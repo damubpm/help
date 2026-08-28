@@ -1,0 +1,1216 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DamuBPM TigerBeetle Lua API</title>
+<style>
+:root {
+  --bg:#0b1020; --panel:#121a2c; --panel2:#0f1728; --text:#e7ecf5; --muted:#9aa8bf;
+  --line:#26334b; --accent:#6ea8fe; --accent2:#9ec5fe; --code:#0a0f1b; --good:#72d6a0;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;line-height:1.55}
+.layout{display:grid;grid-template-columns:280px minmax(0,1fr);min-height:100vh}
+.sidebar{position:sticky;top:0;height:100vh;padding:24px 18px;border-right:1px solid var(--line);background:#0c1322;overflow:auto}
+.brand{font-weight:800;font-size:19px;margin-bottom:6px}
+.sub{color:var(--muted);font-size:13px;margin-bottom:18px}
+.search{width:100%;padding:11px 12px;border:1px solid var(--line);border-radius:10px;background:var(--panel2);color:var(--text);outline:none}
+.search:focus{border-color:var(--accent)}
+.toc{display:flex;flex-direction:column;gap:5px;margin-top:16px}
+.toc a{color:var(--muted);text-decoration:none;padding:7px 9px;border-radius:8px}
+.toc a:hover{background:var(--panel);color:var(--text)}
+.main{padding:32px;max-width:1200px;width:100%;margin:0 auto}
+.hero{padding:26px 28px;border:1px solid var(--line);background:linear-gradient(180deg,#121c31,#101726);border-radius:16px;margin-bottom:24px}
+.hero h1{margin:0 0 8px;font-size:30px}
+.hero p{color:var(--muted);margin:6px 0}
+.note{margin-top:14px;padding:12px 14px;border-left:3px solid var(--accent);background:#0d1628;border-radius:8px;color:var(--accent2)}
+.func-card{border:1px solid var(--line);background:var(--panel);border-radius:16px;padding:24px;margin:20px 0}
+.func-head{display:flex;align-items:center;gap:10px}
+.func-head h2{margin:0;font-size:25px}
+.anchor{color:var(--muted);text-decoration:none}
+.desc{color:#cbd5e1}
+h3{margin-top:24px;font-size:16px;color:#dce6f7}
+pre{background:var(--code);border:1px solid #1d2940;border-radius:12px;padding:16px;overflow:auto;white-space:pre;tab-size:4}
+code{font-family:"SFMono-Regular",Consolas,"Liberation Mono",monospace;font-size:13px}
+table{border-collapse:collapse;width:100%;min-width:620px}
+th,td{border-bottom:1px solid var(--line);padding:10px 12px;text-align:left;vertical-align:top}
+th{color:#bcd2f7;background:#101827}
+td{color:#d8e0ec}
+.table-wrap{overflow:auto;border:1px solid var(--line);border-radius:12px}
+.example{position:relative;margin:14px 0}
+.example-title{font-weight:700;margin-bottom:6px;color:var(--good)}
+.copy-btn{position:absolute;right:9px;top:30px;border:1px solid var(--line);background:#162039;color:#dce6f7;border-radius:8px;padding:6px 9px;cursor:pointer}
+.copy-btn:hover{border-color:var(--accent)}
+.muted{color:var(--muted)}
+.no-results{display:none;padding:18px;border:1px dashed var(--line);border-radius:12px;color:var(--muted);text-align:center}
+.footer{color:var(--muted);font-size:13px;margin:28px 0 10px}
+@media (max-width:900px){
+ .layout{grid-template-columns:1fr}
+ .sidebar{position:relative;height:auto;border-right:0;border-bottom:1px solid var(--line)}
+ .main{padding:18px}
+}
+</style>
+</head>
+<body>
+<div class="layout">
+  <aside class="sidebar">
+    <div class="brand">TigerBeetle Lua API</div>
+    <div class="sub">DamuBPM · pkg/tigerbeetle</div>
+    <input id="search" class="search" placeholder="Поиск функции..." autocomplete="off">
+    <nav class="toc"><a href="#id">ID</a>
+<a href="#ping">Ping</a>
+<a href="#createaccount">CreateAccount</a>
+<a href="#createaccountex">CreateAccountEx</a>
+<a href="#lookupaccount">LookupAccount</a>
+<a href="#createtransfer">CreateTransfer</a>
+<a href="#createtransferex">CreateTransferEx</a>
+<a href="#lookuptransfer">LookupTransfer</a>
+<a href="#getbalance">GetBalance</a>
+<a href="#accountflags">AccountFlags</a>
+<a href="#transferflags">TransferFlags</a></nav>
+  </aside>
+
+  <main class="main">
+    <div class="hero">
+      <h1>DamuBPM TigerBeetle Lua API</h1>
+      <p>Справочник функций модуля, доступных из Lua.</p>
+      <pre><code>local pkg = require("pkg/tigerbeetle")</code></pre>
+      <div class="note">
+        TigerBeetle ID передаются как HEX-строки. Суммы и балансы передаются и возвращаются как десятичные строки, чтобы не терять точность 128-битных значений в Lua.
+      </div>
+    </div>
+
+    <div id="noResults" class="no-results">Ничего не найдено.</div>
+
+    
+    <section class="func-card" id="id" data-search="id генерирует новый уникальный 128-битный идентификатор tigerbeetle. возвращается строкой, чтобы не терять точность в lua.">
+      <div class="func-head">
+        <h2>ID</h2>
+        <a class="anchor" href="#id">#</a>
+      </div>
+      <p class="desc">Генерирует новый уникальный 128-битный идентификатор TigerBeetle. Возвращается строкой, чтобы не терять точность в Lua.</p>
+
+      <h3>Инициализация</h3>
+      <pre><code>local pkg = require("pkg/tigerbeetle")</code></pre>
+
+      <h3>Входящие параметры</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Параметр</th><th>Тип</th><th>Описание</th></tr></thead>
+          <tbody><tr><td colspan="3" class="muted">Нет входных параметров.</td></tr></tbody>
+        </table>
+      </div>
+
+      <h3>Результирующие параметры</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Результат</th><th>Тип</th><th>Описание</th></tr></thead>
+          <tbody><tr><td><code>id</code></td><td><code>string</code></td><td>Новый TigerBeetle ID в строковом HEX-представлении.</td></tr>
+<tr><td><code>err</code></td><td><code>string</code></td><td>Пустая строка &quot;&quot; при успехе.</td></tr>
+<tr><td><code>code</code></td><td><code>integer</code></td><td>0 при успехе.</td></tr></tbody>
+        </table>
+      </div>
+
+      <h3>Примеры</h3>
+      
+        <div class="example">
+          <div class="example-title">Пример 1</div>
+          <button class="copy-btn" onclick="copyCode(this)">Копировать</button>
+          <pre><code>local pkg = require(&quot;pkg/tigerbeetle&quot;)
+
+local id, err, code = pkg.ID()
+
+print(&quot;id =&quot;, id)
+print(&quot;err =&quot;, err)
+print(&quot;code =&quot;, code)
+
+-- Пример результата:
+-- id = 019d0f2c43f600000000000000000001
+-- err =
+-- code = 0</code></pre>
+        </div>
+        <div class="example">
+          <div class="example-title">Пример 2</div>
+          <button class="copy-btn" onclick="copyCode(this)">Копировать</button>
+          <pre><code>local pkg = require(&quot;pkg/tigerbeetle&quot;)
+
+local accountId, err, code = pkg.ID()
+
+if code ~= 0 then
+    print(&quot;Ошибка:&quot;, err)
+    return
+end
+
+print(&quot;Новый accountId:&quot;, accountId)
+
+-- Пример:
+-- Новый accountId: 019d0f2c43f600000000000000000002</code></pre>
+        </div>
+        <div class="example">
+          <div class="example-title">Пример 3</div>
+          <button class="copy-btn" onclick="copyCode(this)">Копировать</button>
+          <pre><code>local pkg = require(&quot;pkg/tigerbeetle&quot;)
+
+local accountId, err1, code1 = pkg.ID()
+local transferId, err2, code2 = pkg.ID()
+
+print(&quot;accountId =&quot;, accountId, &quot;err =&quot;, err1, &quot;code =&quot;, code1)
+print(&quot;transferId =&quot;, transferId, &quot;err =&quot;, err2, &quot;code =&quot;, code2)
+
+-- Пример:
+-- accountId = 019d...001 err =  code = 0
+-- transferId = 019d...002 err =  code = 0</code></pre>
+        </div>
+    </section>
+    
+    <section class="func-card" id="ping" data-search="ping проверяет, может ли модуль инициализировать клиент tigerbeetle. это проверка доступности клиента/конфигурации, а не полноценная бизнес-операция.">
+      <div class="func-head">
+        <h2>Ping</h2>
+        <a class="anchor" href="#ping">#</a>
+      </div>
+      <p class="desc">Проверяет, может ли модуль инициализировать клиент TigerBeetle. Это проверка доступности клиента/конфигурации, а не полноценная бизнес-операция.</p>
+
+      <h3>Инициализация</h3>
+      <pre><code>local pkg = require("pkg/tigerbeetle")</code></pre>
+
+      <h3>Входящие параметры</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Параметр</th><th>Тип</th><th>Описание</th></tr></thead>
+          <tbody><tr><td colspan="3" class="muted">Нет входных параметров.</td></tr></tbody>
+        </table>
+      </div>
+
+      <h3>Результирующие параметры</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Результат</th><th>Тип</th><th>Описание</th></tr></thead>
+          <tbody><tr><td><code>ok</code></td><td><code>boolean</code></td><td>true, если клиент TigerBeetle успешно получен.</td></tr>
+<tr><td><code>err</code></td><td><code>string</code></td><td>Пустая строка &quot;&quot; при успехе, иначе текст ошибки.</td></tr>
+<tr><td><code>code</code></td><td><code>integer</code></td><td>0 при успехе, 100 при ошибке клиента.</td></tr></tbody>
+        </table>
+      </div>
+
+      <h3>Примеры</h3>
+      
+        <div class="example">
+          <div class="example-title">Пример 1</div>
+          <button class="copy-btn" onclick="copyCode(this)">Копировать</button>
+          <pre><code>local pkg = require(&quot;pkg/tigerbeetle&quot;)
+
+local ok, err, code = pkg.Ping()
+
+print(&quot;ok =&quot;, ok)
+print(&quot;err =&quot;, err)
+print(&quot;code =&quot;, code)
+
+-- Пример результата:
+-- ok = true
+-- err =
+-- code = 0</code></pre>
+        </div>
+        <div class="example">
+          <div class="example-title">Пример 2</div>
+          <button class="copy-btn" onclick="copyCode(this)">Копировать</button>
+          <pre><code>local pkg = require(&quot;pkg/tigerbeetle&quot;)
+
+local ok, err, code = pkg.Ping()
+
+if not ok then
+    print(&quot;TigerBeetle недоступен:&quot;, err, &quot;code =&quot;, code)
+    return
+end
+
+print(&quot;TigerBeetle клиент готов&quot;)
+
+-- Пример:
+-- TigerBeetle клиент готов</code></pre>
+        </div>
+    </section>
+    
+    <section class="func-card" id="createaccount" data-search="createaccount создаёт один счёт tigerbeetle с минимальным набором параметров: id, ledger и code. пользовательские поля и flags устанавливаются в 0.">
+      <div class="func-head">
+        <h2>CreateAccount</h2>
+        <a class="anchor" href="#createaccount">#</a>
+      </div>
+      <p class="desc">Создаёт один счёт TigerBeetle с минимальным набором параметров: ID, ledger и code. Пользовательские поля и flags устанавливаются в 0.</p>
+
+      <h3>Инициализация</h3>
+      <pre><code>local pkg = require("pkg/tigerbeetle")</code></pre>
+
+      <h3>Входящие параметры</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Параметр</th><th>Тип</th><th>Описание</th></tr></thead>
+          <tbody><tr><td><code>id</code></td><td><code>string</code></td><td>TigerBeetle Account ID в HEX-строке. Обычно получается через pkg.ID().</td></tr>
+<tr><td><code>ledger</code></td><td><code>integer</code></td><td>Номер ledger. Должен быть положительным uint32 и совпадать с ledger переводов.</td></tr>
+<tr><td><code>code</code></td><td><code>integer</code></td><td>Код типа счёта, uint16.</td></tr></tbody>
+        </table>
+      </div>
+
+      <h3>Результирующие параметры</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Результат</th><th>Тип</th><th>Описание</th></tr></thead>
+          <tbody><tr><td><code>result</code></td><td><code>table|nil</code></td><td>Таблица {id, status, timestamp}. nil при ошибке до выполнения запроса.</td></tr>
+<tr><td><code>err</code></td><td><code>string</code></td><td>Пустая строка при успехе; при бизнес-ошибке содержит status, например AccountExists.</td></tr>
+<tr><td><code>code</code></td><td><code>integer</code></td><td>0 при успехе; 101 при бизнес-ошибке TigerBeetle; другие коды — ошибка параметров/клиента.</td></tr></tbody>
+        </table>
+      </div>
+
+      <h3>Примеры</h3>
+      
+        <div class="example">
+          <div class="example-title">Пример 1</div>
+          <button class="copy-btn" onclick="copyCode(this)">Копировать</button>
+          <pre><code>local pkg = require(&quot;pkg/tigerbeetle&quot;)
+
+local accountId, err, code = pkg.ID()
+print(&quot;ID:&quot;, accountId, err, code)
+
+local result, err, code = pkg.CreateAccount(
+    accountId,
+    1,
+    100
+)
+
+print(&quot;result.id =&quot;, result and result.id)
+print(&quot;result.status =&quot;, result and result.status)
+print(&quot;result.timestamp =&quot;, result and result.timestamp)
+print(&quot;err =&quot;, err)
+print(&quot;code =&quot;, code)
+
+-- Пример результата:
+-- result.id = 019d0f...
+-- result.status = AccountCreated
+-- result.timestamp = 1787923456789012345
+-- err =
+-- code = 0</code></pre>
+        </div>
+        <div class="example">
+          <div class="example-title">Пример 2</div>
+          <button class="copy-btn" onclick="copyCode(this)">Копировать</button>
+          <pre><code>local pkg = require(&quot;pkg/tigerbeetle&quot;)
+
+local id = &quot;019d0f2c43f600000000000000000010&quot;
+
+local result, err, code = pkg.CreateAccount(id, 10, 718)
+
+if code ~= 0 then
+    print(&quot;Не удалось создать счет&quot;)
+    print(&quot;status/error =&quot;, err)
+    print(&quot;code =&quot;, code)
+    return
+end
+
+print(&quot;Счет создан:&quot;, result.id)
+print(&quot;Статус:&quot;, result.status)
+
+-- Пример:
+-- Счет создан: 019d0f2c43f600000000000000000010
+-- Статус: AccountCreated</code></pre>
+        </div>
+        <div class="example">
+          <div class="example-title">Пример 3</div>
+          <button class="copy-btn" onclick="copyCode(this)">Копировать</button>
+          <pre><code>local pkg = require(&quot;pkg/tigerbeetle&quot;)
+
+local id, _, _ = pkg.ID()
+
+local first, err1, code1 = pkg.CreateAccount(id, 1, 100)
+print(&quot;Первый вызов:&quot;, first and first.status, err1, code1)
+
+local second, err2, code2 = pkg.CreateAccount(id, 1, 100)
+print(&quot;Повторный вызов:&quot;, second and second.status, err2, code2)
+
+-- Возможный результат:
+-- Первый вызов: AccountCreated  0
+-- Повторный вызов: AccountExists AccountExists 101</code></pre>
+        </div>
+    </section>
+    
+    <section class="func-card" id="createaccountex" data-search="createaccountex расширенное создание счёта tigerbeetle. позволяет задать flags и пользовательские поля user_data_128, user_data_64 и user_data_32.">
+      <div class="func-head">
+        <h2>CreateAccountEx</h2>
+        <a class="anchor" href="#createaccountex">#</a>
+      </div>
+      <p class="desc">Расширенное создание счёта TigerBeetle. Позволяет задать flags и пользовательские поля user_data_128, user_data_64 и user_data_32.</p>
+
+      <h3>Инициализация</h3>
+      <pre><code>local pkg = require("pkg/tigerbeetle")</code></pre>
+
+      <h3>Входящие параметры</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Параметр</th><th>Тип</th><th>Описание</th></tr></thead>
+          <tbody><tr><td><code>id</code></td><td><code>string</code></td><td>TigerBeetle Account ID, HEX-строка.</td></tr>
+<tr><td><code>ledger</code></td><td><code>integer</code></td><td>Ledger счёта, uint32.</td></tr>
+<tr><td><code>code</code></td><td><code>integer</code></td><td>Код счёта, uint16.</td></tr>
+<tr><td><code>flags</code></td><td><code>integer</code></td><td>Битовая маска AccountFlags. Удобно получать через pkg.AccountFlags(...).</td></tr>
+<tr><td><code>userData128</code></td><td><code>string</code></td><td>128-битное пользовательское поле в HEX. Для нуля можно передать &quot;0&quot;.</td></tr>
+<tr><td><code>userData64</code></td><td><code>string</code></td><td>64-битное пользовательское поле в десятичной строке, например &quot;12345&quot;.</td></tr>
+<tr><td><code>userData32</code></td><td><code>integer</code></td><td>32-битное пользовательское поле.</td></tr></tbody>
+        </table>
+      </div>
+
+      <h3>Результирующие параметры</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Результат</th><th>Тип</th><th>Описание</th></tr></thead>
+          <tbody><tr><td><code>result</code></td><td><code>table|nil</code></td><td>Таблица {id, status, timestamp}.</td></tr>
+<tr><td><code>err</code></td><td><code>string</code></td><td>Пустая строка при успехе или текст ошибки/status.</td></tr>
+<tr><td><code>code</code></td><td><code>integer</code></td><td>0 при успехе.</td></tr></tbody>
+        </table>
+      </div>
+
+      <h3>Примеры</h3>
+      
+        <div class="example">
+          <div class="example-title">Пример 1</div>
+          <button class="copy-btn" onclick="copyCode(this)">Копировать</button>
+          <pre><code>local pkg = require(&quot;pkg/tigerbeetle&quot;)
+
+local id, _, _ = pkg.ID()
+
+local flags = pkg.AccountFlags(
+    0, -- linked
+    1, -- debits must not exceed credits
+    0, -- credits must not exceed debits
+    1  -- history
+)
+
+print(&quot;flags =&quot;, flags)
+
+local result, err, code = pkg.CreateAccountEx(
+    id,
+    1,
+    100,
+    flags,
+    &quot;0&quot;,
+    &quot;123456&quot;,
+    10
+)
+
+print(&quot;id =&quot;, result and result.id)
+print(&quot;status =&quot;, result and result.status)
+print(&quot;timestamp =&quot;, result and result.timestamp)
+print(&quot;err =&quot;, err)
+print(&quot;code =&quot;, code)
+
+-- Пример:
+-- flags = 10
+-- status = AccountCreated
+-- err =
+-- code = 0</code></pre>
+        </div>
+        <div class="example">
+          <div class="example-title">Пример 2</div>
+          <button class="copy-btn" onclick="copyCode(this)">Копировать</button>
+          <pre><code>local pkg = require(&quot;pkg/tigerbeetle&quot;)
+
+local id, _, _ = pkg.ID()
+
+local result, err, code = pkg.CreateAccountEx(
+    id,
+    5,
+    200,
+    0,
+    &quot;abc123&quot;,
+    &quot;987654321&quot;,
+    42
+)
+
+if code ~= 0 then
+    print(&quot;Ошибка:&quot;, err, code)
+    return
+end
+
+print(&quot;Создан счет:&quot;, result.id)
+print(&quot;status:&quot;, result.status)
+
+-- userData128 = abc123
+-- userData64 = 987654321
+-- userData32 = 42</code></pre>
+        </div>
+    </section>
+    
+    <section class="func-card" id="lookupaccount" data-search="lookupaccount получает один счёт tigerbeetle по его id. возвращает текущие posted/pending дебеты и кредиты, пользовательские поля, ledger, code, flags и timestamp.">
+      <div class="func-head">
+        <h2>LookupAccount</h2>
+        <a class="anchor" href="#lookupaccount">#</a>
+      </div>
+      <p class="desc">Получает один счёт TigerBeetle по его ID. Возвращает текущие posted/pending дебеты и кредиты, пользовательские поля, ledger, code, flags и timestamp.</p>
+
+      <h3>Инициализация</h3>
+      <pre><code>local pkg = require("pkg/tigerbeetle")</code></pre>
+
+      <h3>Входящие параметры</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Параметр</th><th>Тип</th><th>Описание</th></tr></thead>
+          <tbody><tr><td><code>id</code></td><td><code>string</code></td><td>TigerBeetle Account ID в HEX-строке.</td></tr></tbody>
+        </table>
+      </div>
+
+      <h3>Результирующие параметры</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Результат</th><th>Тип</th><th>Описание</th></tr></thead>
+          <tbody><tr><td><code>account</code></td><td><code>table|nil</code></td><td>Таблица с данными счёта или nil, если не найден.</td></tr>
+<tr><td><code>err</code></td><td><code>string</code></td><td>Пустая строка при успехе; &quot;account not found&quot; если счёт отсутствует.</td></tr>
+<tr><td><code>code</code></td><td><code>integer</code></td><td>0 при успехе, 404 если счёт не найден.</td></tr></tbody>
+        </table>
+      </div>
+
+      <h3>Примеры</h3>
+      
+        <div class="example">
+          <div class="example-title">Пример 1</div>
+          <button class="copy-btn" onclick="copyCode(this)">Копировать</button>
+          <pre><code>local pkg = require(&quot;pkg/tigerbeetle&quot;)
+
+local accountId = &quot;019d0f2c43f600000000000000000010&quot;
+
+local account, err, code = pkg.LookupAccount(accountId)
+
+print(&quot;account.id =&quot;, account and account.id)
+print(&quot;ledger =&quot;, account and account.ledger)
+print(&quot;code =&quot;, account and account.code)
+print(&quot;debits_posted =&quot;, account and account.debits_posted)
+print(&quot;credits_posted =&quot;, account and account.credits_posted)
+print(&quot;err =&quot;, err)
+print(&quot;return code =&quot;, code)
+
+-- Пример:
+-- ledger = 1
+-- code = 100
+-- debits_posted = 25
+-- credits_posted = 100
+-- err =
+-- return code = 0</code></pre>
+        </div>
+        <div class="example">
+          <div class="example-title">Пример 2</div>
+          <button class="copy-btn" onclick="copyCode(this)">Копировать</button>
+          <pre><code>local pkg = require(&quot;pkg/tigerbeetle&quot;)
+
+local account, err, code = pkg.LookupAccount(
+    &quot;ffffffffffffffffffffffffffffffff&quot;
+)
+
+if code == 404 then
+    print(&quot;Счет не найден&quot;)
+    print(&quot;err =&quot;, err)
+    return
+end
+
+print(&quot;Счет:&quot;, account.id)
+
+-- Пример:
+-- Счет не найден
+-- err = account not found</code></pre>
+        </div>
+        <div class="example">
+          <div class="example-title">Пример 3</div>
+          <button class="copy-btn" onclick="copyCode(this)">Копировать</button>
+          <pre><code>local pkg = require(&quot;pkg/tigerbeetle&quot;)
+
+local account, err, code = pkg.LookupAccount(&quot;019d0f2c43f600000000000000000010&quot;)
+
+if code ~= 0 then
+    print(err, code)
+    return
+end
+
+print(&quot;ID:&quot;, account.id)
+print(&quot;Pending debit:&quot;, account.debits_pending)
+print(&quot;Posted debit:&quot;, account.debits_posted)
+print(&quot;Pending credit:&quot;, account.credits_pending)
+print(&quot;Posted credit:&quot;, account.credits_posted)
+print(&quot;History flag:&quot;, account.flag_history)
+
+-- Все суммы возвращаются строками.</code></pre>
+        </div>
+    </section>
+    
+    <section class="func-card" id="createtransfer" data-search="createtransfer создаёт обычный posted-перевод между двумя счетами tigerbeetle. сумма передаётся десятичной строкой.">
+      <div class="func-head">
+        <h2>CreateTransfer</h2>
+        <a class="anchor" href="#createtransfer">#</a>
+      </div>
+      <p class="desc">Создаёт обычный posted-перевод между двумя счетами TigerBeetle. Сумма передаётся десятичной строкой.</p>
+
+      <h3>Инициализация</h3>
+      <pre><code>local pkg = require("pkg/tigerbeetle")</code></pre>
+
+      <h3>Входящие параметры</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Параметр</th><th>Тип</th><th>Описание</th></tr></thead>
+          <tbody><tr><td><code>id</code></td><td><code>string</code></td><td>Уникальный ID перевода, HEX-строка.</td></tr>
+<tr><td><code>debitAccountId</code></td><td><code>string</code></td><td>ID дебетового счёта.</td></tr>
+<tr><td><code>creditAccountId</code></td><td><code>string</code></td><td>ID кредитового счёта.</td></tr>
+<tr><td><code>amount</code></td><td><code>string</code></td><td>Сумма в десятичной строке, например &quot;25&quot; или &quot;1000000&quot;.</td></tr>
+<tr><td><code>ledger</code></td><td><code>integer</code></td><td>Ledger перевода. Должен совпадать с ledger обоих счетов.</td></tr>
+<tr><td><code>code</code></td><td><code>integer</code></td><td>Код типа перевода, uint16.</td></tr></tbody>
+        </table>
+      </div>
+
+      <h3>Результирующие параметры</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Результат</th><th>Тип</th><th>Описание</th></tr></thead>
+          <tbody><tr><td><code>result</code></td><td><code>table|nil</code></td><td>Таблица {id, status, timestamp}.</td></tr>
+<tr><td><code>err</code></td><td><code>string</code></td><td>Пустая строка при успехе или TigerBeetle status при бизнес-ошибке.</td></tr>
+<tr><td><code>code</code></td><td><code>integer</code></td><td>0 при успехе.</td></tr></tbody>
+        </table>
+      </div>
+
+      <h3>Примеры</h3>
+      
+        <div class="example">
+          <div class="example-title">Пример 1</div>
+          <button class="copy-btn" onclick="copyCode(this)">Копировать</button>
+          <pre><code>local pkg = require(&quot;pkg/tigerbeetle&quot;)
+
+local transferId, _, _ = pkg.ID()
+
+local result, err, code = pkg.CreateTransfer(
+    transferId,
+    &quot;019d0000000000000000000000000001&quot;,
+    &quot;019d0000000000000000000000000002&quot;,
+    &quot;25&quot;,
+    1,
+    200
+)
+
+print(&quot;transfer id =&quot;, result and result.id)
+print(&quot;status =&quot;, result and result.status)
+print(&quot;timestamp =&quot;, result and result.timestamp)
+print(&quot;err =&quot;, err)
+print(&quot;code =&quot;, code)
+
+-- Пример:
+-- status = TransferCreated
+-- err =
+-- code = 0</code></pre>
+        </div>
+        <div class="example">
+          <div class="example-title">Пример 2</div>
+          <button class="copy-btn" onclick="copyCode(this)">Копировать</button>
+          <pre><code>local pkg = require(&quot;pkg/tigerbeetle&quot;)
+
+local transferId, _, _ = pkg.ID()
+
+local result, err, code = pkg.CreateTransfer(
+    transferId,
+    debitAccountId,
+    creditAccountId,
+    &quot;150000&quot;,
+    1,
+    10
+)
+
+if code ~= 0 then
+    print(&quot;Перевод отклонен:&quot;, err)
+    print(&quot;code =&quot;, code)
+    return
+end
+
+print(&quot;Перевод проведен:&quot;, result.id)
+
+-- Пример:
+-- Перевод проведен: 019d...</code></pre>
+        </div>
+        <div class="example">
+          <div class="example-title">Пример 3</div>
+          <button class="copy-btn" onclick="copyCode(this)">Копировать</button>
+          <pre><code>local pkg = require(&quot;pkg/tigerbeetle&quot;)
+
+local id, _, _ = pkg.ID()
+
+local result, err, code = pkg.CreateTransfer(
+    id,
+    debitAccountId,
+    creditAccountId,
+    &quot;999999999999999999999&quot;,
+    1,
+    200
+)
+
+print(&quot;result =&quot;, result and result.status)
+print(&quot;err =&quot;, err)
+print(&quot;code =&quot;, code)
+
+-- При ограничении счета возможен, например:
+-- result = ExceedsCredits
+-- err = ExceedsCredits
+-- code = 101</code></pre>
+        </div>
+    </section>
+    
+    <section class="func-card" id="createtransferex" data-search="createtransferex расширенное создание перевода. поддерживает pending/post/void flags, pendingid, timeout и пользовательские поля.">
+      <div class="func-head">
+        <h2>CreateTransferEx</h2>
+        <a class="anchor" href="#createtransferex">#</a>
+      </div>
+      <p class="desc">Расширенное создание перевода. Поддерживает pending/post/void flags, PendingID, timeout и пользовательские поля.</p>
+
+      <h3>Инициализация</h3>
+      <pre><code>local pkg = require("pkg/tigerbeetle")</code></pre>
+
+      <h3>Входящие параметры</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Параметр</th><th>Тип</th><th>Описание</th></tr></thead>
+          <tbody><tr><td><code>id</code></td><td><code>string</code></td><td>ID нового перевода, HEX.</td></tr>
+<tr><td><code>debitAccountId</code></td><td><code>string</code></td><td>ID дебетового счёта.</td></tr>
+<tr><td><code>creditAccountId</code></td><td><code>string</code></td><td>ID кредитового счёта.</td></tr>
+<tr><td><code>amount</code></td><td><code>string</code></td><td>Сумма в десятичной строке.</td></tr>
+<tr><td><code>ledger</code></td><td><code>integer</code></td><td>Ledger.</td></tr>
+<tr><td><code>code</code></td><td><code>integer</code></td><td>Код перевода.</td></tr>
+<tr><td><code>flags</code></td><td><code>integer</code></td><td>Битовая маска TransferFlags.</td></tr>
+<tr><td><code>pendingId</code></td><td><code>string</code></td><td>ID pending-перевода для post/void. Для обычного/pending перевода можно &quot;0&quot;.</td></tr>
+<tr><td><code>timeout</code></td><td><code>integer</code></td><td>Timeout pending-перевода в секундах. 0 — без timeout.</td></tr>
+<tr><td><code>userData128</code></td><td><code>string</code></td><td>Пользовательские 128 бит HEX, либо &quot;0&quot;.</td></tr>
+<tr><td><code>userData64</code></td><td><code>string</code></td><td>Пользовательские 64 бита в десятичной строке.</td></tr>
+<tr><td><code>userData32</code></td><td><code>integer</code></td><td>Пользовательские 32 бита.</td></tr></tbody>
+        </table>
+      </div>
+
+      <h3>Результирующие параметры</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Результат</th><th>Тип</th><th>Описание</th></tr></thead>
+          <tbody><tr><td><code>result</code></td><td><code>table|nil</code></td><td>Таблица {id, status, timestamp}.</td></tr>
+<tr><td><code>err</code></td><td><code>string</code></td><td>Пустая строка при успехе или status/ошибка.</td></tr>
+<tr><td><code>code</code></td><td><code>integer</code></td><td>0 при успехе.</td></tr></tbody>
+        </table>
+      </div>
+
+      <h3>Примеры</h3>
+      
+        <div class="example">
+          <div class="example-title">Пример 1</div>
+          <button class="copy-btn" onclick="copyCode(this)">Копировать</button>
+          <pre><code>local pkg = require(&quot;pkg/tigerbeetle&quot;)
+
+local transferId, _, _ = pkg.ID()
+
+local flags = pkg.TransferFlags(
+    0, -- linked
+    1, -- pending
+    0, -- post pending
+    0  -- void pending
+)
+
+local result, err, code = pkg.CreateTransferEx(
+    transferId,
+    debitAccountId,
+    creditAccountId,
+    &quot;1000&quot;,
+    1,
+    300,
+    flags,
+    &quot;0&quot;,
+    3600,
+    &quot;0&quot;,
+    &quot;12345&quot;,
+    10
+)
+
+print(&quot;status =&quot;, result and result.status)
+print(&quot;id =&quot;, result and result.id)
+print(&quot;err =&quot;, err)
+print(&quot;code =&quot;, code)
+
+-- Пример:
+-- status = TransferCreated
+-- err =
+-- code = 0</code></pre>
+        </div>
+        <div class="example">
+          <div class="example-title">Пример 2</div>
+          <button class="copy-btn" onclick="copyCode(this)">Копировать</button>
+          <pre><code>local pkg = require(&quot;pkg/tigerbeetle&quot;)
+
+-- Допустим pendingTransferId был создан ранее.
+local postTransferId, _, _ = pkg.ID()
+
+local postFlags = pkg.TransferFlags(
+    0,
+    0,
+    1, -- post pending
+    0
+)
+
+local result, err, code = pkg.CreateTransferEx(
+    postTransferId,
+    debitAccountId,
+    creditAccountId,
+    &quot;1000&quot;,
+    1,
+    300,
+    postFlags,
+    pendingTransferId,
+    0,
+    &quot;0&quot;,
+    &quot;0&quot;,
+    0
+)
+
+print(&quot;post status =&quot;, result and result.status)
+print(&quot;err =&quot;, err)
+print(&quot;code =&quot;, code)
+
+-- Успех:
+-- post status = TransferCreated
+-- err =
+-- code = 0</code></pre>
+        </div>
+        <div class="example">
+          <div class="example-title">Пример 3</div>
+          <button class="copy-btn" onclick="copyCode(this)">Копировать</button>
+          <pre><code>local pkg = require(&quot;pkg/tigerbeetle&quot;)
+
+local voidTransferId, _, _ = pkg.ID()
+
+local voidFlags = pkg.TransferFlags(
+    0,
+    0,
+    0,
+    1 -- void pending
+)
+
+local result, err, code = pkg.CreateTransferEx(
+    voidTransferId,
+    debitAccountId,
+    creditAccountId,
+    &quot;0&quot;,
+    1,
+    300,
+    voidFlags,
+    pendingTransferId,
+    0,
+    &quot;0&quot;,
+    &quot;0&quot;,
+    0
+)
+
+print(&quot;void status =&quot;, result and result.status)
+print(&quot;err =&quot;, err)
+print(&quot;code =&quot;, code)</code></pre>
+        </div>
+    </section>
+    
+    <section class="func-card" id="lookuptransfer" data-search="lookuptransfer получает перевод tigerbeetle по id и возвращает все основные поля: счета, amount, pending_id, user_data, flags, ledger, code и timestamp.">
+      <div class="func-head">
+        <h2>LookupTransfer</h2>
+        <a class="anchor" href="#lookuptransfer">#</a>
+      </div>
+      <p class="desc">Получает перевод TigerBeetle по ID и возвращает все основные поля: счета, amount, pending_id, user_data, flags, ledger, code и timestamp.</p>
+
+      <h3>Инициализация</h3>
+      <pre><code>local pkg = require("pkg/tigerbeetle")</code></pre>
+
+      <h3>Входящие параметры</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Параметр</th><th>Тип</th><th>Описание</th></tr></thead>
+          <tbody><tr><td><code>id</code></td><td><code>string</code></td><td>ID перевода в HEX-строке.</td></tr></tbody>
+        </table>
+      </div>
+
+      <h3>Результирующие параметры</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Результат</th><th>Тип</th><th>Описание</th></tr></thead>
+          <tbody><tr><td><code>transfer</code></td><td><code>table|nil</code></td><td>Таблица с переводом или nil.</td></tr>
+<tr><td><code>err</code></td><td><code>string</code></td><td>Пустая строка при успехе; &quot;transfer not found&quot; если не найден.</td></tr>
+<tr><td><code>code</code></td><td><code>integer</code></td><td>0 при успехе, 404 если перевод отсутствует.</td></tr></tbody>
+        </table>
+      </div>
+
+      <h3>Примеры</h3>
+      
+        <div class="example">
+          <div class="example-title">Пример 1</div>
+          <button class="copy-btn" onclick="copyCode(this)">Копировать</button>
+          <pre><code>local pkg = require(&quot;pkg/tigerbeetle&quot;)
+
+local transfer, err, code = pkg.LookupTransfer(
+    &quot;019d0f2c43f600000000000000000099&quot;
+)
+
+print(&quot;id =&quot;, transfer and transfer.id)
+print(&quot;debit_account_id =&quot;, transfer and transfer.debit_account_id)
+print(&quot;credit_account_id =&quot;, transfer and transfer.credit_account_id)
+print(&quot;amount =&quot;, transfer and transfer.amount)
+print(&quot;ledger =&quot;, transfer and transfer.ledger)
+print(&quot;code =&quot;, transfer and transfer.code)
+print(&quot;err =&quot;, err)
+print(&quot;return code =&quot;, code)
+
+-- Пример:
+-- amount = 25
+-- ledger = 1
+-- code = 200
+-- err =
+-- return code = 0</code></pre>
+        </div>
+        <div class="example">
+          <div class="example-title">Пример 2</div>
+          <button class="copy-btn" onclick="copyCode(this)">Копировать</button>
+          <pre><code>local pkg = require(&quot;pkg/tigerbeetle&quot;)
+
+local transfer, err, code = pkg.LookupTransfer(
+    &quot;ffffffffffffffffffffffffffffffff&quot;
+)
+
+if code == 404 then
+    print(&quot;Перевод не найден&quot;)
+    print(&quot;err =&quot;, err)
+    return
+end
+
+print(transfer.id)</code></pre>
+        </div>
+        <div class="example">
+          <div class="example-title">Пример 3</div>
+          <button class="copy-btn" onclick="copyCode(this)">Копировать</button>
+          <pre><code>local pkg = require(&quot;pkg/tigerbeetle&quot;)
+
+local transfer, err, code = pkg.LookupTransfer(transferId)
+
+if code ~= 0 then
+    print(err, code)
+    return
+end
+
+print(&quot;amount:&quot;, transfer.amount)
+print(&quot;pending:&quot;, transfer.flag_pending)
+print(&quot;post pending:&quot;, transfer.flag_post_pending_transfer)
+print(&quot;void pending:&quot;, transfer.flag_void_pending_transfer)
+print(&quot;timestamp:&quot;, transfer.timestamp)</code></pre>
+        </div>
+    </section>
+    
+    <section class="func-card" id="getbalance" data-search="getbalance возвращает текущие pending/posted обороты счёта и вычисляет удобное поле balance = credits_posted - debits_posted.">
+      <div class="func-head">
+        <h2>GetBalance</h2>
+        <a class="anchor" href="#getbalance">#</a>
+      </div>
+      <p class="desc">Возвращает текущие pending/posted обороты счёта и вычисляет удобное поле balance = credits_posted - debits_posted.</p>
+
+      <h3>Инициализация</h3>
+      <pre><code>local pkg = require("pkg/tigerbeetle")</code></pre>
+
+      <h3>Входящие параметры</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Параметр</th><th>Тип</th><th>Описание</th></tr></thead>
+          <tbody><tr><td><code>accountId</code></td><td><code>string</code></td><td>Известный TigerBeetle Account ID в HEX-строке.</td></tr></tbody>
+        </table>
+      </div>
+
+      <h3>Результирующие параметры</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Результат</th><th>Тип</th><th>Описание</th></tr></thead>
+          <tbody><tr><td><code>balance</code></td><td><code>table|nil</code></td><td>Таблица {id, debits_pending, debits_posted, credits_pending, credits_posted, balance}.</td></tr>
+<tr><td><code>err</code></td><td><code>string</code></td><td>Пустая строка при успехе.</td></tr>
+<tr><td><code>code</code></td><td><code>integer</code></td><td>0 при успехе, 404 если счёт не найден.</td></tr></tbody>
+        </table>
+      </div>
+
+      <h3>Примеры</h3>
+      
+        <div class="example">
+          <div class="example-title">Пример 1</div>
+          <button class="copy-btn" onclick="copyCode(this)">Копировать</button>
+          <pre><code>local pkg = require(&quot;pkg/tigerbeetle&quot;)
+
+local balance, err, code = pkg.GetBalance(
+    &quot;019d0f2c43f600000000000000000010&quot;
+)
+
+print(&quot;id =&quot;, balance and balance.id)
+print(&quot;debits_pending =&quot;, balance and balance.debits_pending)
+print(&quot;debits_posted =&quot;, balance and balance.debits_posted)
+print(&quot;credits_pending =&quot;, balance and balance.credits_pending)
+print(&quot;credits_posted =&quot;, balance and balance.credits_posted)
+print(&quot;balance =&quot;, balance and balance.balance)
+print(&quot;err =&quot;, err)
+print(&quot;code =&quot;, code)
+
+-- Пример:
+-- debits_posted = 25
+-- credits_posted = 100
+-- balance = 75
+-- err =
+-- code = 0</code></pre>
+        </div>
+        <div class="example">
+          <div class="example-title">Пример 2</div>
+          <button class="copy-btn" onclick="copyCode(this)">Копировать</button>
+          <pre><code>local pkg = require(&quot;pkg/tigerbeetle&quot;)
+
+local accountId = &quot;019d0f2c43f600000000000000000010&quot;
+
+local balance, err, code = pkg.GetBalance(accountId)
+
+if code == 404 then
+    print(&quot;Счет не существует&quot;)
+    return
+end
+
+if code ~= 0 then
+    print(&quot;Ошибка:&quot;, err)
+    return
+end
+
+print(&quot;Текущий остаток:&quot;, balance.balance)
+
+-- Пример:
+-- Текущий остаток: 7500</code></pre>
+        </div>
+        <div class="example">
+          <div class="example-title">Пример 3</div>
+          <button class="copy-btn" onclick="copyCode(this)">Копировать</button>
+          <pre><code>local pkg = require(&quot;pkg/tigerbeetle&quot;)
+
+local balance, err, code = pkg.GetBalance(accountId)
+
+if code == 0 then
+    local posted = balance.balance
+    local pendingDebit = balance.debits_pending
+    local pendingCredit = balance.credits_pending
+
+    print(&quot;posted balance =&quot;, posted)
+    print(&quot;pending debit =&quot;, pendingDebit)
+    print(&quot;pending credit =&quot;, pendingCredit)
+end
+
+-- Все значения сумм являются строками.</code></pre>
+        </div>
+    </section>
+    
+    <section class="func-card" id="accountflags" data-search="accountflags формирует числовую битовую маску флагов счёта tigerbeetle. удобно использовать результат в createaccountex.">
+      <div class="func-head">
+        <h2>AccountFlags</h2>
+        <a class="anchor" href="#accountflags">#</a>
+      </div>
+      <p class="desc">Формирует числовую битовую маску флагов счёта TigerBeetle. Удобно использовать результат в CreateAccountEx.</p>
+
+      <h3>Инициализация</h3>
+      <pre><code>local pkg = require("pkg/tigerbeetle")</code></pre>
+
+      <h3>Входящие параметры</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Параметр</th><th>Тип</th><th>Описание</th></tr></thead>
+          <tbody><tr><td><code>linked</code></td><td><code>integer</code></td><td>0/1. Связывает операцию с последующей в batch.</td></tr>
+<tr><td><code>debitsMustNotExceedCredits</code></td><td><code>integer</code></td><td>0/1. Запрещает дебету превышать кредит.</td></tr>
+<tr><td><code>creditsMustNotExceedDebits</code></td><td><code>integer</code></td><td>0/1. Запрещает кредиту превышать дебет.</td></tr>
+<tr><td><code>history</code></td><td><code>integer</code></td><td>0/1. Включает историю балансов/операций счёта.</td></tr></tbody>
+        </table>
+      </div>
+
+      <h3>Результирующие параметры</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Результат</th><th>Тип</th><th>Описание</th></tr></thead>
+          <tbody><tr><td><code>flags</code></td><td><code>integer</code></td><td>Готовая битовая маска AccountFlags.</td></tr></tbody>
+        </table>
+      </div>
+
+      <h3>Примеры</h3>
+      
+        <div class="example">
+          <div class="example-title">Пример 1</div>
+          <button class="copy-btn" onclick="copyCode(this)">Копировать</button>
+          <pre><code>local pkg = require(&quot;pkg/tigerbeetle&quot;)
+
+local flags = pkg.AccountFlags(
+    0,
+    1,
+    0,
+    1
+)
+
+print(&quot;flags =&quot;, flags)
+
+-- Пример:
+-- flags = 10</code></pre>
+        </div>
+        <div class="example">
+          <div class="example-title">Пример 2</div>
+          <button class="copy-btn" onclick="copyCode(this)">Копировать</button>
+          <pre><code>local pkg = require(&quot;pkg/tigerbeetle&quot;)
+
+local flags = pkg.AccountFlags(
+    0, -- linked
+    0, -- debit limit off
+    1, -- credit must not exceed debit
+    1  -- history on
+)
+
+local id, _, _ = pkg.ID()
+
+local result, err, code = pkg.CreateAccountEx(
+    id,
+    1,
+    100,
+    flags,
+    &quot;0&quot;,
+    &quot;0&quot;,
+    0
+)
+
+print(&quot;flags =&quot;, flags)
+print(&quot;status =&quot;, result and result.status)
+print(&quot;err =&quot;, err)
+print(&quot;code =&quot;, code)</code></pre>
+        </div>
+    </section>
+    
+    <section class="func-card" id="transferflags" data-search="transferflags формирует числовую битовую маску флагов перевода tigerbeetle. используется для linked, pending, post pending и void pending операций.">
+      <div class="func-head">
+        <h2>TransferFlags</h2>
+        <a class="anchor" href="#transferflags">#</a>
+      </div>
+      <p class="desc">Формирует числовую битовую маску флагов перевода TigerBeetle. Используется для linked, pending, post pending и void pending операций.</p>
+
+      <h3>Инициализация</h3>
+      <pre><code>local pkg = require("pkg/tigerbeetle")</code></pre>
+
+      <h3>Входящие параметры</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Параметр</th><th>Тип</th><th>Описание</th></tr></thead>
+          <tbody><tr><td><code>linked</code></td><td><code>integer</code></td><td>0/1. Linked transfer.</td></tr>
+<tr><td><code>pending</code></td><td><code>integer</code></td><td>0/1. Создать pending transfer.</td></tr>
+<tr><td><code>postPendingTransfer</code></td><td><code>integer</code></td><td>0/1. Подтвердить существующий pending transfer.</td></tr>
+<tr><td><code>voidPendingTransfer</code></td><td><code>integer</code></td><td>0/1. Отменить существующий pending transfer.</td></tr></tbody>
+        </table>
+      </div>
+
+      <h3>Результирующие параметры</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Результат</th><th>Тип</th><th>Описание</th></tr></thead>
+          <tbody><tr><td><code>flags</code></td><td><code>integer</code></td><td>Готовая битовая маска TransferFlags.</td></tr></tbody>
+        </table>
+      </div>
+
+      <h3>Примеры</h3>
+      
+        <div class="example">
+          <div class="example-title">Пример 1</div>
+          <button class="copy-btn" onclick="copyCode(this)">Копировать</button>
+          <pre><code>local pkg = require(&quot;pkg/tigerbeetle&quot;)
+
+local flags = pkg.TransferFlags(
+    0,
+    1,
+    0,
+    0
+)
+
+print(&quot;pending flags =&quot;, flags)
+
+-- Результат — целое число, которое передается в CreateTransferEx.</code></pre>
+        </div>
+        <div class="example">
+          <div class="example-title">Пример 2</div>
+          <button class="copy-btn" onclick="copyCode(this)">Копировать</button>
+          <pre><code>local pkg = require(&quot;pkg/tigerbeetle&quot;)
+
+local postFlags = pkg.TransferFlags(
+    0,
+    0,
+    1,
+    0
+)
+
+local voidFlags = pkg.TransferFlags(
+    0,
+    0,
+    0,
+    1
+)
+
+print(&quot;postFlags =&quot;, postFlags)
+print(&quot;voidFlags =&quot;, voidFlags)
+
+-- postFlags используется для подтверждения pending-перевода.
+-- voidFlags используется для его отмены.</code></pre>
+        </div>
+        <div class="example">
+          <div class="example-title">Пример 3</div>
+          <button class="copy-btn" onclick="copyCode(this)">Копировать</button>
+          <pre><code>local pkg = require(&quot;pkg/tigerbeetle&quot;)
+
+local pendingFlags = pkg.TransferFlags(0, 1, 0, 0)
+
+local result, err, code = pkg.CreateTransferEx(
+    transferId,
+    debitAccountId,
+    creditAccountId,
+    &quot;500&quot;,
+    1,
+    100,
+    pendingFlags,
+    &quot;0&quot;,
+    600,
+    &quot;0&quot;,
+    &quot;0&quot;,
+    0
+)
+
+print(&quot;flags =&quot;, pendingFlags)
+print(&quot;status =&quot;, result and result.status)
+print(&quot;err =&quot;, err)
+print(&quot;code =&quot;, code)</code></pre>
+        </div>
+    </section>
+    
+
+    <div class="footer">
+      Документация описывает Lua-интерфейс модуля pkg/tigerbeetle.
+    </div>
+  </main>
+</div>
+
+<script>
+const search = document.getElementById('search');
+const cards = [...document.querySelectorAll('.func-card')];
+const noResults = document.getElementById('noResults');
+
+search.addEventListener('input', () => {
+  const q = search.value.trim().toLowerCase();
+  let visible = 0;
+
+  cards.forEach(card => {
+    const text = (card.innerText + ' ' + card.dataset.search).toLowerCase();
+    const show = !q || text.includes(q);
+    card.style.display = show ? '' : 'none';
+    if (show) visible++;
+  });
+
+  noResults.style.display = visible === 0 ? 'block' : 'none';
+});
+
+function copyCode(btn) {
+  const code = btn.parentElement.querySelector('code').innerText;
+  navigator.clipboard.writeText(code).then(() => {
+    const old = btn.innerText;
+    btn.innerText = 'Скопировано';
+    setTimeout(() => btn.innerText = old, 1200);
+  });
+}
+</script>
+</body>
+</html>
