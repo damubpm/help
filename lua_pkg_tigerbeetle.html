@@ -131,8 +131,8 @@
     <div class="brand">TigerBeetle Lua API<small>DamuBPM · справочник вызовов</small></div>
     <a class="home" href="index.html">← На главную</a>
     <input id="search" class="search" type="search" placeholder="Поиск функции, поля, параметра…" autocomplete="off">
-    <div class="nav-title">Функции · 13</div>
-    <nav id="nav"><a href="#id" data-nav="id"><span>01</span>ID</a><a href="#ping" data-nav="ping"><span>02</span>Ping</a><a href="#createaccount" data-nav="createaccount"><span>03</span>CreateAccount</a><a href="#createaccountex" data-nav="createaccountex"><span>04</span>CreateAccountEx</a><a href="#luacreateaccounts" data-nav="luacreateaccounts"><span>05</span>CreateAccounts</a><a href="#lookupaccount" data-nav="lookupaccount"><span>06</span>LookupAccount</a><a href="#createtransfer" data-nav="createtransfer"><span>07</span>CreateTransfer</a><a href="#createtransferex" data-nav="createtransferex"><span>08</span>CreateTransferEx</a><a href="#luacreatetransfers" data-nav="luacreatetransfers"><span>09</span>CreateTransfers</a><a href="#lookuptransfer" data-nav="lookuptransfer"><span>10</span>LookupTransfer</a><a href="#getbalance" data-nav="getbalance"><span>11</span>GetBalance</a><a href="#accountflags" data-nav="accountflags"><span>12</span>AccountFlags</a><a href="#transferflags" data-nav="transferflags"><span>13</span>TransferFlags</a></nav>
+    <div class="nav-title">Функции · 14</div>
+    <nav id="nav"><a href="#id" data-nav="id"><span>01</span>ID</a><a href="#ping" data-nav="ping"><span>02</span>Ping</a><a href="#createaccount" data-nav="createaccount"><span>03</span>CreateAccount</a><a href="#createaccountex" data-nav="createaccountex"><span>04</span>CreateAccountEx</a><a href="#luacreateaccounts" data-nav="luacreateaccounts"><span>05</span>CreateAccounts</a><a href="#lookupaccount" data-nav="lookupaccount"><span>06</span>LookupAccount</a><a href="#createtransfer" data-nav="createtransfer"><span>07</span>CreateTransfer</a><a href="#createtransferex" data-nav="createtransferex"><span>08</span>CreateTransferEx</a><a href="#luacreatetransfers" data-nav="luacreatetransfers"><span>09</span>CreateTransfers</a><a href="#lookuptransfer" data-nav="lookuptransfer"><span>10</span>LookupTransfer</a><a href="#getbalance" data-nav="getbalance"><span>11</span>GetBalance</a><a href="#getbalances" data-nav="getbalances"><span>12</span>GetBalances</a><a href="#accountflags" data-nav="accountflags"><span>13</span>AccountFlags</a><a href="#transferflags" data-nav="transferflags"><span>14</span>TransferFlags</a></nav>
   </aside>
 
   <main>
@@ -1276,6 +1276,208 @@ balance number = 750
     
     </section>
     
+
+    <section class="api-card" id="getbalances" data-search="getbalances счета пакетное получение балансов нескольких счетов одним lookupaccounts запросом. local balances, err, code = pkg.getbalances(accountids) accountids table массив hex id счетов. balances table массив результатов index id found debits_pending debits_posted credits_pending credits_posted balance.">
+      <div class="card-head">
+        <div>
+          <div class="category">Счета</div>
+          <h2>GetBalances</h2>
+          <p>Пакетно получает балансы нескольких счетов одним вызовом TigerBeetle <code>LookupAccounts</code>.</p>
+        </div>
+        <a class="anchor" href="#getbalances">#</a>
+      </div>
+
+      <h3>Вызов</h3>
+      <pre class="signature"><code>local balances, err, code = pkg.GetBalances({ accountId1, accountId2, accountId3 })</code></pre>
+
+      <h3>Входящие параметры</h3>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Параметр</th><th>Тип</th><th>Описание</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>accountIds</td>
+              <td>table</td>
+              <td>Последовательный Lua-массив HEX ID счетов с индексами 1..N.</td>
+            </tr>
+            <tr>
+              <td>accountIds[i]</td>
+              <td>string</td>
+              <td>Uint128 ID счета в HEX-представлении.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Результат</h3>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Результат</th><th>Тип</th><th>Описание</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>balances</td>
+              <td>table[]|nil</td>
+              <td>Массив результатов в том же порядке, что входные ID.</td>
+            </tr>
+            <tr>
+              <td>err</td>
+              <td>string</td>
+              <td>Пустая строка при полном успехе. Если счет отсутствует — сообщение о первом отсутствующем ID.</td>
+            </tr>
+            <tr>
+              <td>code</td>
+              <td>integer</td>
+              <td>0 при полном успехе; 404 если один или несколько счетов не найдены; другие коды при ошибке параметров или клиента.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h4>Поля каждого элемента balances</h4>
+      <div class="chips">
+        <code class="chip">index</code>
+        <code class="chip">id</code>
+        <code class="chip">found</code>
+        <code class="chip">debits_pending</code>
+        <code class="chip">debits_posted</code>
+        <code class="chip">credits_pending</code>
+        <code class="chip">credits_posted</code>
+        <code class="chip">balance</code>
+      </div>
+
+      <div class="notes">
+        <div>• Все суммы возвращаются строками, поэтому большие Uint128 значения не теряют точность в Lua.</div>
+        <div>• <code>balance = credits_posted - debits_posted</code> и может быть отрицательной строкой.</div>
+        <div>• Если счет не найден, элемент сохраняется с <code>found = false</code>, <code>index</code> и <code>id</code>.</div>
+        <div>• Если хотя бы один счет не найден, общий <code>code = 404</code>, но найденные балансы все равно возвращаются.</div>
+      </div>
+
+      <h3>Примеры</h3>
+
+      <div class="example">
+        <div class="example-title"><span>Получить балансы нескольких счетов</span><button class="copy-btn" data-copy="code-33">Копировать</button></div>
+        <pre id="code-33"><code>local pkg = require(&quot;pkg/tigerbeetle&quot;)
+
+local balances, err, code = pkg.GetBalances({
+    accountId1,
+    accountId2,
+    accountId3
+})
+
+print(&quot;balances =&quot;, balances)
+print(&quot;err =&quot;, err)
+print(&quot;code =&quot;, code)
+
+if balances then
+    for i, item in ipairs(balances) do
+        print(&quot;item =&quot;, i)
+        print(&quot;index =&quot;, item.index)
+        print(&quot;id =&quot;, item.id)
+        print(&quot;found =&quot;, item.found)
+
+        if item.found then
+            print(&quot;debits_pending =&quot;, item.debits_pending)
+            print(&quot;debits_posted =&quot;, item.debits_posted)
+            print(&quot;credits_pending =&quot;, item.credits_pending)
+            print(&quot;credits_posted =&quot;, item.credits_posted)
+            print(&quot;balance =&quot;, item.balance)
+        end
+    end
+end</code></pre>
+        <div class="output-title">Пример вывода</div>
+        <pre class="output"><code>balances = table: ...
+err =
+code = 0
+item = 1
+index = 1
+id = 019d...
+found = true
+debits_pending = 0
+debits_posted = 250
+credits_pending = 0
+credits_posted = 1000
+balance = 750
+item = 2
+index = 2
+id = 019e...
+found = true
+debits_pending = 0
+debits_posted = 100
+credits_pending = 0
+credits_posted = 500
+balance = 400</code></pre>
+      </div>
+
+      <div class="example">
+        <div class="example-title"><span>Короткий вывод ID и баланса</span><button class="copy-btn" data-copy="code-34">Копировать</button></div>
+        <pre id="code-34"><code>local pkg = require(&quot;pkg/tigerbeetle&quot;)
+
+local balances, err, code = pkg.GetBalances({
+    accountId1,
+    accountId2
+})
+
+print(&quot;err =&quot;, err)
+print(&quot;code =&quot;, code)
+
+if balances then
+    for _, item in ipairs(balances) do
+        print(
+            &quot;id =&quot;, item.id,
+            &quot;found =&quot;, item.found,
+            &quot;balance =&quot;, item.balance
+        )
+    end
+end</code></pre>
+        <div class="output-title">Пример вывода</div>
+        <pre class="output"><code>err =
+code = 0
+id = 019d... found = true balance = 750
+id = 019e... found = true balance = -50</code></pre>
+      </div>
+
+      <div class="example">
+        <div class="example-title"><span>Если один из счетов не найден</span><button class="copy-btn" data-copy="code-35">Копировать</button></div>
+        <pre id="code-35"><code>local pkg = require(&quot;pkg/tigerbeetle&quot;)
+
+local balances, err, code = pkg.GetBalances({
+    accountId1,
+    &quot;1&quot;,
+    accountId3
+})
+
+print(&quot;err =&quot;, err)
+print(&quot;code =&quot;, code)
+
+if balances then
+    for _, item in ipairs(balances) do
+        print(
+            &quot;index =&quot;, item.index,
+            &quot;id =&quot;, item.id,
+            &quot;found =&quot;, item.found,
+            &quot;balance =&quot;, item.balance
+        )
+    end
+end
+
+if code == 404 then
+    print(&quot;Часть счетов не найдена&quot;)
+end</code></pre>
+        <div class="output-title">Пример вывода</div>
+        <pre class="output"><code>err = account 2 not found: 1
+code = 404
+index = 1 id = 019d... found = true balance = 750
+index = 2 id = 1 found = false balance = nil
+index = 3 id = 019f... found = true balance = 1250
+Часть счетов не найдена</code></pre>
+      </div>
+
+    </section>
+
     <section class="api-card" id="accountflags" data-search="accountflags flags формирует числовую битовую маску tigerbeetle accountflags из четырех параметров 0/1. local flags = pkg.accountflags(linked, debitsmustnotexceedcredits, creditsmustnotexceeddebits, history) linked 0 = false, любое ненулевое значение = true. debitsmustnotexceedcredits запрет дебетам превышать кредиты. creditsmustnotexceeddebits запрет кредитам превышать дебеты. history включить историю балансов счета. flags готовая uint16 битовая маска.">
       <div class="card-head">
         <div>
