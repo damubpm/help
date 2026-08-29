@@ -131,6 +131,12 @@
     <div class="brand">TigerBeetle Lua API<small>DamuBPM · справочник вызовов</small></div>
     <a class="home" href="index.html">← На главную</a>
     <input id="search" class="search" type="search" placeholder="Поиск функции, поля, параметра…" autocomplete="off">
+    
+    <div class="nav-title">Руководство</div>
+    <nav class="guide-nav">
+      <a href="#balance-control" data-nav="balance-control"><span>★</span>Контроль остатков</a>
+    </nav>
+
     <div class="nav-title">Функции · 14</div>
     <nav id="nav"><a href="#id" data-nav="id"><span>01</span>ID</a><a href="#ping" data-nav="ping"><span>02</span>Ping</a><a href="#createaccount" data-nav="createaccount"><span>03</span>CreateAccount</a><a href="#createaccountex" data-nav="createaccountex"><span>04</span>CreateAccountEx</a><a href="#luacreateaccounts" data-nav="luacreateaccounts"><span>05</span>CreateAccounts</a><a href="#lookupaccount" data-nav="lookupaccount"><span>06</span>LookupAccount</a><a href="#createtransfer" data-nav="createtransfer"><span>07</span>CreateTransfer</a><a href="#createtransferex" data-nav="createtransferex"><span>08</span>CreateTransferEx</a><a href="#luacreatetransfers" data-nav="luacreatetransfers"><span>09</span>CreateTransfers</a><a href="#lookuptransfer" data-nav="lookuptransfer"><span>10</span>LookupTransfer</a><a href="#getbalance" data-nav="getbalance"><span>11</span>GetBalance</a><a href="#getbalances" data-nav="getbalances"><span>12</span>GetBalances</a><a href="#accountflags" data-nav="accountflags"><span>13</span>AccountFlags</a><a href="#transferflags" data-nav="transferflags"><span>14</span>TransferFlags</a></nav>
   </aside>
@@ -159,6 +165,267 @@
     </section>
 
     <div id="empty" class="empty">Ничего не найдено. Измените строку поиска.</div>
+
+    <section class="api-card" id="balance-control" data-search="контроль остатков запрет минуса отрицательный баланс debits_must_not_exceed_credits accountflags pending резерв race condition склад остатки">
+      <div class="card-head">
+        <div>
+          <div class="category">Практическое руководство</div>
+          <h2>Контроль остатков: как запретить уход в минус</h2>
+          <p>Для контроля доступного остатка не нужно сначала читать баланс и затем вручную решать, разрешать ли перевод. Ограничение должно быть установлено непосредственно на счете TigerBeetle.</p>
+        </div>
+        <a class="anchor" href="#balance-control">#</a>
+      </div>
+
+      <h3>Главный принцип</h3>
+      <div class="notes">
+        <div>• Если остаток считается как <code>credits_posted - debits_posted</code>, создавайте счет с флагом <code>debits_must_not_exceed_credits</code>.</div>
+        <div>• TigerBeetle сам атомарно отклонит transfer, который привел бы к превышению дебета над кредитом.</div>
+        <div>• Проверка выполняется внутри TigerBeetle, поэтому конкурентные запросы не смогут одновременно списать один и тот же остаток.</div>
+        <div>• Флаг нужно задать при создании счета. После создания обычные поля account изменить нельзя.</div>
+      </div>
+
+      <h3>Как TigerBeetle проверяет остаток</h3>
+      <pre class="signature"><code>debits_pending + debits_posted + transfer.amount &gt; credits_posted</code></pre>
+
+      <p class="muted">
+        Если это условие выполняется, TigerBeetle отклоняет transfer. Благодаря
+        <code>debits_pending</code> в проверку входят и уже зарезервированные суммы pending-transfer.
+      </p>
+
+      <h3>Создание счета с запретом отрицательного остатка</h3>
+      <p>
+        В этой Lua-обертке используется <code>pkg.AccountFlags()</code>.
+        Второй параметр — это <code>debitsMustNotExceedCredits</code>.
+      </p>
+
+      <div class="example">
+        <div class="example-title"><span>Счет, который нельзя увести в минус</span><button class="copy-btn" data-copy="balance-code-1">Копировать</button></div>
+        <pre id="balance-code-1"><code>local pkg = require(&quot;pkg/tigerbeetle&quot;)
+
+local accountId, err, code = pkg.ID()
+
+print(&quot;accountId =&quot;, accountId)
+print(&quot;err =&quot;, err)
+print(&quot;code =&quot;, code)
+
+local flags = pkg.AccountFlags(
+    0, -- linked
+    1, -- debitsMustNotExceedCredits: ЗАПРЕТ УХОДА В МИНУС
+    0, -- creditsMustNotExceedDebits
+    1  -- history
+)
+
+print(&quot;flags =&quot;, flags)
+
+local result, err, code = pkg.CreateAccountEx(
+    accountId,
+    1,      -- ledger
+    718,    -- code
+    flags,
+    &quot;0&quot;,  -- userData128
+    &quot;0&quot;,  -- userData64
+    0       -- userData32
+)
+
+print(&quot;result =&quot;, result)
+print(&quot;err =&quot;, err)
+print(&quot;code =&quot;, code)
+
+if result then
+    print(&quot;id =&quot;, result.id)
+    print(&quot;status =&quot;, result.status)
+    print(&quot;timestamp =&quot;, result.timestamp)
+end</code></pre>
+        <div class="output-title">Пример вывода</div>
+        <pre class="output"><code>accountId = 019d...
+err =
+code = 0
+flags = 10
+result = table: ...
+err =
+code = 0
+id = 019d...
+status = AccountCreated
+timestamp = 178804...</code></pre>
+      </div>
+
+      <h3>Пример контроля при списании</h3>
+      <p>Допустим, у счета:</p>
+
+      <pre><code>credits_posted = 1000
+debits_posted  = 700
+debits_pending = 0
+
+доступный остаток = 1000 - 700 = 300</code></pre>
+
+      <p>Перевод на 200 пройдет:</p>
+
+      <pre><code>0 + 700 + 200 = 900
+900 &lt;= 1000</code></pre>
+
+      <p>Следующий перевод на 150 уже не пройдет:</p>
+
+      <pre><code>0 + 900 + 150 = 1050
+1050 &gt; 1000
+
+TigerBeetle отклонит transfer.</code></pre>
+
+      <div class="example">
+        <div class="example-title"><span>Попытка списания</span><button class="copy-btn" data-copy="balance-code-2">Копировать</button></div>
+        <pre id="balance-code-2"><code>local pkg = require(&quot;pkg/tigerbeetle&quot;)
+
+local transferId, err, code = pkg.ID()
+
+local result, err, code = pkg.CreateTransfer(
+    transferId,
+    accountId,        -- debit account
+    destinationId,    -- credit account
+    &quot;200&quot;,
+    1,
+    100
+)
+
+print(&quot;result =&quot;, result)
+print(&quot;err =&quot;, err)
+print(&quot;code =&quot;, code)
+
+if result then
+    print(&quot;id =&quot;, result.id)
+    print(&quot;status =&quot;, result.status)
+    print(&quot;timestamp =&quot;, result.timestamp)
+end
+
+if code ~= 0 then
+    print(&quot;Списание отклонено TigerBeetle&quot;)
+    print(&quot;Причина =&quot;, err)
+end</code></pre>
+        <div class="output-title">Пример вывода при успешном списании</div>
+        <pre class="output"><code>result = table: ...
+err =
+code = 0
+id = 019e...
+status = TransferCreated
+timestamp = 178804...</code></pre>
+      </div>
+
+      <h3>Почему не надо делать GetBalance → проверка → CreateTransfer</h3>
+
+      <div class="notes">
+        <div>• Между чтением баланса и созданием transfer другой запрос может уже изменить остаток.</div>
+        <div>• Такая проверка на уровне Lua создает race condition.</div>
+        <div>• <code>GetBalance</code> полезен для отображения остатка, отчетов и бизнес-логики, но не должен быть единственной защитой от перерасхода.</div>
+      </div>
+
+      <pre><code>-- НЕ НАДЕЖНАЯ защита от минуса
+
+local data, err, code = pkg.GetBalance(accountId)
+
+if code == 0 and tonumber(data.balance) &gt;= 100 then
+    -- Между GetBalance и CreateTransfer
+    -- другой запрос уже мог списать деньги.
+    pkg.CreateTransfer(...)
+end</code></pre>
+
+      <h3>Что происходит при двух одновременных списаниях</h3>
+
+      <pre><code>остаток = 100
+
+Запрос A хочет списать 80
+Запрос B хочет списать 80
+
+Без ограничения:
+A прочитал 100
+B прочитал 100
+оба решили, что денег достаточно
+
+С debits_must_not_exceed_credits:
+один transfer пройдет,
+второй будет отклонен TigerBeetle.</code></pre>
+
+      <h3>Pending transfer и резервирование</h3>
+      <p>
+        Pending-transfer резервирует сумму в <code>debits_pending</code>. Поэтому зарезервированную
+        сумму нельзя повторно потратить до завершения, отмены или истечения pending-transfer.
+      </p>
+
+      <pre><code>credits_posted = 1000
+debits_posted  = 600
+debits_pending = 300
+
+доступно для нового списания:
+
+1000 - 600 - 300 = 100</code></pre>
+
+      <p>Попытка зарезервировать еще 150 будет отклонена:</p>
+
+      <pre><code>300 + 600 + 150 = 1050
+1050 &gt; 1000</code></pre>
+
+      <h3>Пример для склада</h3>
+      <p>Такой механизм можно использовать не только для денег, но и для количественного учета товара:</p>
+
+      <pre><code>credits = приход товара
+debits  = расход товара
+
+остаток = credits_posted - debits_posted</code></pre>
+
+      <p>
+        Если складской счет создан с <code>debits_must_not_exceed_credits</code>,
+        TigerBeetle не позволит провести расход больше доступного количества.
+      </p>
+
+      <div class="example">
+        <div class="example-title"><span>Создание складского счета</span><button class="copy-btn" data-copy="balance-code-3">Копировать</button></div>
+        <pre id="balance-code-3"><code>local pkg = require(&quot;pkg/tigerbeetle&quot;)
+
+local stockAccountId, _, _ = pkg.ID()
+
+local stockFlags = pkg.AccountFlags(
+    0,
+    1, -- расход не может превысить приход
+    0,
+    1
+)
+
+local result, err, code = pkg.CreateAccountEx(
+    stockAccountId,
+    10,       -- ledger склада
+    1001,     -- code товара/типа складского счета
+    stockFlags,
+    &quot;0&quot;,
+    &quot;0&quot;,
+    0
+)
+
+print(&quot;stockAccountId =&quot;, stockAccountId)
+print(&quot;result =&quot;, result)
+print(&quot;err =&quot;, err)
+print(&quot;code =&quot;, code)</code></pre>
+        <div class="output-title">Пример вывода</div>
+        <pre class="output"><code>stockAccountId = 019f...
+result = table: ...
+err =
+code = 0</code></pre>
+      </div>
+
+      <h3>Кратко</h3>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Задача</th><th>Что использовать</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Не разрешать отрицательный остаток</td><td><code>AccountFlags(0, 1, 0, ...)</code></td></tr>
+            <tr><td>Показать текущий остаток</td><td><code>GetBalance</code></td></tr>
+            <tr><td>Получить несколько остатков</td><td><code>GetBalances</code></td></tr>
+            <tr><td>Зарезервировать остаток</td><td>Pending transfer</td></tr>
+            <tr><td>Защититься от конкурентного перерасхода</td><td>Ограничение TigerBeetle на account, а не предварительная проверка в Lua</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+
     
     <section class="api-card" id="id" data-search="id служебные генерирует новый уникальный tigerbeetle uint128 id и возвращает его как hex-строку. local id, err, code = pkg.id()  id новый uint128 id в hex-представлении. err пустая строка &quot;&quot; при успехе. code 0 при успехе.">
       <div class="card-head">
@@ -1653,7 +1920,7 @@ print(&quot;flags =&quot;, flags)</code></pre>
 (function() {
   const input = document.getElementById('search');
   const cards = [...document.querySelectorAll('.api-card')];
-  const links = [...document.querySelectorAll('#nav a')];
+  const links = [...document.querySelectorAll('#nav a, .guide-nav a')];
   const empty = document.getElementById('empty');
 
   function filter() {
