@@ -137,8 +137,8 @@
       <a href="#balance-control" data-nav="balance-control"><span>★</span>Контроль остатков</a>
     </nav>
 
-    <div class="nav-title">Функции · 14</div>
-    <nav id="nav"><a href="#id" data-nav="id"><span>01</span>ID</a><a href="#ping" data-nav="ping"><span>02</span>Ping</a><a href="#createaccount" data-nav="createaccount"><span>03</span>CreateAccount</a><a href="#createaccountex" data-nav="createaccountex"><span>04</span>CreateAccountEx</a><a href="#luacreateaccounts" data-nav="luacreateaccounts"><span>05</span>CreateAccounts</a><a href="#lookupaccount" data-nav="lookupaccount"><span>06</span>LookupAccount</a><a href="#createtransfer" data-nav="createtransfer"><span>07</span>CreateTransfer</a><a href="#createtransferex" data-nav="createtransferex"><span>08</span>CreateTransferEx</a><a href="#luacreatetransfers" data-nav="luacreatetransfers"><span>09</span>CreateTransfers</a><a href="#lookuptransfer" data-nav="lookuptransfer"><span>10</span>LookupTransfer</a><a href="#getbalance" data-nav="getbalance"><span>11</span>GetBalance</a><a href="#getbalances" data-nav="getbalances"><span>12</span>GetBalances</a><a href="#accountflags" data-nav="accountflags"><span>13</span>AccountFlags</a><a href="#transferflags" data-nav="transferflags"><span>14</span>TransferFlags</a></nav>
+    <div class="nav-title">Функции · 15</div>
+    <nav id="nav"><a href="#id" data-nav="id"><span>01</span>ID</a><a href="#ping" data-nav="ping"><span>02</span>Ping</a><a href="#createaccount" data-nav="createaccount"><span>03</span>CreateAccount</a><a href="#createaccountex" data-nav="createaccountex"><span>04</span>CreateAccountEx</a><a href="#luacreateaccounts" data-nav="luacreateaccounts"><span>05</span>CreateAccounts</a><a href="#createaccountsex" data-nav="createaccountsex"><span>06</span>CreateAccountsEx</a><a href="#lookupaccount" data-nav="lookupaccount"><span>07</span>LookupAccount</a><a href="#createtransfer" data-nav="createtransfer"><span>08</span>CreateTransfer</a><a href="#createtransferex" data-nav="createtransferex"><span>09</span>CreateTransferEx</a><a href="#luacreatetransfers" data-nav="luacreatetransfers"><span>10</span>CreateTransfers</a><a href="#lookuptransfer" data-nav="lookuptransfer"><span>11</span>LookupTransfer</a><a href="#getbalance" data-nav="getbalance"><span>12</span>GetBalance</a><a href="#getbalances" data-nav="getbalances"><span>13</span>GetBalances</a><a href="#accountflags" data-nav="accountflags"><span>14</span>AccountFlags</a><a href="#transferflags" data-nav="transferflags"><span>15</span>TransferFlags</a></nav>
   </aside>
 
   <main>
@@ -885,6 +885,194 @@ index = 2 id = 019d... status = AccountCreated timestamp = 178804...</code></pre
     
     </section>
     
+
+    <section class="api-card" id="createaccountsex" data-search="createaccountsex счета пакетное расширенное создание нескольких счетов flags user_data_128 user_data_64 user_data_32 одним createaccounts запросом. local results, err, code = pkg.createaccountsex(accounts) обязательные расширенные параметры">
+      <div class="card-head">
+        <div>
+          <div class="category">Счета</div>
+          <h2>CreateAccountsEx</h2>
+          <p>Пакетный аналог <code>CreateAccountEx</code>. Создает несколько счетов одним запросом TigerBeetle и требует явно указать расширенные поля каждого счета.</p>
+        </div>
+        <a class="anchor" href="#createaccountsex">#</a>
+      </div>
+
+      <h3>Вызов</h3>
+      <pre class="signature"><code>local results, err, code = pkg.CreateAccountsEx(accounts)</code></pre>
+
+      <h3>Входящие параметры</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Параметр</th><th>Тип</th><th>Описание</th></tr></thead>
+          <tbody>
+            <tr><td>accounts</td><td>table[]</td><td>Последовательный Lua-массив счетов с индексами 1..N.</td></tr>
+            <tr><td>accounts[i].id</td><td>string</td><td>Обязательно. Uint128 ID счета в HEX.</td></tr>
+            <tr><td>accounts[i].ledger</td><td>integer</td><td>Обязательно. Ledger, диапазон uint32.</td></tr>
+            <tr><td>accounts[i].code</td><td>integer</td><td>Обязательно. Код счета, диапазон uint16.</td></tr>
+            <tr><td>accounts[i].flags</td><td>integer</td><td>Обязательно. Битовая маска AccountFlags, uint16. Для отсутствия флагов передайте 0.</td></tr>
+            <tr><td>accounts[i].user_data_128</td><td>string</td><td>Обязательно. Uint128 HEX. Для нулевого значения передайте &quot;0&quot;.</td></tr>
+            <tr><td>accounts[i].user_data_64</td><td>string|integer</td><td>Обязательно. uint64. Для больших значений рекомендуется строка. Для нуля можно передать &quot;0&quot;.</td></tr>
+            <tr><td>accounts[i].user_data_32</td><td>integer</td><td>Обязательно. uint32. Для нулевого значения передайте 0.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Результат</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Результат</th><th>Тип</th><th>Описание</th></tr></thead>
+          <tbody>
+            <tr><td>results</td><td>table[]|nil</td><td>Для каждого входного счета: <code>{ index, id, status, timestamp }</code>.</td></tr>
+            <tr><td>err</td><td>string</td><td>Пустая строка при полном успехе. При ошибке содержит текст валидации, клиента или первый ошибочный TigerBeetle status.</td></tr>
+            <tr><td>code</td><td>integer</td><td>0 если все счета созданы; 1/3/100/101 при ошибках.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="notes">
+        <div>• В отличие от <code>CreateAccounts</code>, расширенные поля здесь обязательны. Это делает вызов явным и симметричным одиночному <code>CreateAccountEx</code>.</div>
+        <div>• Все счета отправляются в TigerBeetle одним <code>CreateAccounts</code> запросом.</div>
+        <div>• Для запрета отрицательного остатка используйте <code>pkg.AccountFlags(0, 1, 0, ...)</code> и передайте полученную маску в <code>flags</code>.</div>
+        <div>• Массив должен иметь последовательные индексы 1..N без пропусков.</div>
+      </div>
+
+      <h3>Примеры</h3>
+
+      <div class="example">
+        <div class="example-title"><span>Создать два расширенных счета</span><button class="copy-btn" data-copy="code-createaccountsex-1">Копировать</button></div>
+        <pre id="code-createaccountsex-1"><code>local pkg = require(&quot;pkg/tigerbeetle&quot;)
+
+local id1, _, _ = pkg.ID()
+local id2, _, _ = pkg.ID()
+
+local results, err, code = pkg.CreateAccountsEx({
+    {
+        id = id1,
+        ledger = 1,
+        code = 718,
+        flags = 0,
+        user_data_128 = &quot;0&quot;,
+        user_data_64 = &quot;501&quot;,
+        user_data_32 = 1
+    },
+    {
+        id = id2,
+        ledger = 1,
+        code = 718,
+        flags = 0,
+        user_data_128 = &quot;abcdef&quot;,
+        user_data_64 = &quot;502&quot;,
+        user_data_32 = 2
+    }
+})
+
+print(&quot;results =&quot;, results)
+print(&quot;err =&quot;, err)
+print(&quot;code =&quot;, code)
+
+if results then
+    for _, r in ipairs(results) do
+        print(&quot;index =&quot;, r.index)
+        print(&quot;id =&quot;, r.id)
+        print(&quot;status =&quot;, r.status)
+        print(&quot;timestamp =&quot;, r.timestamp)
+    end
+end</code></pre>
+        <div class="output-title">Пример вывода</div>
+        <pre class="output"><code>results = table: ...
+err =
+code = 0
+index = 1
+id = 019d...
+status = AccountCreated
+timestamp = 178804...
+index = 2
+id = 019e...
+status = AccountCreated
+timestamp = 178804...</code></pre>
+      </div>
+
+      <div class="example">
+        <div class="example-title"><span>Пакет счетов с контролем остатка</span><button class="copy-btn" data-copy="code-createaccountsex-2">Копировать</button></div>
+        <pre id="code-createaccountsex-2"><code>local pkg = require(&quot;pkg/tigerbeetle&quot;)
+
+local id1, _, _ = pkg.ID()
+local id2, _, _ = pkg.ID()
+
+local balanceFlags = pkg.AccountFlags(
+    0, -- linked
+    1, -- debitsMustNotExceedCredits
+    0, -- creditsMustNotExceedDebits
+    1  -- history
+)
+
+print(&quot;balanceFlags =&quot;, balanceFlags)
+
+local results, err, code = pkg.CreateAccountsEx({
+    {
+        id = id1,
+        ledger = 10,
+        code = 1001,
+        flags = balanceFlags,
+        user_data_128 = &quot;0&quot;,
+        user_data_64 = &quot;10001&quot;,
+        user_data_32 = 1
+    },
+    {
+        id = id2,
+        ledger = 10,
+        code = 1001,
+        flags = balanceFlags,
+        user_data_128 = &quot;0&quot;,
+        user_data_64 = &quot;10002&quot;,
+        user_data_32 = 2
+    }
+})
+
+print(&quot;err =&quot;, err)
+print(&quot;code =&quot;, code)
+
+if results then
+    for _, r in ipairs(results) do
+        print(r.index, r.id, r.status, r.timestamp)
+    end
+end</code></pre>
+        <div class="output-title">Пример вывода</div>
+        <pre class="output"><code>balanceFlags = 10
+err =
+code = 0
+1  019d...  AccountCreated  178804...
+2  019e...  AccountCreated  178804...</code></pre>
+      </div>
+
+      <div class="example">
+        <div class="example-title"><span>Проверка обязательных Ex-полей</span><button class="copy-btn" data-copy="code-createaccountsex-3">Копировать</button></div>
+        <pre id="code-createaccountsex-3"><code>local pkg = require(&quot;pkg/tigerbeetle&quot;)
+
+local id, _, _ = pkg.ID()
+
+-- Специально не передаем flags.
+local results, err, code = pkg.CreateAccountsEx({
+    {
+        id = id,
+        ledger = 1,
+        code = 718,
+        user_data_128 = &quot;0&quot;,
+        user_data_64 = &quot;0&quot;,
+        user_data_32 = 0
+    }
+})
+
+print(&quot;results =&quot;, results)
+print(&quot;err =&quot;, err)
+print(&quot;code =&quot;, code)</code></pre>
+        <div class="output-title">Пример вывода</div>
+        <pre class="output"><code>results = nil
+err = account 1: flags is required
+code = 3</code></pre>
+      </div>
+
+    </section>
+
     <section class="api-card" id="lookupaccount" data-search="lookupaccount счета ищет один счет по tigerbeetle id и возвращает его текущее состояние и флаги. local account, err, code = pkg.lookupaccount(id) id uint128 id счета в hex. account полная таблица счета или nil, если счет не найден/ошибка. err &quot;&quot; при успехе; &quot;account not found&quot; при отсутствии счета. code 0 при успехе, 404 если счет не найден.">
       <div class="card-head">
         <div>
