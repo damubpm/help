@@ -1,0 +1,830 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DamuBPM — интерактивное руководство по разработке JIT-виджетов</title>
+<style>
+:root{
+  --bg:#0b1020;
+  --panel:#11182b;
+  --panel2:#151f38;
+  --text:#eef3ff;
+  --muted:#9fb0cc;
+  --line:#263553;
+  --accent:#5f83ff;
+  --accent2:#8f6cff;
+  --good:#4ed29a;
+  --warn:#f1c75b;
+  --bad:#ff6f7d;
+  --code:#080d19;
+  --shadow:0 14px 40px rgba(0,0,0,.30);
+  --radius:18px;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0;
+  font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  background:
+    radial-gradient(circle at 15% 0%, rgba(95,131,255,.14), transparent 30%),
+    radial-gradient(circle at 90% 10%, rgba(143,108,255,.13), transparent 30%),
+    var(--bg);
+  color:var(--text);
+  line-height:1.55;
+}
+a{color:inherit}
+button,input{font:inherit}
+.topbar{
+  position:sticky; top:0; z-index:50;
+  display:flex; gap:14px; align-items:center;
+  padding:12px 18px;
+  background:rgba(11,16,32,.90);
+  backdrop-filter:blur(14px);
+  border-bottom:1px solid var(--line);
+}
+.home-btn,.action-btn,.quiz-btn,.copy-btn,.chip{
+  border:0; border-radius:12px; cursor:pointer;
+}
+.home-btn{
+  text-decoration:none;
+  display:inline-flex;align-items:center;gap:8px;
+  padding:10px 14px;
+  background:linear-gradient(135deg,var(--accent),var(--accent2));
+  color:white;font-weight:700;
+  white-space:nowrap;
+}
+.brand{min-width:0}
+.brand strong{display:block}
+.brand span{color:var(--muted);font-size:12px}
+.search-wrap{margin-left:auto;min-width:min(420px,42vw)}
+.search-wrap input{
+  width:100%;padding:10px 13px;border-radius:12px;
+  border:1px solid var(--line);background:#0f1628;color:var(--text);
+  outline:none;
+}
+.search-wrap input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(95,131,255,.15)}
+.layout{display:grid;grid-template-columns:280px minmax(0,1fr);gap:24px;max-width:1500px;margin:auto;padding:24px}
+.sidebar{
+  position:sticky; top:80px; align-self:start;
+  max-height:calc(100vh - 104px); overflow:auto;
+  padding:14px;border:1px solid var(--line);border-radius:var(--radius);
+  background:rgba(17,24,43,.82);
+}
+.sidebar h3{margin:4px 8px 12px;font-size:14px;color:#c9d5eb}
+.nav a{
+  display:block;text-decoration:none;padding:9px 10px;margin:3px 0;border-radius:10px;
+  color:var(--muted);font-size:14px;
+}
+.nav a:hover,.nav a.active{background:rgba(95,131,255,.14);color:white}
+.main{min-width:0}
+.hero{
+  padding:28px;border:1px solid var(--line);border-radius:24px;
+  background:linear-gradient(145deg,rgba(95,131,255,.11),rgba(143,108,255,.08)),var(--panel);
+  box-shadow:var(--shadow);
+}
+.hero h1{font-size:clamp(28px,4vw,48px);line-height:1.08;margin:0 0 14px}
+.hero p{color:var(--muted);font-size:17px;max-width:900px}
+.badges{display:flex;flex-wrap:wrap;gap:8px;margin-top:18px}
+.badge{
+  padding:7px 10px;border-radius:999px;border:1px solid var(--line);
+  background:#0e1628;color:#cbd7eb;font-size:13px
+}
+.grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin-top:18px}
+.stat{
+  padding:16px;border:1px solid var(--line);border-radius:15px;background:var(--panel2)
+}
+.stat b{display:block;font-size:23px}.stat span{color:var(--muted);font-size:13px}
+.section{
+  margin-top:24px;padding:24px;border:1px solid var(--line);
+  border-radius:var(--radius);background:rgba(17,24,43,.78)
+}
+.section h2{margin-top:0;font-size:27px}
+.section h3{margin-top:26px}
+.section p,.section li{color:#ced8e8}
+.callout{
+  border-left:4px solid var(--accent);
+  padding:12px 14px;margin:14px 0;border-radius:0 12px 12px 0;
+  background:rgba(95,131,255,.09);color:#dfe7f5
+}
+.callout.warn{border-color:var(--warn);background:rgba(241,199,91,.08)}
+.callout.good{border-color:var(--good);background:rgba(78,210,154,.08)}
+.codebox{margin:14px 0;border:1px solid var(--line);border-radius:14px;overflow:hidden;background:var(--code)}
+.codehead{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:8px 10px;border-bottom:1px solid #1d2a43;color:#9fb0cc;font-size:12px
+}
+.copy-btn{padding:6px 9px;background:#182541;color:#dce6f8}
+pre{margin:0;padding:16px;overflow:auto;color:#dce7ff;font-size:13px;line-height:1.6}
+code{font-family:"SFMono-Regular",Consolas,"Liberation Mono",monospace}
+.api-table{width:100%;border-collapse:collapse;display:block;overflow:auto}
+.api-table th,.api-table td{padding:11px 12px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+.api-table th{color:#aebddb;font-size:12px;text-transform:uppercase;letter-spacing:.04em}
+.api-table td:first-child{white-space:nowrap;color:#dce7ff}
+details{
+  border:1px solid var(--line);border-radius:13px;margin:10px 0;background:#0f1728;
+}
+summary{cursor:pointer;padding:13px 15px;font-weight:700}
+details>div{padding:0 15px 15px}
+.flow{
+  display:grid;grid-template-columns:repeat(5,minmax(130px,1fr));gap:10px;align-items:stretch
+}
+.flow .node{
+  position:relative;padding:14px;border:1px solid var(--line);border-radius:14px;background:var(--panel2);text-align:center
+}
+.flow .node:not(:last-child)::after{
+  content:"→";position:absolute;right:-17px;top:50%;transform:translateY(-50%);color:var(--accent);font-size:22px;z-index:2
+}
+.tabs{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px}
+.chip{padding:8px 11px;border:1px solid var(--line);background:#111a2e;color:#bfcbe0}
+.chip.active{background:rgba(95,131,255,.18);color:#fff;border-color:#5878dc}
+.tab-panel{display:none}.tab-panel.active{display:block}
+.quiz-card{padding:16px;border:1px solid var(--line);border-radius:14px;margin:12px 0;background:#0f1728}
+.quiz-card label{display:block;margin:8px 0;color:#d6dfed}
+.quiz-btn{padding:10px 14px;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;font-weight:700}
+#quizResult{margin-top:12px;font-weight:700}
+.search-hidden{display:none!important}
+footer{padding:30px 10px 70px;text-align:center;color:var(--muted)}
+.mini{font-size:13px;color:var(--muted)}
+.kbd{border:1px solid var(--line);padding:1px 6px;border-radius:6px;background:#111a2d;color:#dce7ff}
+@media(max-width:1050px){
+  .layout{grid-template-columns:1fr}.sidebar{position:relative;top:auto;max-height:none}.nav{columns:2}
+  .grid{grid-template-columns:1fr 1fr}.flow{grid-template-columns:1fr}
+  .flow .node:not(:last-child)::after{content:"↓";right:auto;left:50%;top:auto;bottom:-21px;transform:translateX(-50%)}
+}
+@media(max-width:700px){
+  .topbar{flex-wrap:wrap}.search-wrap{order:3;width:100%;min-width:100%}
+  .layout{padding:14px}.hero,.section{padding:18px}.grid{grid-template-columns:1fr}.nav{columns:1}
+}
+</style>
+</head>
+<body>
+<header class="topbar">
+  <a class="home-btn" href="index.html">← На главную</a>
+  <div class="brand">
+    <strong>DamuBPM Widget Guide</strong>
+    <span>JIT + Angular + HTML</span>
+  </div>
+  <div class="search-wrap">
+    <input id="guideSearch" type="search" placeholder="Поиск: bpRun, QueryOptions, WebSocket, ngModel…" aria-label="Поиск по руководству">
+  </div>
+</header>
+
+<div class="layout">
+  <aside class="sidebar">
+    <h3>Содержание</h3>
+    <nav class="nav" id="sideNav">
+      <a href="#start">1. Быстрый старт</a>
+      <a href="#architecture">2. Архитектура</a>
+      <a href="#lifecycle">3. Lifecycle</a>
+      <a href="#bp">4. bpRun</a>
+      <a href="#rest">5. REST API</a>
+      <a href="#query">6. QueryOptions</a>
+      <a href="#db">7. Работа с данными</a>
+      <a href="#router">8. Router</a>
+      <a href="#forms">9. Формы</a>
+      <a href="#angular">10. Angular template</a>
+      <a href="#rxjs">11. RxJS</a>
+      <a href="#websocket">12. WebSocket</a>
+      <a href="#runtime">13. Runtime API</a>
+      <a href="#security">14. Безопасность</a>
+      <a href="#template">15. Готовый шаблон</a>
+      <a href="#quiz">16. Самопроверка</a>
+    </nav>
+  </aside>
+
+  <main class="main">
+    <section class="hero searchable" id="intro">
+      <h1>Интерактивное руководство по разработке JIT-виджетов DamuBPM</h1>
+      <p>Практический справочник по созданию динамических Angular-виджетов DamuBPM: от минимального JIT-класса до REST, сущностей, бизнес-процессов, WebSocket и полноценного интерфейса.</p>
+      <div class="badges">
+        <span class="badge">JIT Runtime</span><span class="badge">Angular Template</span><span class="badge">PrimeNG</span>
+        <span class="badge">RxJS</span><span class="badge">DamuBPM BP</span><span class="badge">REST API</span>
+      </div>
+      <div class="grid">
+        <div class="stat"><b>2</b><span>основные части: Logic + HTML</span></div>
+        <div class="stat"><b>20+</b><span>подтверждённых runtime-возможностей</span></div>
+        <div class="stat"><b>1</b><span>класс GenClass, наследующий runtime DamuBPM</span></div>
+      </div>
+    </section>
+
+    <section class="section searchable" id="start">
+      <h2>1. Быстрый старт</h2>
+      <p>Минимальный виджет состоит из JIT-логики и Angular HTML-шаблона.</p>
+      <div class="tabs">
+        <button type="button" class="chip active" data-tab="start-js">Logic</button>
+        <button type="button" class="chip" data-tab="start-html">HTML</button>
+      </div>
+
+      <div class="tab-panel active" id="start-js">
+        <div class="codebox"><div class="codehead"><span>widget.js</span><button class="copy-btn" type="button">Копировать</button></div>
+<pre><code>const vm = this;
+
+const { first } = rxjs;
+const { QueryOptions } = Models;
+
+return class GenClass extends vm.constructor {
+
+    loaded = false;
+    loading = false;
+    items = [];
+
+    ngOnInit() {
+        this.loadData();
+    }
+
+    loadData() {
+        this.loading = true;
+
+        const opt = new QueryOptions('users');
+        opt.page = 1;
+        opt.perpage = 20;
+
+        this.dbQueryService.getQuery(opt)
+            .pipe(first())
+            .subscribe(resp => {
+                this.items = resp.items || [];
+                this.loading = false;
+            });
+    }
+
+    ngAfterViewInit() {
+        this.loaded = true;
+    }
+}</code></pre></div>
+      </div>
+
+      <div class="tab-panel" id="start-html">
+        <div class="codebox"><div class="codehead"><span>widget.html</span><button class="copy-btn" type="button">Копировать</button></div>
+<pre><code>&lt;div *ngIf="loaded"&gt;
+    &lt;h2&gt;Пользователи&lt;/h2&gt;
+
+    &lt;div *ngIf="loading"&gt;Загрузка...&lt;/div&gt;
+
+    &lt;div *ngFor="let item of items"&gt;
+        {{ item.title }}
+    &lt;/div&gt;
+&lt;/div&gt;</code></pre></div>
+      </div>
+    </section>
+
+    <section class="section searchable" id="architecture">
+      <h2>2. Архитектура JIT-виджета</h2>
+      <div class="flow">
+        <div class="node"><b>DamuBPM Angular App</b><br><span class="mini">готовит runtime</span></div>
+        <div class="node"><b>JIT Engine</b><br><span class="mini">получает this / vm</span></div>
+        <div class="node"><b>GenClass</b><br><span class="mini">extends vm.constructor</span></div>
+        <div class="node"><b>Angular Template</b><br><span class="mini">binding + directives</span></div>
+        <div class="node"><b>Widget UI</b><br><span class="mini">DamuBPM интерфейс</span></div>
+      </div>
+      <div class="callout good"><b>Главный принцип:</b> JIT-класс не создаёт отдельный Angular-компонент через <code>@Component</code>, а расширяет уже подготовленный runtime-компонент DamuBPM.</div>
+      <div class="codebox"><div class="codehead"><span>JIT skeleton</span><button class="copy-btn" type="button">Копировать</button></div>
+<pre><code>const vm = this;
+
+const { first } = rxjs;
+const { forkJoin } = rx;
+const { map, take } = rxjs;
+const { QueryOptions } = Models;
+const { Validators } = forms;
+
+return class GenClass extends vm.constructor {
+
+    ngOnInit() {
+    }
+
+}</code></pre></div>
+    </section>
+
+    <section class="section searchable" id="lifecycle">
+      <h2>3. Жизненный цикл</h2>
+      <details open><summary>ngOnInit()</summary><div>Инициализация состояния, форм, загрузка данных, создание подписок.</div></details>
+      <details><summary>ngAfterViewInit()</summary><div>DOM уже создан. Подходит для операций с DOM, canvas и установки <code>loaded = true</code>.</div></details>
+      <details><summary>ngAfterViewChecked()</summary><div>Вызывается часто. Использовать только когда действительно нужно реагировать на обновление view.</div></details>
+      <details><summary>ngOnDestroy()</summary><div>Отписка от interval, fromEvent, WebSocket, router/query subscriptions.</div></details>
+      <div class="codebox"><div class="codehead"><span>cleanup</span><button class="copy-btn" type="button">Копировать</button></div>
+<pre><code>ngOnDestroy() {
+    if (this.wsSub) this.wsSub.unsubscribe();
+    if (this.timerSub) this.timerSub.unsubscribe();
+    if (this.routeSub) this.routeSub.unsubscribe();
+}</code></pre></div>
+    </section>
+
+    <section class="section searchable" id="bp">
+      <h2>4. Запуск бизнес-процессов — appComponent.bpRun()</h2>
+      <p>Бизнес-логику рекомендуется оставлять на стороне DamuBPM BP, а виджет использовать как UI.</p>
+      <div class="codebox"><div class="codehead"><span>bpRun</span><button class="copy-btn" type="button">Копировать</button></div>
+<pre><code>this.appComponent.bpRun(
+    'process_code',
+    {
+        id: item.id,
+        title: item.title
+    },
+    data => {
+        console.log('BP result:', data);
+    }
+);</code></pre></div>
+      <div class="callout"><b>Форма вызова:</b> <code>bpRun(processCode, parameters, callback)</code>.</div>
+    </section>
+
+    <section class="section searchable" id="rest">
+      <h2>5. REST API DamuBPM</h2>
+      <h3>GET</h3>
+      <div class="codebox"><div class="codehead"><span>restapiGet</span><button class="copy-btn" type="button">Копировать</button></div>
+<pre><code>this.dbQueryService.restapiGet('alerts', {})
+    .pipe(first())
+    .subscribe(resp => {
+        this.items = resp.alerts || [];
+    });</code></pre></div>
+
+      <h3>POST</h3>
+      <div class="codebox"><div class="codehead"><span>restapiPost</span><button class="copy-btn" type="button">Копировать</button></div>
+<pre><code>this.dbQueryService.restapiPost(
+    'notifications_set_is_closed',
+    { id: item.id }
+)
+.pipe(first())
+.subscribe(resp => {
+    console.log(resp);
+});</code></pre></div>
+    </section>
+
+    <section class="section searchable" id="query">
+      <h2>6. QueryOptions и поиск по сущностям</h2>
+      <div class="codebox"><div class="codehead"><span>QueryOptions</span><button class="copy-btn" type="button">Копировать</button></div>
+<pre><code>const opt = new QueryOptions('users');
+
+opt.page = 1;
+opt.perpage = 20;
+opt.flt = {
+    title: this.searchText
+};
+
+this.dbQueryService.getQuery(opt)
+    .subscribe(resp => {
+        this.users = resp.items || [];
+    });</code></pre></div>
+
+      <h3>Параллельная загрузка</h3>
+      <div class="codebox"><div class="codehead"><span>forkJoin</span><button class="copy-btn" type="button">Копировать</button></div>
+<pre><code>forkJoin(
+    this.dbQueryService.getQuery(optUsers),
+    this.dbQueryService.getQuery(optPages),
+    this.dbQueryService.getQuery(optWidgets)
+)
+.subscribe(resp => {
+    this.users = resp[0].items || [];
+    this.pages = resp[1].items || [];
+    this.widgets = resp[2].items || [];
+});</code></pre></div>
+    </section>
+
+    <section class="section searchable" id="db">
+      <h2>7. Работа с данными</h2>
+      <details open><summary>Получить одну запись — getDetail()</summary><div>
+        <div class="codebox"><div class="codehead"><span>getDetail</span><button class="copy-btn" type="button">Копировать</button></div>
+<pre><code>this.dbQueryService.getDetail('users', id)
+    .pipe(map(resp => resp['users']))
+    .subscribe(users => {
+        this.user = users?.[0] || null;
+    });</code></pre></div>
+      </div></details>
+      <details><summary>Обновить записи — updateTable()</summary><div>
+        <div class="codebox"><div class="codehead"><span>updateTable</span><button class="copy-btn" type="button">Копировать</button></div>
+<pre><code>this.dbQueryService.updateTable(
+    'notifications',
+    [{
+        id: notification.id,
+        is_closed: '1'
+    }]
+)
+.subscribe(resp => {
+    if (resp.error == 0) {
+        notification.is_closed = 1;
+    }
+});</code></pre></div>
+      </div></details>
+    </section>
+
+    <section class="section searchable" id="router">
+      <h2>8. Router и параметры URL</h2>
+      <div class="codebox"><div class="codehead"><span>navigate</span><button class="copy-btn" type="button">Копировать</button></div>
+<pre><code>this.router.navigate([
+    '/usersdetails/' + user.id
+]);</code></pre></div>
+      <div class="codebox"><div class="codehead"><span>query params</span><button class="copy-btn" type="button">Копировать</button></div>
+<pre><code>this.route.queryParams
+    .pipe(take(1))
+    .subscribe(params => {
+        if (params.search) {
+            this.searchText = params.search;
+        }
+    });</code></pre></div>
+      <div class="codebox"><div class="codehead"><span>template</span><button class="copy-btn" type="button">Копировать</button></div>
+<pre><code>&lt;a
+    [routerLink]="'/users'"
+    [queryParams]="{ dep_id: depId }"&gt;
+    Пользователи
+&lt;/a&gt;</code></pre></div>
+    </section>
+
+    <section class="section searchable" id="forms">
+      <h2>9. Формы</h2>
+      <div class="tabs">
+        <button type="button" class="chip active" data-tab="reactive">Reactive Forms</button>
+        <button type="button" class="chip" data-tab="ngmodel">ngModel</button>
+      </div>
+      <div class="tab-panel active" id="reactive">
+        <div class="codebox"><div class="codehead"><span>Reactive Forms</span><button class="copy-btn" type="button">Копировать</button></div>
+<pre><code>this.form = this.formBuilder.group({
+    title: ['', Validators.required],
+    code: ['']
+});</code></pre></div>
+        <div class="codebox"><div class="codehead"><span>HTML</span><button class="copy-btn" type="button">Копировать</button></div>
+<pre><code>&lt;form [formGroup]="form" (submit)="save()"&gt;
+    &lt;input pInputText formControlName="title"&gt;
+    &lt;button type="submit"&gt;Сохранить&lt;/button&gt;
+&lt;/form&gt;</code></pre></div>
+      </div>
+      <div class="tab-panel" id="ngmodel">
+        <div class="codebox"><div class="codehead"><span>ngModel</span><button class="copy-btn" type="button">Копировать</button></div>
+<pre><code>&lt;textarea
+    [(ngModel)]="inputText"
+    name="prompt"
+    (keydown)="onKeydown($event)"&gt;
+&lt;/textarea&gt;</code></pre></div>
+      </div>
+    </section>
+
+    <section class="section searchable" id="angular">
+      <h2>10. Angular-синтаксис в шаблоне</h2>
+      <table class="api-table">
+        <thead><tr><th>Конструкция</th><th>Назначение</th><th>Пример</th></tr></thead>
+        <tbody>
+          <tr><td><code>*ngIf</code></td><td>Условный вывод</td><td><code>*ngIf="loading"</code></td></tr>
+          <tr><td><code>*ngFor</code></td><td>Цикл</td><td><code>*ngFor="let item of items"</code></td></tr>
+          <tr><td><code>{{ ... }}</code></td><td>Интерполяция</td><td><code>{{ item.title }}</code></td></tr>
+          <tr><td><code>(click)</code></td><td>Событие</td><td><code>(click)="open(item)"</code></td></tr>
+          <tr><td><code>[(ngModel)]</code></td><td>Двусторонний binding</td><td><code>[(ngModel)]="searchText"</code></td></tr>
+          <tr><td><code>[ngClass]</code></td><td>Динамические классы</td><td><code>[ngClass]="{active:selected}"</code></td></tr>
+          <tr><td><code>[innerHTML]</code></td><td>HTML-рендеринг</td><td><code>[innerHTML]="html"</code></td></tr>
+          <tr><td><code>ng-template</code></td><td>Переиспользуемый шаблон</td><td><code>#verticalmenu</code></td></tr>
+          <tr><td><code>ngTemplateOutlet</code></td><td>Динамическая вставка шаблона</td><td><code>[ngTemplateOutlet]="tpl"</code></td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section class="section searchable" id="rxjs">
+      <h2>11. RxJS</h2>
+      <div class="badges">
+        <span class="badge">first()</span><span class="badge">take()</span><span class="badge">map()</span>
+        <span class="badge">forkJoin()</span><span class="badge">interval()</span><span class="badge">fromEvent()</span>
+      </div>
+      <div class="codebox"><div class="codehead"><span>interval + cleanup</span><button class="copy-btn" type="button">Копировать</button></div>
+<pre><code>ngOnInit() {
+    this.timerSub = rx.interval(60000)
+        .subscribe(() => this.refresh());
+}
+
+ngOnDestroy() {
+    if (this.timerSub) {
+        this.timerSub.unsubscribe();
+    }
+}</code></pre></div>
+    </section>
+
+    <section class="section searchable" id="websocket">
+      <h2>12. WebSocket и уведомления</h2>
+      <div class="codebox"><div class="codehead"><span>WebSocket</span><button class="copy-btn" type="button">Копировать</button></div>
+<pre><code>this.wsSub = this.websocketService.messages
+    .subscribe(msg => {
+        if (msg.data && msg.type === 'url_notification') {
+            this.refresh();
+        }
+    });</code></pre></div>
+      <div class="codebox"><div class="codehead"><span>Browser notification</span><button class="copy-btn" type="button">Копировать</button></div>
+<pre><code>this.notificationService.create(
+    'Уведомление!',
+    {
+        requireInteraction: true,
+        body: 'Появились новые данные',
+        icon: '/assets/img/peopleavatars/face_1.svg'
+    }
+)
+.subscribe(result => {
+    console.log(result);
+});</code></pre></div>
+    </section>
+
+    <section class="section searchable" id="runtime">
+      <h2>13. Подтверждённый Runtime API</h2>
+      <input id="apiFilter" type="search" placeholder="Фильтр API…" style="width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:12px;background:#0f1628;color:white;margin-bottom:12px">
+      <table class="api-table" id="apiTable">
+        <thead><tr><th>Объект / метод</th><th>Назначение</th></tr></thead>
+        <tbody>
+          <tr><td><code>appComponent.bpRun()</code></td><td>Запуск бизнес-процесса</td></tr>
+          <tr><td><code>appComponent.getGlobal()</code></td><td>Получение global/menu данных</td></tr>
+          <tr><td><code>appComponent.menu</code></td><td>Меню DamuBPM</td></tr>
+          <tr><td><code>appComponent.translateService</code></td><td>Языки и переводы</td></tr>
+          <tr><td><code>dbQueryService.restapiGet()</code></td><td>REST GET</td></tr>
+          <tr><td><code>dbQueryService.restapiPost()</code></td><td>REST POST</td></tr>
+          <tr><td><code>dbQueryService.getQuery()</code></td><td>Запрос списка сущности</td></tr>
+          <tr><td><code>dbQueryService.getDetail()</code></td><td>Получение одной записи</td></tr>
+          <tr><td><code>dbQueryService.updateTable()</code></td><td>Обновление записей</td></tr>
+          <tr><td><code>accountService.getSession()</code></td><td>Обновление/получение сессии</td></tr>
+          <tr><td><code>accountService.logout()</code></td><td>Выход</td></tr>
+          <tr><td><code>router.navigate()</code></td><td>Программная навигация</td></tr>
+          <tr><td><code>route.params</code></td><td>Route params</td></tr>
+          <tr><td><code>route.queryParams</code></td><td>Query params</td></tr>
+          <tr><td><code>formBuilder.group()</code></td><td>Reactive Forms</td></tr>
+          <tr><td><code>websocketService.messages</code></td><td>WebSocket stream</td></tr>
+          <tr><td><code>notificationService.create()</code></td><td>Browser notification</td></tr>
+          <tr><td><code>alertService.error()</code></td><td>Сообщение об ошибке</td></tr>
+          <tr><td><code>scriptsService.loadUrl()</code></td><td>Динамическая загрузка JS</td></tr>
+          <tr><td><code>Models.QueryOptions</code></td><td>Построение entity query</td></tr>
+          <tr><td><code>Models.MenuItem.setMenu()</code></td><td>Подготовка menu item</td></tr>
+          <tr><td><code>uuid.v4()</code></td><td>UUID</td></tr>
+          <tr><td><code>rx.interval()</code></td><td>Таймер Observable</td></tr>
+          <tr><td><code>rx.fromEvent()</code></td><td>DOM Event Observable</td></tr>
+          <tr><td><code>rx.forkJoin()</code></td><td>Параллельные запросы</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section class="section searchable" id="security">
+      <h2>14. Безопасность и устойчивость</h2>
+      <div class="callout warn"><b>Не злоупотребляйте <code>[innerHTML]</code>.</b> Для обычного текста безопаснее интерполяция <code>{{ text }}</code>.</div>
+      <div class="callout warn"><b>Не используйте <code>eval</code> для новой прикладной логики.</b> Лучше явно вызывать методы класса.</div>
+      <div class="callout warn"><b>UI-проверка роли не заменяет серверную авторизацию.</b> <code>*ngIf="session_roles.admin"</code> лишь скрывает элемент интерфейса.</div>
+      <div class="callout warn"><b>Очищайте подписки.</b> Долгоживущие <code>interval</code>, <code>fromEvent</code> и WebSocket без unsubscribe приводят к утечкам.</div>
+      <div class="callout"><b>CSS namespace:</b> используйте уникальный префикс — например <code>salesw-</code>, <code>docw-</code>, <code>aiw-</code>.</div>
+      <div class="callout"><b>localStorage:</b> используйте ключи вида <code>widget.&lt;code&gt;.&lt;key&gt;</code>.</div>
+    </section>
+
+    <section class="section searchable" id="template">
+      <h2>15. Готовый каркас нового виджета</h2>
+      <div class="tabs">
+        <button type="button" class="chip active" data-tab="tpl-js">Logic</button>
+        <button type="button" class="chip" data-tab="tpl-html">HTML</button>
+      </div>
+      <div class="tab-panel active" id="tpl-js">
+        <div class="codebox"><div class="codehead"><span>logic.js</span><button class="copy-btn" type="button">Копировать</button></div>
+<pre><code>const vm = this;
+
+const { first, map, take } = rxjs;
+const { forkJoin } = rx;
+const { QueryOptions } = Models;
+const { Validators } = forms;
+
+return class GenClass extends vm.constructor {
+
+    loaded = false;
+    loading = false;
+    items = [];
+    form;
+
+    ngOnInit() {
+        this.form = this.formBuilder.group({
+            search: ['']
+        });
+
+        this.loadData();
+    }
+
+    loadData() {
+        this.loading = true;
+
+        const opt = new QueryOptions('users');
+        opt.page = 1;
+        opt.perpage = 20;
+
+        if (this.form.value.search) {
+            opt.flt = {
+                title: this.form.value.search
+            };
+        }
+
+        this.dbQueryService.getQuery(opt)
+            .pipe(first())
+            .subscribe({
+                next: resp => {
+                    this.items = resp.items || [];
+                    this.loading = false;
+                },
+                error: () => {
+                    this.loading = false;
+                    this.alertService.error('Ошибка загрузки');
+                }
+            });
+    }
+
+    open(item) {
+        this.router.navigate([
+            '/usersdetails/' + item.id
+        ]);
+    }
+
+    runProcess(item) {
+        this.appComponent.bpRun(
+            'my_process',
+            { id: item.id },
+            () => this.loadData()
+        );
+    }
+
+    ngAfterViewInit() {
+        this.loaded = true;
+    }
+
+    ngOnDestroy() {
+    }
+}</code></pre></div>
+      </div>
+
+      <div class="tab-panel" id="tpl-html">
+        <div class="codebox"><div class="codehead"><span>template.html</span><button class="copy-btn" type="button">Копировать</button></div>
+<pre><code>&lt;style&gt;
+.myw-root { padding:20px; }
+.myw-toolbar { display:flex; gap:10px; margin-bottom:16px; }
+.myw-card { padding:12px; border-bottom:1px solid #ddd; }
+&lt;/style&gt;
+
+&lt;div class="myw-root" *ngIf="loaded"&gt;
+
+    &lt;form
+        class="myw-toolbar"
+        [formGroup]="form"
+        (submit)="loadData()"&gt;
+
+        &lt;input
+            pInputText
+            formControlName="search"
+            placeholder="Поиск"&gt;
+
+        &lt;button type="submit"&gt;Найти&lt;/button&gt;
+    &lt;/form&gt;
+
+    &lt;div *ngIf="loading"&gt;Загрузка...&lt;/div&gt;
+
+    &lt;div
+        class="myw-card"
+        *ngFor="let item of items"&gt;
+
+        &lt;strong&gt;{{ item.title }}&lt;/strong&gt;
+
+        &lt;button type="button" (click)="open(item)"&gt;
+            Открыть
+        &lt;/button&gt;
+
+        &lt;button type="button" (click)="runProcess(item)"&gt;
+            Запустить BP
+        &lt;/button&gt;
+
+    &lt;/div&gt;
+&lt;/div&gt;</code></pre></div>
+      </div>
+    </section>
+
+    <section class="section searchable" id="quiz">
+      <h2>16. Самопроверка</h2>
+
+      <div class="quiz-card" data-answer="b">
+        <b>1. Какой базовый класс должен вернуть JIT-код?</b>
+        <label><input type="radio" name="q1" value="a"> AngularComponent</label>
+        <label><input type="radio" name="q1" value="b"> class GenClass extends vm.constructor</label>
+        <label><input type="radio" name="q1" value="c"> HTMLElement</label>
+      </div>
+
+      <div class="quiz-card" data-answer="c">
+        <b>2. Чем рекомендуется запускать бизнес-процесс DamuBPM?</b>
+        <label><input type="radio" name="q2" value="a"> fetch('/bp')</label>
+        <label><input type="radio" name="q2" value="b"> router.navigate()</label>
+        <label><input type="radio" name="q2" value="c"> appComponent.bpRun()</label>
+      </div>
+
+      <div class="quiz-card" data-answer="a">
+        <b>3. Как загрузить список записей сущности?</b>
+        <label><input type="radio" name="q3" value="a"> QueryOptions + dbQueryService.getQuery()</label>
+        <label><input type="radio" name="q3" value="b"> document.querySelector()</label>
+        <label><input type="radio" name="q3" value="c"> notificationService.create()</label>
+      </div>
+
+      <div class="quiz-card" data-answer="b">
+        <b>4. Где нужно отписываться от WebSocket/interval?</b>
+        <label><input type="radio" name="q4" value="a"> ngAfterViewChecked()</label>
+        <label><input type="radio" name="q4" value="b"> ngOnDestroy()</label>
+        <label><input type="radio" name="q4" value="c"> constructor()</label>
+      </div>
+
+      <button type="button" class="quiz-btn" id="checkQuiz">Проверить результат</button>
+      <div id="quizResult" aria-live="polite"></div>
+    </section>
+
+    <footer>
+      DamuBPM JIT Widget Developer Guide · <a href="index.html">Вернуться на Главную</a>
+    </footer>
+  </main>
+</div>
+
+<script>
+(function(){
+  const search = document.getElementById('guideSearch');
+  const searchable = Array.from(document.querySelectorAll('.searchable'));
+  const navLinks = Array.from(document.querySelectorAll('#sideNav a'));
+
+  search.addEventListener('input', function(){
+    const q = this.value.trim().toLowerCase();
+    searchable.forEach(section => {
+      const hit = !q || section.textContent.toLowerCase().includes(q);
+      section.classList.toggle('search-hidden', !hit);
+    });
+  });
+
+  document.querySelectorAll('.tabs').forEach(group => {
+    const buttons = Array.from(group.querySelectorAll('[data-tab]'));
+    buttons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        buttons.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        const container = group.parentElement;
+        container.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+        const panel = document.getElementById(btn.dataset.tab);
+        if (panel) panel.classList.add('active');
+      });
+    });
+  });
+
+  document.querySelectorAll('.copy-btn').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const box = btn.closest('.codebox');
+      const code = box ? box.querySelector('code') : null;
+      if (!code) return;
+      const text = code.innerText;
+      try {
+        await navigator.clipboard.writeText(text);
+        const old = btn.textContent;
+        btn.textContent = 'Скопировано';
+        setTimeout(() => btn.textContent = old, 1200);
+      } catch(e) {
+        const ta = document.createElement('textarea');
+        ta.value = text;
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand('copy');
+        ta.remove();
+        btn.textContent = 'Скопировано';
+        setTimeout(() => btn.textContent = 'Копировать', 1200);
+      }
+    });
+  });
+
+  const apiFilter = document.getElementById('apiFilter');
+  const apiRows = Array.from(document.querySelectorAll('#apiTable tbody tr'));
+  apiFilter.addEventListener('input', function(){
+    const q = this.value.trim().toLowerCase();
+    apiRows.forEach(row => {
+      row.style.display = (!q || row.textContent.toLowerCase().includes(q)) ? '' : 'none';
+    });
+  });
+
+  document.getElementById('checkQuiz').addEventListener('click', () => {
+    const cards = Array.from(document.querySelectorAll('.quiz-card'));
+    let score = 0;
+    let answered = 0;
+
+    cards.forEach(card => {
+      const selected = card.querySelector('input[type="radio"]:checked');
+      card.style.borderColor = 'var(--line)';
+      if (!selected) return;
+      answered++;
+      if (selected.value === card.dataset.answer) {
+        score++;
+        card.style.borderColor = 'var(--good)';
+      } else {
+        card.style.borderColor = 'var(--bad)';
+      }
+    });
+
+    const result = document.getElementById('quizResult');
+    if (answered < cards.length) {
+      result.textContent = `Отвечено ${answered} из ${cards.length}. Заполните все вопросы.`;
+      result.style.color = 'var(--warn)';
+      return;
+    }
+
+    result.textContent = `Результат: ${score} из ${cards.length}`;
+    result.style.color = score === cards.length ? 'var(--good)' : 'var(--warn)';
+  });
+
+  const sections = Array.from(document.querySelectorAll('main section[id]'));
+  const obs = new IntersectionObserver(entries => {
+    entries.forEach(entry => {
+      if (!entry.isIntersecting) return;
+      navLinks.forEach(a => a.classList.toggle('active', a.getAttribute('href') === '#' + entry.target.id));
+    });
+  }, {rootMargin:'-20% 0px -70% 0px', threshold:0});
+
+  sections.forEach(s => obs.observe(s));
+})();
+</script>
+</body>
+</html>
