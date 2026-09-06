@@ -1,0 +1,370 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DamuBPM — BPM + Lua: практический справочник</title>
+<style>
+:root{--bg:#07111f;--panel:#0d1a2b;--panel2:#10243a;--text:#eaf2ff;--muted:#9fb2ca;--line:#213954;--accent:#55d6be;--accent2:#8ab4ff;--warn:#ffcf70;--danger:#ff7b8b;--ok:#62e6a7;--code:#050b13;--shadow:0 18px 50px rgba(0,0,0,.28)}
+:root.light{--bg:#f4f8fc;--panel:#fff;--panel2:#edf5ff;--text:#112238;--muted:#5d7087;--line:#d7e2ef;--accent:#087f72;--accent2:#315fba;--warn:#9c6400;--danger:#b53247;--ok:#087f53;--code:#101827;--shadow:0 14px 40px rgba(46,72,103,.12)}
+*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:radial-gradient(circle at 20% -10%,rgba(85,214,190,.14),transparent 32%),radial-gradient(circle at 85% 0,rgba(138,180,255,.12),transparent 28%),var(--bg);color:var(--text);font:15px/1.62 Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+a{color:var(--accent2);text-decoration:none}a:hover{text-decoration:underline}.layout{display:grid;grid-template-columns:285px minmax(0,1fr);min-height:100vh}.sidebar{position:sticky;top:0;height:100vh;overflow:auto;border-right:1px solid var(--line);background:color-mix(in srgb,var(--bg) 92%,transparent);backdrop-filter:blur(16px);padding:20px}.brand{display:flex;gap:12px;align-items:center;margin-bottom:18px}.mark{width:42px;height:42px;border:1px solid var(--line);border-radius:13px;display:grid;place-items:center;background:linear-gradient(135deg,rgba(85,214,190,.2),rgba(138,180,255,.18));font-weight:800}.brand b{display:block;font-size:16px}.brand small{color:var(--muted)}.back{display:flex;align-items:center;gap:8px;padding:10px 12px;border:1px solid var(--line);border-radius:11px;color:var(--text);background:var(--panel);margin:10px 0 18px}.back:hover{text-decoration:none;border-color:var(--accent)}.navTitle{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin:16px 8px 7px}.nav a{display:block;padding:8px 10px;border-radius:9px;color:var(--muted)}.nav a:hover{background:var(--panel);color:var(--text);text-decoration:none}.main{min-width:0}.topbar{position:sticky;top:0;z-index:20;padding:12px 28px;border-bottom:1px solid var(--line);backdrop-filter:blur(18px);background:color-mix(in srgb,var(--bg) 84%,transparent);display:flex;gap:10px;align-items:center}.search{flex:1;max-width:720px;position:relative}.search input{width:100%;padding:11px 15px 11px 39px;border:1px solid var(--line);border-radius:12px;background:var(--panel);color:var(--text);outline:none}.search input:focus{border-color:var(--accent)}.search:before{content:'⌕';position:absolute;left:14px;top:7px;color:var(--muted);font-size:20px}.btn{border:1px solid var(--line);background:var(--panel);color:var(--text);padding:10px 12px;border-radius:11px;cursor:pointer}.btn:hover{border-color:var(--accent)}.content{max-width:1240px;margin:auto;padding:38px 28px 90px}.hero{padding:34px;border:1px solid var(--line);border-radius:24px;background:linear-gradient(135deg,rgba(85,214,190,.10),rgba(138,180,255,.08)),var(--panel);box-shadow:var(--shadow);overflow:hidden;position:relative}.hero:after{content:'BPM';position:absolute;right:-15px;bottom:-55px;font-size:190px;font-weight:900;color:rgba(255,255,255,.025);letter-spacing:-.08em}.eyebrow{display:inline-flex;gap:8px;align-items:center;border:1px solid var(--line);border-radius:999px;padding:5px 10px;color:var(--accent);font-size:12px}.hero h1{font-size:clamp(32px,5vw,58px);line-height:1.04;margin:16px 0 12px;letter-spacing:-.04em}.hero p{max-width:850px;color:var(--muted);font-size:17px}.chips{display:flex;gap:8px;flex-wrap:wrap;margin-top:18px}.chip{border:1px solid var(--line);background:rgba(0,0,0,.08);border-radius:999px;padding:6px 10px;color:var(--muted)}section{scroll-margin-top:76px;margin-top:44px}h2{font-size:28px;letter-spacing:-.02em;margin:0 0 10px}h3{font-size:20px;margin:26px 0 10px}.lead{color:var(--muted);max-width:900px}.grid{display:grid;grid-template-columns:repeat(12,1fr);gap:14px}.card{grid-column:span 4;border:1px solid var(--line);border-radius:16px;padding:18px;background:var(--panel);box-shadow:0 8px 24px rgba(0,0,0,.08)}.card.wide{grid-column:span 6}.card.full{grid-column:1/-1}.card h3{margin:0 0 8px;font-size:17px}.card p{margin:0;color:var(--muted)}.kpi{font-size:28px;font-weight:800;color:var(--accent)}.flow{display:flex;align-items:stretch;gap:8px;flex-wrap:wrap;margin:18px 0}.step{flex:1;min-width:160px;border:1px solid var(--line);background:var(--panel);border-radius:14px;padding:14px}.arrow{display:grid;place-items:center;color:var(--muted)}.callout{border:1px solid var(--line);border-left:4px solid var(--accent);border-radius:12px;padding:14px 16px;background:var(--panel);margin:14px 0}.callout.warn{border-left-color:var(--warn)}.callout.danger{border-left-color:var(--danger)}.callout strong{display:block;margin-bottom:4px}.tableWrap{overflow:auto;border:1px solid var(--line);border-radius:14px}table{width:100%;border-collapse:collapse;min-width:720px;background:var(--panel)}th,td{text-align:left;padding:12px 13px;border-bottom:1px solid var(--line);vertical-align:top}th{font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);background:var(--panel2)}tr:last-child td{border-bottom:0}code{font-family:"SFMono-Regular",Consolas,"Liberation Mono",monospace}.inline{padding:2px 6px;border:1px solid var(--line);border-radius:6px;background:var(--panel2);color:var(--accent)}.codebox{position:relative;margin:12px 0;border:1px solid var(--line);border-radius:14px;overflow:hidden;background:var(--code)}.codehead{display:flex;justify-content:space-between;align-items:center;padding:8px 11px;border-bottom:1px solid #263246;color:#92a6bd;font-size:12px}.copy{background:#111d2d;color:#c8d6e8;border:1px solid #2a3b52;border-radius:7px;padding:5px 8px;cursor:pointer}.copy:hover{border-color:#55d6be}.codebox pre{margin:0;padding:15px 17px;overflow:auto;color:#d9e6f7;font-size:13px;line-height:1.55;tab-size:2}.api{display:grid;grid-template-columns:220px 1fr;gap:14px;align-items:start;padding:16px 0;border-bottom:1px solid var(--line)}.api:last-child{border-bottom:0}.sig{color:var(--accent);font-weight:700}.muted{color:var(--muted)}.tags{display:flex;flex-wrap:wrap;gap:6px}.tag{font-size:11px;padding:3px 7px;border:1px solid var(--line);border-radius:999px;color:var(--muted)}.examplesHead{display:flex;justify-content:space-between;gap:12px;align-items:end;flex-wrap:wrap}.filters{display:flex;gap:7px;flex-wrap:wrap}.filter{border:1px solid var(--line);background:var(--panel);color:var(--muted);padding:7px 10px;border-radius:999px;cursor:pointer}.filter.active,.filter:hover{color:var(--text);border-color:var(--accent)}.examples{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin-top:16px}.example{border:1px solid var(--line);border-radius:16px;background:var(--panel);overflow:hidden}.exampleMeta{padding:14px 15px 0}.example h3{font-size:16px;margin:0 0 5px}.example p{color:var(--muted);margin:0 0 8px}.example .codebox{border-left:0;border-right:0;border-bottom:0;border-radius:0;margin:10px 0 0}.builder{display:grid;grid-template-columns:1fr 1fr;gap:16px}.form{border:1px solid var(--line);border-radius:16px;background:var(--panel);padding:17px}.field{margin-bottom:12px}.field label{display:block;font-size:12px;color:var(--muted);margin-bottom:5px}.field input,.field textarea,.field select{width:100%;border:1px solid var(--line);background:var(--bg);color:var(--text);border-radius:10px;padding:10px;outline:none}.field textarea{min-height:140px;resize:vertical}.status{padding:9px 11px;border-radius:10px;background:var(--panel2);color:var(--muted);font-size:13px}.hidden{display:none!important}.footer{margin-top:55px;border-top:1px solid var(--line);padding-top:22px;color:var(--muted)}@media(max-width:1000px){.layout{grid-template-columns:1fr}.sidebar{display:none}.card,.card.wide{grid-column:span 6}.examples{grid-template-columns:1fr}}@media(max-width:680px){.content{padding:25px 15px 70px}.topbar{padding:10px 14px}.hero{padding:24px 20px}.card,.card.wide{grid-column:1/-1}.builder{grid-template-columns:1fr}.api{grid-template-columns:1fr}.topbar .btn span{display:none}}
+</style>
+</head>
+<body>
+<div class="layout">
+<aside class="sidebar">
+  <div class="brand"><div class="mark">BP</div><div><b>DamuBPM</b><small>BPM + Lua reference</small></div></div>
+  <a class="back" href="index.html">← На главную</a>
+  <div class="nav">
+    <div class="navTitle">Основы</div>
+    <a href="#overview">Модель выполнения</a><a href="#quick">Быстрый старт</a><a href="#lua-api">Lua API</a>
+    <div class="navTitle">Задачи</div>
+    <a href="#usertask">UserTask</a><a href="#manualtask">ManualTask</a><a href="#vars">var / sys / request</a>
+    <div class="navTitle">Интеграция</div>
+    <a href="#frontend">Frontend bpRun</a><a href="#rest">REST API</a><a href="#builder">Генератор вызова</a>
+    <div class="navTitle">Практика</div>
+    <a href="#examples">Примеры Lua</a><a href="#errors">Ошибки</a><a href="#gotchas">Подводные камни</a><a href="#cheatsheet">Шпаргалка</a>
+  </div>
+</aside>
+<main class="main">
+  <div class="topbar">
+    <div class="search"><input id="globalSearch" placeholder="Поиск: BPMSStartProcess, UserTask, task, var..." autocomplete="off"></div>
+    <button class="btn" id="themeBtn" title="Сменить тему">◐ <span>Тема</span></button>
+  </div>
+  <div class="content">
+    <header class="hero">
+      <span class="eyebrow">● Практический справочник</span>
+      <h1>BPM-процессы из Lua</h1>
+      <p>Как запускать процессы, передавать входные данные, получать <b>instance</b> и <b>task</b>, продолжать ожидающие задачи, работать с UserTask/ManualTask и обмениваться переменными между BPM и Lua.</p>
+      <div class="chips"><span class="chip">BPMSStartProcess</span><span class="chip">BPMSStartProcess2</span><span class="chip">BPMSRunManualTask</span><span class="chip">var</span><span class="chip">sys</span><span class="chip">REST</span><span class="chip">Frontend</span></div>
+    </header>
+
+    <section id="overview" data-searchable>
+      <h2>1. Как устроено выполнение BPM</h2>
+      <p class="lead">Основная идея: запуск процесса выполняет автоматические точки до тех пор, пока процесс не завершится либо не дойдёт до задачи, которая требует продолжения. В ответе вы получаете идентификатор экземпляра и, если есть ожидающая задача, её <code class="inline">task</code>.</p>
+      <div class="flow"><div class="step"><b>1. Запуск</b><br><span class="muted">processCode + userId + input</span></div><div class="arrow">→</div><div class="step"><b>2. Автоматические шаги</b><br><span class="muted">скрипты, условия, маршрутизация</span></div><div class="arrow">→</div><div class="step"><b>3. Ожидание</b><br><span class="muted">возвращается task UUID</span></div><div class="arrow">→</div><div class="step"><b>4. Продолжение</b><br><span class="muted">task + input → nextTask</span></div></div>
+      <div class="grid">
+        <div class="card"><div class="kpi">instance</div><p>UUID экземпляра процесса, возвращаемый при старте.</p></div>
+        <div class="card"><div class="kpi">task</div><p>UUID текущей ожидающей задачи. Это главный ключ для её продолжения.</p></div>
+        <div class="card"><div class="kpi">output</div><p>Глобальные выходные переменные процесса, доступные вызывающей стороне.</p></div>
+      </div>
+      <div class="callout warn"><strong>Не путайте два идентификатора экземпляра</strong><code class="inline">instance</code>, возвращаемый стартовым API, — строковый UUID экземпляра. Внутри Lua <code class="inline">sys.instance_id</code> содержит внутренний числовой ID в строковом виде. Для <code class="inline">BPMSStartProcess2</code> как <code class="inline">parent_id</code> нужен числовой ID, поэтому обычно используют <code class="inline">tonumber(sys.instance_id)</code>.</div>
+    </section>
+
+    <section id="quick" data-searchable>
+      <h2>2. Быстрый старт</h2>
+      <div class="codebox"><div class="codehead"><span>Lua · запуск процесса</span><button class="copy">Копировать</button></div><pre><code>local output, instance, task, errText, errNum = BPMSStartProcess(
+  "process_code",
+  tonumber(sys.user_id),
+  {
+    id = 125,
+    title = "Заявка №125"
+  }
+)
+
+if errNum ~= 0 or output == nil then
+  error(errText ~= "" and errText or "Не удалось запустить процесс")
+end
+
+var.child_instance = instance
+var.child_task = task</code></pre></div>
+      <div class="codebox"><div class="codehead"><span>Lua · продолжение ожидающей задачи</span><button class="copy">Копировать</button></div><pre><code>local nextTask, errText, errNum = BPMSRunManualTask(
+  var.task_uuid,
+  tonumber(sys.user_id),
+  {
+    decision = "approve",
+    comment = "Согласовано"
+  }
+)
+
+if errNum ~= 0 then
+  error(errText)
+end
+
+var.next_task = nextTask</code></pre></div>
+    </section>
+
+    <section id="lua-api" data-searchable>
+      <h2>3. Lua API BPM</h2>
+      <p class="lead">В предоставленном Lua-окружении зарегистрированы следующие BPM-функции.</p>
+      <div class="card full">
+        <div class="api"><div><div class="sig">BPMSStartProcess</div><div class="tags"><span class="tag">start</span><span class="tag">5 returns</span></div></div><div><code>output, instance, task, errText, errNum = BPMSStartProcess(processCode, userId, input)</code><p class="muted">Запускает процесс по коду. <code>input</code> — Lua-таблица ключ/значение.</p></div></div>
+        <div class="api"><div><div class="sig">BPMSStartProcess2</div><div class="tags"><span class="tag">child</span><span class="tag">parent_id</span></div></div><div><code>output, instance, task, errText, errNum = BPMSStartProcess2(processCode, userId, input, parentId)</code><p class="muted">То же, но позволяет передать внутренний ID родительского экземпляра.</p></div></div>
+        <div class="api"><div><div class="sig">BPMSRunManualTask</div><div class="tags"><span class="tag">task</span><span class="tag">3 returns</span></div></div><div><code>newTask, errText, errNum = BPMSRunManualTask(task, userId, input)</code><p class="muted">Находит BPM-точку по UUID задачи, проверяет входные значения и продолжает экземпляр. Возвращает следующую задачу.</p></div></div>
+        <div class="api"><div><div class="sig">TerminateByInstanceId</div><div class="tags"><span class="tag">terminate</span></div></div><div><code>errText, errNum = TerminateByInstanceId(instanceId, errorTable)</code><p class="muted">Прерывает процесс по внутреннему ID экземпляра и передаёт структурированную информацию об ошибке.</p></div></div>
+      </div>
+      <div class="callout warn"><strong>Контракт типов</strong><code>processCode</code> должен быть строкой, <code>userId</code> — числом, <code>input</code> — таблицей. Для надёжной обработки старта проверяйте не только <code>errNum</code>, но и <code>output ~= nil</code>.</div>
+    </section>
+
+    <section id="usertask" data-searchable>
+      <h2>4. UserTask: задача пользователя</h2>
+      <p class="lead">UserTask — точка процесса, рассчитанная на участие пользователя. У неё есть <code>task</code> UUID, открыто/закрыто состояние, форма и акторы, которым разрешено открыть задачу.</p>
+      <div class="grid">
+        <div class="card wide"><h3>Получение формы</h3><p>Форма UserTask запрашивается по <code class="inline">task</code>. Доступ к открытой форме проверяется по акторам задачи; публичный процесс также может разрешать просмотр.</p></div>
+        <div class="card wide"><h3>Завершение</h3><p>Надёжный внешний контракт — отправить <code class="inline">task</code> и <code class="inline">input</code>. Перед продолжением проверяются обязательные выходные переменные точки.</p></div>
+      </div>
+      <h3>Правильный сценарий UserTask</h3>
+      <div class="flow"><div class="step"><b>Старт</b><br><span class="muted">получили task</span></div><div class="arrow">→</div><div class="step"><b>Показ формы</b><br><span class="muted">GET ShowUserTaskForm/:task</span></div><div class="arrow">→</div><div class="step"><b>Пользователь вводит данные</b></div><div class="arrow">→</div><div class="step"><b>Завершение</b><br><span class="muted">POST runUserTaskByTask</span></div></div>
+      <div class="callout"><strong>А что из Lua?</strong>Отдельной Lua-функции с именем «RunUserTask» в предоставленном API нет. Программный вызов <code class="inline">BPMSRunManualTask(task, userId, input)</code> работает через тот же механизм поиска точки по <code>task</code>, проверки переменных и продолжения экземпляра. Явной проверки «это именно ManualTask» в этой Lua-обёртке нет. Поэтому технически механизм общий, но для пользовательской формы рекомендуемый контракт — UserTask REST/Frontend.</div>
+    </section>
+
+    <section id="manualtask" data-searchable>
+      <h2>5. ManualTask из Lua</h2>
+      <p class="lead">Для программного продолжения ожидающей задачи используется <code class="inline">BPMSRunManualTask</code>. Вызов ориентирован на UUID задачи, а не на код процесса или код точки.</p>
+      <div class="tableWrap"><table><thead><tr><th>Параметр</th><th>Тип</th><th>Назначение</th></tr></thead><tbody><tr><td><code>task</code></td><td>string</td><td>UUID текущей BPM-задачи.</td></tr><tr><td><code>userId</code></td><td>integer</td><td>Пользователь, от имени которого продолжается задача.</td></tr><tr><td><code>input</code></td><td>table</td><td>Переменные, которые передаются в текущую точку перед продолжением.</td></tr></tbody></table></div>
+      <h3>Что происходит при вызове</h3>
+      <div class="flow"><div class="step">1. По <code>task</code> определяется текущая точка</div><div class="arrow">→</div><div class="step">2. Проверяются обязательные переменные</div><div class="arrow">→</div><div class="step">3. Текущая задача выполняется</div><div class="arrow">→</div><div class="step">4. Возвращается <code>newTask</code></div></div>
+      <div class="codebox"><div class="codehead"><span>Шаблон безопасного вызова</span><button class="copy">Копировать</button></div><pre><code>local function runTask(task, userId, input)
+  if task == nil or task == "" then
+    return nil, "task не задан"
+  end
+
+  local newTask, errText, errNum = BPMSRunManualTask(task, userId, input or {})
+  if errNum ~= 0 then
+    return nil, errText
+  end
+
+  return newTask, nil
+end</code></pre></div>
+    </section>
+
+    <section id="vars" data-searchable>
+      <h2>6. Переменные внутри BPM Lua</h2>
+      <div class="grid">
+        <div class="card"><h3><code>var</code></h3><p>Таблица глобальных переменных процесса. Перед запуском скрипта она заполняется значениями экземпляра; после скрипта значения считываются обратно.</p></div>
+        <div class="card"><h3><code>sys</code></h3><p>Системный контекст: <code>instance_id</code>, <code>user_id</code>, <code>frontend</code>, <code>lang</code>, <code>action_entity_id</code>, session ID, IP.</p></div>
+        <div class="card"><h3><code>request</code></h3><p>Контекст HTTP-запроса. В текущем API используется <code>request.get</code> и <code>request.user_id</code>.</p></div>
+      </div>
+      <div class="tableWrap" style="margin-top:14px"><table><thead><tr><th>Поле</th><th>Пример</th><th>Комментарий</th></tr></thead><tbody>
+        <tr><td><code>sys.instance_id</code></td><td><code>"44125"</code></td><td>Внутренний ID как строка.</td></tr>
+        <tr><td><code>sys.user_id</code></td><td><code>"73"</code></td><td>Пользователь как строка; для BPM API используйте <code>tonumber()</code>.</td></tr>
+        <tr><td><code>sys.frontend</code></td><td>зависит от контекста</td><td>Признак/контекст frontend.</td></tr>
+        <tr><td><code>sys.lang</code></td><td><code>"ru"</code></td><td>Добавляется при наличии запроса.</td></tr>
+        <tr><td><code>sys.action_entity_id</code></td><td><code>120</code></td><td>Сущность действия процесса, если настроена.</td></tr>
+        <tr><td><code>sys.anonymous_session_id</code></td><td>строка</td><td>Идентификатор анонимной сессии.</td></tr>
+        <tr><td><code>sys.x_real_ip</code></td><td><code>"10.0.0.15"</code></td><td>Берётся из заголовка <code>X-Real-Ip</code>.</td></tr>
+        <tr><td><code>sys.next_task_uuid</code></td><td>UUID</td><td>Можно задать в Lua; движок считывает значение после скрипта.</td></tr>
+        <tr><td><code>sys.next_task_hide</code></td><td><code>true</code></td><td>Можно задать в Lua; влияет на возврат/видимость следующей задачи.</td></tr>
+      </tbody></table></div>
+      <div class="codebox"><div class="codehead"><span>Lua · чтение и изменение контекста</span><button class="copy">Копировать</button></div><pre><code>local currentUserId = tonumber(sys.user_id)
+local currentInstanceId = tonumber(sys.instance_id)
+
+var.status = "processing"
+var.updated_by = tostring(currentUserId)
+
+if request and request.get and request.get.source then
+  var.source = request.get.source
+end</code></pre></div>
+    </section>
+
+    <section id="frontend" data-searchable>
+      <h2>7. Запуск BPM из Frontend</h2>
+      <p class="lead">Для страницы/виджета можно использовать готовую обёртку <code class="inline">bpRun</code>. Код процесса передаётся первым аргументом, объект входных переменных — вторым, callback — третьим.</p>
+      <div class="codebox"><div class="codehead"><span>Frontend · запуск процесса</span><button class="copy">Копировать</button></div><pre><code>this.appComponent.bpRun(
+  'process_code',
+  {
+    id: item.id,
+    title: item.title
+  },
+  data => {
+    console.log('BP result:', data);
+  }
+);</code></pre></div>
+      <div class="callout"><strong>Практика</strong>Передавайте в объекте только те поля, которые объявлены входными переменными BPM. Коды полей должны совпадать с кодами переменных процесса.</div>
+    </section>
+
+    <section id="rest" data-searchable>
+      <h2>8. REST API BPM</h2>
+      <h3>Запуск процесса</h3>
+      <div class="codebox"><div class="codehead"><span>POST /restapi/bpms/start</span><button class="copy">Копировать</button></div><pre><code>{
+  "processCode": "process_code",
+  "input": {
+    "id": 125,
+    "title": "Заявка №125"
+  }
+}</code></pre></div>
+      <div class="codebox"><div class="codehead"><span>Ответ</span><button class="copy">Копировать</button></div><pre><code>{
+  "ok": true,
+  "instance": "INSTANCE-UUID",
+  "task": "TASK-UUID",
+  "errorText": "",
+  "output": {},
+  "instanceIsFinished": false
+}</code></pre></div>
+      <div class="callout warn"><strong>Права запуска</strong>Запуск разрешается, если у пользователя есть роль с правом запуска этого процесса либо процесс помечен публичным. Для пользователя в readonly mode запуск блокируется.</div>
+
+      <h3>Завершение UserTask по task — рекомендуемый вариант</h3>
+      <div class="codebox"><div class="codehead"><span>POST /restapi/bpms/runUserTaskByTask/</span><button class="copy">Копировать</button></div><pre><code>{
+  "task": "TASK-UUID",
+  "input": {
+    "decision": "approve",
+    "comment": "Согласовано"
+  }
+}</code></pre></div>
+      <p class="muted">Ответ содержит <code>ok</code>, <code>errorVars</code>, <code>errorText</code>, новую <code>task</code>, <code>output</code>, <code>instance</code> и <code>instanceIsFinished</code>.</p>
+
+      <h3>Форма UserTask</h3>
+      <div class="tableWrap"><table><thead><tr><th>Метод</th><th>Адрес</th><th>Назначение</th></tr></thead><tbody>
+        <tr><td>GET</td><td><code>/restapi/bpms/ShowUserTaskForm/:task</code></td><td>Получить форму, переменные и информацию по шагам.</td></tr>
+        <tr><td>GET</td><td><code>/restapi/bpms/ShowUserTaskFormAngular/:task</code></td><td>Получить данные Angular-формы UserTask.</td></tr>
+        <tr><td>GET</td><td><code>/restapi/bpms/ShowInstanceForm/:instance</code></td><td>Получить форму по экземпляру.</td></tr>
+        <tr><td>GET</td><td><code>/restapi/bpms/ShowInstanceAngularClass/:instance</code></td><td>Получить Angular-класс по экземпляру.</td></tr>
+        <tr><td>GET</td><td><code>/restapi/bpms/ShowInstanceAngularForm/:instance</code></td><td>Получить Angular-форму по экземпляру.</td></tr>
+      </tbody></table></div>
+
+      <div class="callout danger"><strong>Не опирайтесь на лишние поля старых endpoint'ов</strong>В варианте <code>runUserTaskByInstance</code> структура запроса содержит <code>processCode</code>, <code>instance</code> и <code>pointCode</code>, но продолжение фактически строится по <code>task</code>. В <code>manualExecByInstance</code> текущая реализация также ориентируется на <code>task</code> и не использует переданный <code>input</code>. Для нового кода проще и понятнее строить контракт вокруг UUID задачи.</div>
+    </section>
+
+    <section id="builder" data-searchable>
+      <h2>9. Генератор Lua-вызова</h2>
+      <p class="lead">Заполните параметры — справочник соберёт готовый фрагмент.</p>
+      <div class="builder">
+        <div class="form">
+          <div class="field"><label>Операция</label><select id="bMode"><option value="start">Запуск процесса</option><option value="child">Запуск дочернего процесса</option><option value="task">Продолжение задачи</option></select></div>
+          <div class="field" id="fProcess"><label>Код процесса</label><input id="bProcess" value="process_code"></div>
+          <div class="field" id="fTask" style="display:none"><label>Task UUID / выражение Lua</label><input id="bTask" value="var.task_uuid"></div>
+          <div class="field"><label>User ID / выражение Lua</label><input id="bUser" value="tonumber(sys.user_id)"></div>
+          <div class="field" id="fParent" style="display:none"><label>Parent ID / выражение Lua</label><input id="bParent" value="tonumber(sys.instance_id)"></div>
+          <div class="field"><label>Input (тело Lua-таблицы)</label><textarea id="bInput">id = var.id,
+title = var.title</textarea></div>
+          <button class="btn" id="buildBtn">Собрать код</button>
+          <div class="status" id="buildStatus" style="margin-top:10px">Готово к генерации.</div>
+        </div>
+        <div class="codebox" style="margin:0"><div class="codehead"><span>Результат</span><button class="copy">Копировать</button></div><pre><code id="buildOutput"></code></pre></div>
+      </div>
+    </section>
+
+    <section id="examples" data-searchable>
+      <div class="examplesHead"><div><h2>10. Библиотека примеров</h2><p class="lead">Более 40 практических вариантов: старт, дочерние процессы, задачи, переменные, ошибки, REST и Frontend.</p></div><div class="filters" id="filters"><button class="filter active" data-filter="all">Все</button><button class="filter" data-filter="start">Старт</button><button class="filter" data-filter="task">Задачи</button><button class="filter" data-filter="vars">Переменные</button><button class="filter" data-filter="frontend">Frontend</button><button class="filter" data-filter="rest">REST</button></div></div>
+      <div class="examples" id="exampleGrid"></div>
+    </section>
+
+    <section id="errors" data-searchable>
+      <h2>11. Ошибки и обработка</h2>
+      <div class="tableWrap"><table><thead><tr><th>Вызов</th><th>errNum</th><th>Смысл</th><th>Действие</th></tr></thead><tbody>
+        <tr><td><code>BPMSStartProcess*</code></td><td>0</td><td>Обычно успех. При неверных типах аргументов старый контракт может вернуть пустые значения без корректного кода ошибки.</td><td>Проверять <code>output ~= nil</code> и валидировать типы до вызова.</td></tr>
+        <tr><td><code>BPMSStartProcess*</code></td><td>1</td><td>Ошибка создания экземпляра.</td><td>Логировать <code>errText</code>, не продолжать цепочку.</td></tr>
+        <tr><td><code>BPMSRunManualTask</code></td><td>0</td><td>Успех.</td><td>Использовать возвращённый <code>newTask</code>.</td></tr>
+        <tr><td><code>BPMSRunManualTask</code></td><td>2</td><td>Ошибка привязки параметров или выполнения.</td><td>Проверить task/userId/input и текст ошибки.</td></tr>
+        <tr><td><code>BPMSRunManualTask</code></td><td>3</td><td>Не удалось определить точку по task.</td><td>Проверить UUID и что задача существует.</td></tr>
+        <tr><td><code>BPMSRunManualTask</code></td><td>4</td><td>Не прошла проверка обязательных переменных точки.</td><td>Передать недостающие значения.</td></tr>
+      </tbody></table></div>
+      <div class="codebox"><div class="codehead"><span>Универсальный start wrapper</span><button class="copy">Копировать</button></div><pre><code>local function startProcess(code, input, userId)
+  userId = userId or tonumber(sys.user_id)
+  assert(type(code) == "string" and code ~= "", "processCode required")
+  assert(type(userId) == "number", "userId must be number")
+  assert(type(input) == "table", "input must be table")
+
+  local output, instance, task, errText, errNum = BPMSStartProcess(code, userId, input)
+  if errNum ~= 0 or output == nil then
+    return nil, errText ~= "" and errText or "BPM start failed"
+  end
+
+  return {output=output, instance=instance, task=task}, nil
+end</code></pre></div>
+    </section>
+
+    <section id="gotchas" data-searchable>
+      <h2>12. Подводные камни</h2>
+      <div class="grid">
+        <div class="card wide"><h3>1. task важнее pointCode</h3><p>Для продолжения текущей задачи храните UUID <code>task</code>. Именно он используется для поиска текущей BPM-точки.</p></div>
+        <div class="card wide"><h3>2. UserTask имеет акторов</h3><p>Открытие пользовательской формы связано с actor-доступом. Не проектируйте UI так, будто любой пользователь может открыть произвольный task UUID.</p></div>
+        <div class="card wide"><h3>3. Проверка required-переменных</h3><p>Перед исполнением задачи вход сверяется с требованиями текущей точки. Пустой <code>{}</code> подходит только если обязательных значений нет.</p></div>
+        <div class="card wide"><h3>4. Типы sys.user_id / sys.instance_id</h3><p>В системном контексте они строковые. Перед передачей в BPM-функции используйте <code>tonumber()</code>.</p></div>
+        <div class="card wide"><h3>5. Выходные переменные</h3><p>В API старта возвращаются именно глобальные output-переменные процесса; не ожидайте в <code>output</code> каждую внутреннюю переменную.</p></div>
+        <div class="card wide"><h3>6. Старые endpoint'ы</h3><p>Некоторые структуры запросов содержат поля, которые текущая реализация фактически не использует. Для новых интеграций предпочитайте минимальный контракт <code>task + input</code>.</p></div>
+      </div>
+    </section>
+
+    <section id="cheatsheet" data-searchable>
+      <h2>13. Шпаргалка</h2>
+      <div class="codebox"><div class="codehead"><span>Минимум, который стоит запомнить</span><button class="copy">Копировать</button></div><pre><code>-- START
+local out, instance, task, errText, errNum =
+  BPMSStartProcess("process_code", tonumber(sys.user_id), {id = var.id})
+
+-- CHILD START
+local out2, childInstance, childTask, errText2, errNum2 =
+  BPMSStartProcess2("child_process", tonumber(sys.user_id), {id = var.id}, tonumber(sys.instance_id))
+
+-- CONTINUE TASK
+local nextTask, taskErr, taskErrNum =
+  BPMSRunManualTask(task, tonumber(sys.user_id), {decision = "approve"})
+
+-- PROCESS VARIABLES
+var.status = "done"
+local instanceId = tonumber(sys.instance_id)
+local userId = tonumber(sys.user_id)</code></pre></div>
+    </section>
+
+    <div class="footer">DamuBPM · BPM + Lua practical reference · <a href="index.html">Вернуться на главную</a></div>
+  </div>
+</main>
+</div>
+<script>
+const examples = [
+['start','Минимальный запуск','Запуск без входных данных.',`local out, instance, task, errText, errNum = BPMSStartProcess(\n  "simple_process",\n  tonumber(sys.user_id),\n  {}\n)`],
+['start','Запуск с ID сущности','Передаём идентификатор записи.',`local out, instance, task, errText, errNum = BPMSStartProcess(\n  "entity_process",\n  tonumber(sys.user_id),\n  { entity_id = var.id }\n)`],
+['start','Запуск с несколькими полями','Строки, числа и логические значения.',`local out, instance, task, errText, errNum = BPMSStartProcess(\n  "request_process",\n  tonumber(sys.user_id),\n  {\n    request_id = var.id,\n    title = var.title,\n    amount = 150000,\n    urgent = true\n  }\n)`],
+['start','Передача структуры','Lua-таблица как сложная входная переменная.',`local input = {\n  customer = {id = 10, name = "Aruzhan"},\n  items = {{id=1, qty=2},{id=2, qty=1}}\n}\nlocal out, instance, task, errText, errNum =\n  BPMSStartProcess("order_process", tonumber(sys.user_id), input)`],
+['start','Сохранить task дочернего процесса','Task можно сохранить в переменную родительского процесса.',`local out, instance, task, errText, errNum =\n  BPMSStartProcess("approval", tonumber(sys.user_id), {id=var.id})\nif errNum == 0 and out ~= nil then\n  var.approval_instance = instance\n  var.approval_task = task\nend`],
+['start','Проверка output','Читаем выходную переменную дочернего процесса.',`local out, instance, task, errText, errNum =\n  BPMSStartProcess("calculator", tonumber(sys.user_id), {a=10,b=20})\nif errNum == 0 and out then\n  var.result = out.result\nend`],
+['start','Старт от другого userId','Когда userId известен явно.',`local userId = 73\nlocal out, instance, task, errText, errNum =\n  BPMSStartProcess("process_code", userId, {id=100})`],
+['start','Дочерний процесс','Связываем новый экземпляр с текущим.',`local out, instance, task, errText, errNum = BPMSStartProcess2(\n  "child_process",\n  tonumber(sys.user_id),\n  { parent_ref = var.id },\n  tonumber(sys.instance_id)\n)`],
+['start','Дочерний процесс с parent_id=0','Явный запуск без родителя через второй API.',`local out, instance, task, errText, errNum =\n  BPMSStartProcess2("standalone", tonumber(sys.user_id), {}, 0)`],
+['start','Цепочка двух процессов','Второй получает данные первого.',`local o1, i1, t1, e1, n1 = BPMSStartProcess("prepare", tonumber(sys.user_id), {id=var.id})\nif n1 ~= 0 or not o1 then error(e1) end\nlocal o2, i2, t2, e2, n2 = BPMSStartProcess("notify", tonumber(sys.user_id), {result=o1.result})\nif n2 ~= 0 or not o2 then error(e2) end`],
+['start','Не падать при ошибке','Сохраняем ошибку в переменную процесса.',`local out, instance, task, errText, errNum =\n  BPMSStartProcess("external_flow", tonumber(sys.user_id), {id=var.id})\nif errNum ~= 0 or out == nil then\n  var.child_error = errText\n  var.child_ok = "0"\nelse\n  var.child_ok = "1"\nend`],
+['start','Функция-обёртка','Повторно используемый helper.',`local function bpStart(code, input)\n  local out, instance, task, errText, errNum = BPMSStartProcess(code, tonumber(sys.user_id), input or {})\n  if errNum ~= 0 or out == nil then return nil, errText end\n  return {output=out, instance=instance, task=task}, nil\nend\n\nlocal r, err = bpStart("process_code", {id=var.id})`],
+['task','ManualTask без параметров','Продолжение задачи, если текущая точка не требует данных.',`local nextTask, errText, errNum =\n  BPMSRunManualTask(var.task_uuid, tonumber(sys.user_id), {})\nif errNum ~= 0 then error(errText) end`],
+['task','ManualTask с решением','Передаём результат согласования.',`local nextTask, errText, errNum = BPMSRunManualTask(\n  var.task_uuid,\n  tonumber(sys.user_id),\n  {decision="approve", comment="OK"}\n)`],
+['task','Сохранить следующую задачу','newTask становится task следующего шага.',`local newTask, errText, errNum =\n  BPMSRunManualTask(var.task_uuid, tonumber(sys.user_id), {status="done"})\nif errNum == 0 then\n  var.task_uuid = newTask\nend`],
+['task','Проверка пустого task','Не вызывать API с пустым UUID.',`if var.task_uuid == nil or var.task_uuid == "" then\n  error("BPM task UUID is empty")\nend\nlocal newTask, errText, errNum =\n  BPMSRunManualTask(var.task_uuid, tonumber(sys.user_id), {})`],
+['task','Обработка errNum=3','Task не найден/не определяется точка.',`local newTask, errText, errNum =\n  BPMSRunManualTask(var.task_uuid, tonumber(sys.user_id), {})\nif errNum == 3 then\n  var.task_state = "not_found"\n  var.task_error = errText\nend`],
+['task','Обработка errNum=4','Не хватает обязательных переменных.',`local newTask, errText, errNum =\n  BPMSRunManualTask(var.task_uuid, tonumber(sys.user_id), {decision=var.decision})\nif errNum == 4 then\n  var.validation_error = errText\nend`],
+['task','Прокинуть ID и комментарий','Типовой submit задачи.',`local newTask, errText, errNum = BPMSRunManualTask(\n  var.task_uuid, tonumber(sys.user_id),\n  {id=var.id, comment=var.comment}\n)`],
+['task','Условное согласование','Собираем input динамически.',`local input = {comment = var.comment}\nif tonumber(var.amount or "0") > 1000000 then\n  input.decision = "escalate"\nelse\n  input.decision = "approve"\nend\nlocal newTask, errText, errNum = BPMSRunManualTask(var.task_uuid, tonumber(sys.user_id), input)`],
+['task','Повторно используемый helper','Единая обработка ошибок задач.',`local function completeTask(task, input)\n  local nextTask, errText, errNum = BPMSRunManualTask(task, tonumber(sys.user_id), input or {})\n  if errNum ~= 0 then return nil, errText, errNum end\n  return nextTask, nil, 0\nend`],
+['task','Task из запуска процесса','Сразу продолжить задачу нового процесса.',`local out, instance, task, errText, errNum =\n  BPMSStartProcess("process_code", tonumber(sys.user_id), {id=var.id})\nif errNum == 0 and out and task ~= "" then\n  local nextTask, e, n = BPMSRunManualTask(task, tonumber(sys.user_id), {auto="1"})\nend`],
+['task','Программное подтверждение UserTask','Технически task-механизм общий; применять только в доверенном сценарии.',`local nextTask, errText, errNum =\n  BPMSRunManualTask(var.user_task_uuid, tonumber(sys.user_id), {decision="approve"})\nif errNum ~= 0 then error(errText) end`],
+['task','Завершить с массивом','Структурированное значение в input.',`local nextTask, errText, errNum = BPMSRunManualTask(\n  var.task_uuid, tonumber(sys.user_id),\n  {items={{id=1},{id=2},{id=3}}}\n)`],
+['vars','Изменить переменную процесса','var автоматически считывается после Lua-точки.',`var.status = "approved"\nvar.comment = "Обработано автоматически"`],
+['vars','Взять текущего пользователя','sys.user_id хранится строкой.',`local userId = tonumber(sys.user_id)\nvar.executor_id = tostring(userId)`],
+['vars','Взять внутренний instance ID','Полезно для parent_id.',`local parentId = tonumber(sys.instance_id)\nlocal out, instance, task, errText, errNum =\n  BPMSStartProcess2("child", tonumber(sys.user_id), {}, parentId)`],
+['vars','Получить язык','Поле доступно при HTTP-контексте.',`local lang = sys.lang or "ru"\nvar.notification_lang = lang`],
+['vars','Получить IP','X-Real-Ip переносится в sys.',`if sys.x_real_ip and sys.x_real_ip ~= "" then\n  var.client_ip = sys.x_real_ip\nend`],
+['vars','GET параметр запроса','request.get содержит query/form параметры.',`if request and request.get then\n  var.source = request.get.source or "unknown"\nend`],
+['vars','action_entity_id','Используем сущность действия процесса.',`if sys.action_entity_id then\n  var.entity_id = tostring(sys.action_entity_id)\nend`],
+['vars','next_task_uuid','Переопределение возвращаемого task в сценарии, где это предусмотрено моделью.',`sys.next_task_uuid = var.preferred_task_uuid`],
+['vars','next_task_hide','Скрыть следующую задачу в поддерживаемом сценарии.',`sys.next_task_hide = true`],
+['vars','Безопасное число','Переменные часто приходят строками.',`local amount = tonumber(var.amount or "0") or 0\nif amount > 100000 then\n  var.route = "large"\nend`],
+['vars','Структура в var','Записываем Lua-таблицу в struct-переменную.',`var.payload = {\n  id = var.id,\n  status = "ready",\n  meta = {source = "bpm"}\n}`],
+['frontend','bpRun минимальный','Самый короткий вызов с фронта.',`this.appComponent.bpRun('process_code', {}, data => {\n  console.log(data);\n});`],
+['frontend','bpRun с записью','Передача полей выбранного item.',`this.appComponent.bpRun('process_code', {\n  id: item.id,\n  title: item.title\n}, data => console.log('BP result:', data));`],
+['frontend','bpRun после сохранения','Запускаем процесс после создания записи.',`this.appComponent.bpRun('publish_request', {\n  id: saved.id,\n  status: saved.status\n}, data => {\n  if (data && data.ok) this.reload();\n});`],
+['frontend','bpRun с массивом','Передача списка объектов.',`this.appComponent.bpRun('mass_process', {\n  ids: selected.map(x => x.id)\n}, data => console.log(data));`],
+['rest','REST start','HTTP запуск по processCode.',`POST /restapi/bpms/start\nContent-Type: application/json\n\n{\n  "processCode":"process_code",\n  "input":{"id":125,"title":"Заявка"}\n}`],
+['rest','REST UserTask submit','Завершение по UUID задачи.',`POST /restapi/bpms/runUserTaskByTask/\nContent-Type: application/json\n\n{\n  "task":"TASK-UUID",\n  "input":{"decision":"approve"}\n}`],
+['rest','Получить HTML-форму UserTask','Форма запрашивается по task.',`GET /restapi/bpms/ShowUserTaskForm/TASK-UUID`],
+['rest','Получить Angular-форму UserTask','Вариант для Angular-формы.',`GET /restapi/bpms/ShowUserTaskFormAngular/TASK-UUID`],
+['rest','Форма экземпляра','Запрос по instance UUID.',`GET /restapi/bpms/ShowInstanceForm/INSTANCE-UUID`],
+['rest','Проверка finished','При старте и submit смотрите instanceIsFinished.',`if (result.ok && result.instanceIsFinished) {\n  console.log('Процесс завершён', result.output);\n} else {\n  console.log('Следующая задача', result.task);\n}`]
+];
+
+function esc(s){return s.replace(/[&<>]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[m]));}
+function renderExamples(filter='all', search=''){
+  const grid=document.getElementById('exampleGrid');
+  const q=search.trim().toLowerCase();
+  const rows=examples.filter(e=>(filter==='all'||e[0]===filter)&&(!q||(e.join(' ').toLowerCase().includes(q))));
+  grid.innerHTML=rows.map((e,i)=>`<article class="example" data-searchable><div class="exampleMeta"><div class="tags"><span class="tag">${e[0]}</span><span class="tag">#${i+1}</span></div><h3>${e[1]}</h3><p>${e[2]}</p></div><div class="codebox"><div class="codehead"><span>пример</span><button class="copy">Копировать</button></div><pre><code>${esc(e[3])}</code></pre></div></article>`).join('');
+  bindCopy();
+}
+function bindCopy(){document.querySelectorAll('.copy').forEach(btn=>{if(btn.dataset.bound)return;btn.dataset.bound='1';btn.addEventListener('click',async()=>{const code=btn.closest('.codebox').querySelector('code').innerText;try{await navigator.clipboard.writeText(code);btn.textContent='Скопировано';setTimeout(()=>btn.textContent='Копировать',1200)}catch(e){btn.textContent='Выделите код'}})})}
+let activeFilter='all';
+document.getElementById('filters').addEventListener('click',e=>{if(!e.target.matches('.filter'))return;document.querySelectorAll('.filter').forEach(x=>x.classList.remove('active'));e.target.classList.add('active');activeFilter=e.target.dataset.filter;renderExamples(activeFilter,document.getElementById('globalSearch').value)});
+document.getElementById('globalSearch').addEventListener('input',e=>{const q=e.target.value.toLowerCase().trim();document.querySelectorAll('section[data-searchable]').forEach(s=>{if(s.id==='examples')return;s.classList.toggle('hidden',q && !s.innerText.toLowerCase().includes(q))});renderExamples(activeFilter,q)});
+document.getElementById('themeBtn').addEventListener('click',()=>{document.documentElement.classList.toggle('light');localStorage.setItem('bpmTheme',document.documentElement.classList.contains('light')?'light':'dark')});if(localStorage.getItem('bpmTheme')==='light')document.documentElement.classList.add('light');
+const mode=document.getElementById('bMode');function modeUI(){document.getElementById('fProcess').style.display=mode.value==='task'?'none':'block';document.getElementById('fTask').style.display=mode.value==='task'?'block':'none';document.getElementById('fParent').style.display=mode.value==='child'?'block':'none'}mode.addEventListener('change',modeUI);
+function build(){const m=mode.value,p=document.getElementById('bProcess').value.trim(),t=document.getElementById('bTask').value.trim(),u=document.getElementById('bUser').value.trim(),pa=document.getElementById('bParent').value.trim(),inp=document.getElementById('bInput').value.trim();let code='';if(m==='start')code=`local output, instance, task, errText, errNum = BPMSStartProcess(\n  "${p}",\n  ${u},\n  {\n    ${inp.replace(/\n/g,'\n    ')}\n  }\n)`;if(m==='child')code=`local output, instance, task, errText, errNum = BPMSStartProcess2(\n  "${p}",\n  ${u},\n  {\n    ${inp.replace(/\n/g,'\n    ')}\n  },\n  ${pa}\n)`;if(m==='task')code=`local nextTask, errText, errNum = BPMSRunManualTask(\n  ${t},\n  ${u},\n  {\n    ${inp.replace(/\n/g,'\n    ')}\n  }\n)`;document.getElementById('buildOutput').textContent=code;document.getElementById('buildStatus').textContent='Код собран. Проверьте коды переменных BPM перед использованием.'}document.getElementById('buildBtn').addEventListener('click',build);modeUI();build();renderExamples();bindCopy();
+</script>
+</body>
+</html>
