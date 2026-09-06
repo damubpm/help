@@ -1,0 +1,1101 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DamuBPM REST API + Lua — интерактивный справочник</title>
+<meta name="description" content="Интерактивный справочник по созданию REST API в DamuBPM на Lua: маршруты, request/output, статусы, заголовки, авторизация, async, no_parallel и десятки примеров.">
+<style>
+:root{
+  --bg:#07111f; --panel:#0d1b2b; --panel2:#11243a; --line:#203a56;
+  --text:#e8f0f8; --muted:#9fb4c8; --accent:#34d399; --accent2:#60a5fa;
+  --warn:#fbbf24; --danger:#fb7185; --ok:#22c55e; --shadow:0 12px 36px rgba(0,0,0,.28);
+  --code:#06101d;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:linear-gradient(180deg,#06101d 0,#091625 100%);color:var(--text);font:15px/1.6 Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+a{color:inherit}
+button,input,select,textarea{font:inherit}
+.topbar{position:sticky;top:0;z-index:30;display:flex;gap:12px;align-items:center;padding:12px 18px;border-bottom:1px solid var(--line);background:rgba(7,17,31,.93);backdrop-filter:blur(14px)}
+.home{display:inline-flex;align-items:center;gap:8px;text-decoration:none;font-weight:800;background:linear-gradient(135deg,var(--accent),#10b981);color:#03120d;padding:9px 13px;border-radius:12px}
+.brand{font-weight:900;letter-spacing:.2px}
+.search{margin-left:auto;min-width:280px;max-width:520px;width:38vw;padding:10px 13px;border:1px solid var(--line);border-radius:12px;background:#0a1726;color:var(--text);outline:none}
+.search:focus{border-color:var(--accent2);box-shadow:0 0 0 3px rgba(96,165,250,.12)}
+.layout{display:grid;grid-template-columns:300px minmax(0,1fr);min-height:100vh}
+.sidebar{position:sticky;top:65px;height:calc(100vh - 65px);overflow:auto;border-right:1px solid var(--line);padding:18px;background:rgba(8,20,34,.86)}
+.sidebar h3{margin:4px 0 12px;font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.12em}
+.nav{display:grid;gap:6px}
+.nav a{padding:8px 10px;border-radius:9px;text-decoration:none;color:#cbd8e5}
+.nav a:hover,.nav a.active{background:#10243a;color:#fff}
+.main{max-width:1180px;width:100%;padding:28px 34px 80px;margin:0 auto}
+.hero{padding:28px;border:1px solid var(--line);border-radius:22px;background:
+radial-gradient(circle at 85% 15%,rgba(52,211,153,.15),transparent 27%),
+radial-gradient(circle at 10% 10%,rgba(96,165,250,.12),transparent 24%),
+linear-gradient(160deg,#0b1a2b,#0c2032);box-shadow:var(--shadow)}
+.hero h1{font-size:clamp(32px,5vw,58px);line-height:1.02;margin:0 0 14px}
+.hero p{font-size:18px;color:#c8d7e6;max-width:860px}
+.badges{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px}
+.badge{border:1px solid var(--line);background:#0a1726;border-radius:999px;padding:6px 10px;color:#c9d7e4}
+section{scroll-margin-top:90px;margin-top:34px}
+h2{font-size:28px;line-height:1.2;margin:0 0 14px}
+h3{font-size:20px;margin:24px 0 10px}
+p{margin:8px 0 12px}
+.muted{color:var(--muted)}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.grid3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.card{border:1px solid var(--line);border-radius:16px;background:linear-gradient(180deg,var(--panel),#0a1827);padding:17px;box-shadow:0 8px 28px rgba(0,0,0,.16)}
+.card h3,.card h4{margin-top:0}
+.note{border-left:4px solid var(--accent2);padding:12px 14px;background:#0b1a2b;border-radius:10px}
+.warn{border-left-color:var(--warn)}
+.ok{border-left-color:var(--ok)}
+.danger{border-left-color:var(--danger)}
+code:not(pre code){background:#0a1726;border:1px solid var(--line);border-radius:6px;padding:1px 5px}
+.codebox{position:relative;margin:10px 0 16px;border:1px solid var(--line);border-radius:14px;overflow:hidden;background:var(--code)}
+.codehead{display:flex;align-items:center;justify-content:space-between;padding:8px 10px 8px 14px;border-bottom:1px solid #17314b;color:#9eb2c6;background:#0a1726;font-size:12px}
+pre{margin:0;overflow:auto;padding:16px;color:#dce9f5;tab-size:2}
+.copy{border:1px solid #2a4968;background:#10253a;color:#dce9f5;border-radius:8px;padding:5px 9px;cursor:pointer}
+.copy:hover{border-color:var(--accent);color:#fff}
+table{width:100%;border-collapse:collapse;overflow:hidden;border-radius:12px;background:#0b1928;border:1px solid var(--line)}
+th,td{text-align:left;padding:10px 12px;border-bottom:1px solid #1a334d;vertical-align:top}
+th{color:#cfe0ef;background:#0e2236}
+tr:last-child td{border-bottom:0}
+.kbd{font:12px ui-monospace,SFMono-Regular,Menlo,monospace;border:1px solid var(--line);border-bottom-width:2px;border-radius:6px;padding:2px 5px;background:#0b1826}
+.filters{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0 18px}
+.filter{border:1px solid var(--line);background:#0b1928;color:#dce9f5;padding:7px 11px;border-radius:999px;cursor:pointer}
+.filter.active{border-color:var(--accent);background:rgba(52,211,153,.12)}
+.example{transition:.15s opacity,.15s transform}
+.example.hidden{display:none}
+.method{display:inline-flex;font-weight:900;font-size:12px;letter-spacing:.05em;border-radius:7px;padding:3px 7px;margin-right:6px}
+.GET{background:rgba(96,165,250,.16);color:#93c5fd}
+.POST{background:rgba(52,211,153,.16);color:#6ee7b7}
+.PUT{background:rgba(251,191,36,.16);color:#fde68a}
+.CONFIG{background:rgba(168,85,247,.16);color:#d8b4fe}
+.AUTH{background:rgba(251,113,133,.14);color:#fda4af}
+.builder{display:grid;grid-template-columns:1fr 220px;gap:12px}
+.builder textarea{min-height:150px;resize:vertical}
+.field{display:grid;gap:6px}
+.field label{color:#a9bfd2;font-size:13px}
+.field input,.field select,.field textarea{width:100%;padding:10px 11px;border-radius:10px;border:1px solid var(--line);background:#081522;color:#eef6ff;outline:none}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--accent2)}
+.output{white-space:pre-wrap;background:#06101d;border:1px solid var(--line);border-radius:12px;padding:14px;min-height:120px;overflow:auto}
+.steps{counter-reset:s}
+.step{position:relative;padding-left:44px;margin:16px 0}
+.step:before{counter-increment:s;content:counter(s);position:absolute;left:0;top:0;width:30px;height:30px;border-radius:50%;display:grid;place-items:center;background:linear-gradient(135deg,var(--accent2),var(--accent));color:#03111a;font-weight:900}
+.tagline{color:#a7f3d0;font-weight:800}
+.footer{margin-top:52px;padding-top:20px;border-top:1px solid var(--line);color:var(--muted)}
+.empty{display:none;padding:16px;border:1px dashed var(--line);border-radius:12px;color:var(--muted);margin-top:10px}
+@media(max-width:920px){
+ .layout{grid-template-columns:1fr}.sidebar{display:none}.main{padding:22px 16px 60px}.grid,.grid3,.builder{grid-template-columns:1fr}.search{min-width:0;width:100%}.brand{display:none}.topbar{padding:10px}
+}
+</style>
+</head>
+<body>
+<header class="topbar">
+  <a class="home" href="index.html">← Главная</a>
+  <div class="brand">DamuBPM REST API + Lua</div>
+  <input id="search" class="search" type="search" placeholder="Поиск: request.input, async, header, Login..." aria-label="Поиск по справочнику">
+</header>
+
+<div class="layout">
+<aside class="sidebar">
+  <h3>Содержание</h3>
+  <nav class="nav" id="nav">
+    <a href="#start">Быстрый старт</a>
+    <a href="#url">URL и методы</a>
+    <a href="#request">Объект request</a>
+    <a href="#response">Ответ сервиса</a>
+    <a href="#metadata">Настройки сервиса</a>
+    <a href="#builder">Генератор вызова</a>
+    <a href="#examples">Примеры Lua</a>
+    <a href="#calls">Примеры вызова</a>
+    <a href="#auth">Авторизация и сессия</a>
+    <a href="#async">Async и no_parallel</a>
+    <a href="#headers">Заголовки и CORS</a>
+    <a href="#patterns">Рекомендуемые шаблоны</a>
+    <a href="#checklist">Чек-лист</a>
+  </nav>
+</aside>
+
+<main class="main">
+<section class="hero" id="start" data-search>
+  <div class="tagline">Интерактивный справочник</div>
+  <h1>REST API на Lua<br>в DamuBPM</h1>
+  <p>Практическая памятка по созданию сервисов через <code>/restapi/services/run/&lt;code&gt;</code>: как читать параметры, JSON, заголовки и пользователя, как формировать ответ, статусы, свои headers, редиректы, асинхронный запуск и защиту от параллельного выполнения.</p>
+  <div class="badges">
+    <span class="badge">GET</span><span class="badge">POST</span><span class="badge">PUT</span><span class="badge">OPTIONS</span>
+    <span class="badge">Lua</span><span class="badge">JSON</span><span class="badge">Async</span><span class="badge">Roles</span>
+  </div>
+</section>
+
+<section id="url" data-search>
+<h2>1. URL и методы</h2>
+<p>Код сервиса становится частью URL:</p>
+<div class="codebox"><div class="codehead">Шаблон URL<button class="copy">Копировать</button></div><pre><code>/restapi/services/run/&lt;code&gt;</code></pre></div>
+<div class="grid">
+  <div class="card"><h3><span class="method GET">GET</span>Получение данных</h3><pre><code>GET /restapi/services/run/customer/get?id=123</code></pre></div>
+  <div class="card"><h3><span class="method POST">POST</span>Создание / действие</h3><pre><code>POST /restapi/services/run/customer/create</code></pre></div>
+  <div class="card"><h3><span class="method PUT">PUT</span>Изменение</h3><pre><code>PUT /restapi/services/run/customer/update</code></pre></div>
+  <div class="card"><h3>OPTIONS</h3><p class="muted">Используется для предварительных запросов браузера и правил CORS.</p></div>
+</div>
+<div class="note ok"><b>Рекомендация:</b> версионируй свои сервисы кодом, например <code>api/v1/customer/create</code>, <code>api/v1/customer/get</code>.</div>
+</section>
+
+<section id="request" data-search>
+<h2>2. Объект <code>request</code></h2>
+<p>В каждом Lua-сервисе доступен глобальный объект <code>request</code>.</p>
+<table>
+<thead><tr><th>Поле</th><th>Что содержит</th><th>Пример</th></tr></thead>
+<tbody>
+<tr><td><code>request.input</code></td><td>Разобранный JSON тела запроса</td><td><code>request.input.title</code></td></tr>
+<tr><td><code>request.input_raw</code></td><td>Исходное тело запроса строкой</td><td><code>local raw = request.input_raw</code></td></tr>
+<tr><td><code>request.get</code></td><td>Query/form параметры как таблица строк</td><td><code>request.get.id</code></td></tr>
+<tr><td><code>request.header</code></td><td>Входящие HTTP-заголовки</td><td><code>request.header["X-Api-Key"]</code></td></tr>
+<tr><td><code>request.user_id</code></td><td>ID текущего пользователя, передаётся строкой</td><td><code>tonumber(request.user_id)</code></td></tr>
+<tr><td><code>request.last_user_id</code></td><td>Последний пользователь в сессии</td><td><code>request.last_user_id</code></td></tr>
+<tr><td><code>request.lang</code></td><td>Язык запроса</td><td><code>request.lang</code></td></tr>
+<tr><td><code>request.anonymous_session_id</code></td><td>ID анонимной сессии</td><td><code>request.anonymous_session_id</code></td></tr>
+<tr><td><code>request.host</code></td><td>Host запроса</td><td><code>request.host</code></td></tr>
+<tr><td><code>request.method</code></td><td>Метод запроса</td><td><code>GET</code>, <code>POST</code>, <code>PUT</code></td></tr>
+<tr><td><code>request.RemoteAddr</code></td><td>Удалённый адрес соединения</td><td><code>request.RemoteAddr</code></td></tr>
+<tr><td><code>request.NTLM_DOMAIN</code></td><td>NTLM domain при <code>sys_ntlm_req=1</code></td><td><code>request.NTLM_DOMAIN</code></td></tr>
+<tr><td><code>request.NTLM_USER</code></td><td>NTLM user при <code>sys_ntlm_req=1</code></td><td><code>request.NTLM_USER</code></td></tr>
+<tr><td><code>request.NTLM_HOST</code></td><td>NTLM host при <code>sys_ntlm_req=1</code></td><td><code>request.NTLM_HOST</code></td></tr>
+</tbody>
+</table>
+<div class="note warn"><b>Важно:</b> <code>request.user_id</code> удобно сразу приводить к числу: <code>local userId = tonumber(request.user_id)</code>.</div>
+</section>
+
+<section id="response" data-search>
+<h2>3. Как формируется ответ</h2>
+<div class="grid3">
+  <div class="card"><h3><code>output</code></h3><p>Главная переменная ответа. Может быть строкой или Lua-таблицей.</p></div>
+  <div class="card"><h3><code>http_response_code</code></h3><p>HTTP-статус: 200, 201, 400, 401, 404, 409 и т. д.</p></div>
+  <div class="card"><h3><code>header</code></h3><p>Таблица дополнительных HTTP-заголовков ответа.</p></div>
+</div>
+
+<div class="codebox"><div class="codehead">Базовый JSON-ответ<button class="copy">Копировать</button></div><pre><code>http_response_code = 200
+
+header = {
+  ["X-Service"] = "customer"
+}
+
+output = {
+  success = true,
+  data = {
+    id = 123,
+    title = "Test"
+  }
+}</code></pre></div>
+
+<div class="note"><b>Для чистого REST-ответа</b> удобно использовать настройку <code>cut_status_info = 1</code>. Тогда наружу возвращается непосредственно <code>output</code>.</div>
+</section>
+
+<section id="metadata" data-search>
+<h2>4. Настройки REST-сервиса</h2>
+<table>
+<thead><tr><th>Настройка</th><th>Назначение</th><th>Практика</th></tr></thead>
+<tbody>
+<tr><td><code>code</code></td><td>Код сервиса и часть URL</td><td><code>api/v1/customer/create</code></td></tr>
+<tr><td><code>body</code></td><td>Lua-код сервиса</td><td>Логика запроса и формирование <code>output</code></td></tr>
+<tr><td><code>res_content_type_id</code></td><td>Тип ответа и MIME</td><td>Обычно JSON</td></tr>
+<tr><td><code>is_public</code></td><td>Публичный доступ</td><td>Включать только для действительно публичных методов</td></tr>
+<tr><td><code>only_auth</code></td><td>Требование авторизованной сессии</td><td>Для приватных POST/PUT</td></tr>
+<tr><td><code>cut_status_info</code></td><td>Убрать служебную обёртку ответа</td><td><code>1</code> для обычного REST JSON</td></tr>
+<tr><td><code>is_redirect_output</code></td><td>Использовать <code>output</code> как URL перенаправления</td><td>Для специальных redirect endpoints</td></tr>
+<tr><td><code>no_parallel</code></td><td>Запретить параллельный запуск одного и того же сервиса</td><td>Импорт, синхронизация, тяжёлые процедуры</td></tr>
+</tbody>
+</table>
+</section>
+
+<section id="builder" data-search>
+<h2>5. Генератор вызова</h2>
+<p>Заполни параметры — справа автоматически сформируются команды вызова.</p>
+<div class="card">
+  <div class="builder">
+    <div>
+      <div class="field"><label>Базовый адрес</label><input id="bBase" value="https://example.kz"></div>
+      <div class="field" style="margin-top:10px"><label>Код сервиса</label><input id="bCode" value="api/v1/customer/create"></div>
+      <div class="field" style="margin-top:10px"><label>JSON body</label><textarea id="bBody">{
+  "title": "ТОО Test",
+  "email": "info@test.kz"
+}</textarea></div>
+    </div>
+    <div>
+      <div class="field"><label>Метод</label>
+        <select id="bMethod"><option>POST</option><option>GET</option><option>PUT</option></select>
+      </div>
+      <div class="field" style="margin-top:10px"><label>Query string</label><input id="bQuery" value=""></div>
+      <div class="field" style="margin-top:10px"><label>Доп. header</label><input id="bHeader" value="X-Api-Key: demo"></div>
+    </div>
+  </div>
+  <h3>cURL</h3><div id="curlOut" class="output"></div>
+  <h3>fetch()</h3><div id="fetchOut" class="output"></div>
+</div>
+</section>
+
+<section id="examples" data-search>
+<h2>6. Десятки примеров Lua</h2>
+<div class="filters" id="filters">
+  <button class="filter active" data-filter="ALL">Все</button>
+  <button class="filter" data-filter="GET">GET</button>
+  <button class="filter" data-filter="POST">POST</button>
+  <button class="filter" data-filter="PUT">PUT</button>
+  <button class="filter" data-filter="AUTH">Auth</button>
+  <button class="filter" data-filter="CONFIG">Config</button>
+</div>
+<div id="examplesList">
+
+<div class="card example" data-kind="GET"><h3><span class="method GET">GET</span>1. Hello</h3>
+<div class="codebox"><div class="codehead">Lua<button class="copy">Копировать</button></div><pre><code>output = {
+  success = true,
+  message = "Hello from DamuBPM"
+}</code></pre></div></div>
+
+<div class="card example" data-kind="GET"><h3><span class="method GET">GET</span>2. Один query-параметр</h3>
+<pre><code>local id = request.get.id
+
+output = {
+  id = id
+}</code></pre></div>
+
+<div class="card example" data-kind="GET"><h3><span class="method GET">GET</span>3. Несколько query-параметров</h3>
+<pre><code>local page = request.get.page or "1"
+local limit = request.get.limit or "20"
+
+output = {
+  page = tonumber(page),
+  limit = tonumber(limit)
+}</code></pre></div>
+
+<div class="card example" data-kind="GET"><h3><span class="method GET">GET</span>4. Обязательный параметр</h3>
+<pre><code>local id = request.get.id
+
+if id == nil or id == "" then
+  http_response_code = 400
+  output = {success = false, error = "id is required"}
+  return
+end
+
+output = {success = true, id = id}</code></pre></div>
+
+<div class="card example" data-kind="GET"><h3><span class="method GET">GET</span>5. Числовой параметр</h3>
+<pre><code>local id = tonumber(request.get.id)
+
+if id == nil then
+  http_response_code = 400
+  output = {success = false, error = "id must be a number"}
+  return
+end
+
+output = {success = true, id = id}</code></pre></div>
+
+<div class="card example" data-kind="GET"><h3><span class="method GET">GET</span>6. Определить метод</h3>
+<pre><code>output = {
+  method = request.method
+}</code></pre></div>
+
+<div class="card example" data-kind="GET"><h3><span class="method GET">GET</span>7. Host запроса</h3>
+<pre><code>output = {
+  host = request.host
+}</code></pre></div>
+
+<div class="card example" data-kind="GET"><h3><span class="method GET">GET</span>8. RemoteAddr</h3>
+<pre><code>output = {
+  remote_addr = request.RemoteAddr
+}</code></pre></div>
+
+<div class="card example" data-kind="POST"><h3><span class="method POST">POST</span>9. Прочитать JSON</h3>
+<pre><code>local input = request.input
+
+output = {
+  title = input.title,
+  email = input.email
+}</code></pre></div>
+
+<div class="card example" data-kind="POST"><h3><span class="method POST">POST</span>10. Проверка JSON body</h3>
+<pre><code>local input = request.input
+
+if input == nil then
+  http_response_code = 400
+  output = {success = false, error = "Request body required"}
+  return
+end
+
+output = {success = true}</code></pre></div>
+
+<div class="card example" data-kind="POST"><h3><span class="method POST">POST</span>11. Обязательное поле</h3>
+<pre><code>local input = request.input
+
+if input.title == nil or input.title == "" then
+  http_response_code = 400
+  output = {success = false, error = "title is required"}
+  return
+end
+
+output = {success = true, title = input.title}</code></pre></div>
+
+<div class="card example" data-kind="POST"><h3><span class="method POST">POST</span>12. Несколько обязательных полей</h3>
+<pre><code>local input = request.input
+
+if not input.title or not input.email then
+  http_response_code = 400
+  output = {
+    success = false,
+    error = "title and email are required"
+  }
+  return
+end
+
+output = {success = true}</code></pre></div>
+
+<div class="card example" data-kind="POST"><h3><span class="method POST">POST</span>13. Число из JSON</h3>
+<pre><code>local amount = tonumber(request.input.amount)
+
+if amount == nil then
+  http_response_code = 400
+  output = {success = false, error = "amount must be numeric"}
+  return
+end
+
+output = {success = true, amount = amount}</code></pre></div>
+
+<div class="card example" data-kind="POST"><h3><span class="method POST">POST</span>14. Вложенный объект</h3>
+<pre><code>local input = request.input
+local customer = input.customer or {}
+
+output = {
+  success = true,
+  customer = {
+    title = customer.title,
+    email = customer.email
+  }
+}</code></pre></div>
+
+<div class="card example" data-kind="POST"><h3><span class="method POST">POST</span>15. Вернуть исходное тело</h3>
+<pre><code>output = {
+  raw = request.input_raw
+}</code></pre></div>
+
+<div class="card example" data-kind="POST"><h3><span class="method POST">POST</span>16. Echo endpoint</h3>
+<pre><code>output = {
+  success = true,
+  received = request.input,
+  method = request.method
+}</code></pre></div>
+
+<div class="card example" data-kind="PUT"><h3><span class="method PUT">PUT</span>17. Обновление по ID</h3>
+<pre><code>local id = tonumber(request.get.id)
+local input = request.input
+
+if id == nil then
+  http_response_code = 400
+  output = {success = false, error = "id is required"}
+  return
+end
+
+output = {
+  success = true,
+  updated = {
+    id = id,
+    title = input.title
+  }
+}</code></pre></div>
+
+<div class="card example" data-kind="PUT"><h3><span class="method PUT">PUT</span>18. Частичное изменение</h3>
+<pre><code>local input = request.input
+
+output = {
+  success = true,
+  patch = {
+    title = input.title,
+    email = input.email
+  }
+}</code></pre></div>
+
+<div class="card example" data-kind="CONFIG"><h3><span class="method CONFIG">CONFIG</span>19. Статус 201</h3>
+<pre><code>http_response_code = 201
+
+output = {
+  success = true,
+  id = 123
+}</code></pre></div>
+
+<div class="card example" data-kind="CONFIG"><h3><span class="method CONFIG">CONFIG</span>20. Статус 400</h3>
+<pre><code>http_response_code = 400
+output = {success = false, error = "Bad Request"}</code></pre></div>
+
+<div class="card example" data-kind="CONFIG"><h3><span class="method CONFIG">CONFIG</span>21. Статус 401</h3>
+<pre><code>http_response_code = 401
+output = {success = false, error = "Unauthorized"}</code></pre></div>
+
+<div class="card example" data-kind="CONFIG"><h3><span class="method CONFIG">CONFIG</span>22. Статус 404</h3>
+<pre><code>http_response_code = 404
+output = {success = false, error = "Not found"}</code></pre></div>
+
+<div class="card example" data-kind="CONFIG"><h3><span class="method CONFIG">CONFIG</span>23. Статус 409</h3>
+<pre><code>http_response_code = 409
+output = {success = false, error = "Conflict"}</code></pre></div>
+
+<div class="card example" data-kind="CONFIG"><h3><span class="method CONFIG">CONFIG</span>24. Свои response headers</h3>
+<pre><code>header = {
+  ["X-Service"] = "customer",
+  ["X-Version"] = "1"
+}
+
+output = {success = true}</code></pre></div>
+
+<div class="card example" data-kind="POST"><h3><span class="method POST">POST</span>25. Прочитать X-Api-Key</h3>
+<pre><code>local apiKey = request.header["X-Api-Key"]
+
+if not apiKey or apiKey == "" then
+  http_response_code = 401
+  output = {success = false, error = "X-Api-Key required"}
+  return
+end
+
+output = {success = true}</code></pre></div>
+
+<div class="card example" data-kind="POST"><h3><span class="method POST">POST</span>26. Прочитать Authorization</h3>
+<pre><code>local authorization = request.header.Authorization
+
+output = {
+  has_authorization = authorization ~= nil
+}</code></pre></div>
+
+<div class="card example" data-kind="AUTH"><h3><span class="method AUTH">AUTH</span>27. Текущий user_id</h3>
+<pre><code>local userId = tonumber(request.user_id)
+
+output = {
+  success = true,
+  user_id = userId
+}</code></pre></div>
+
+<div class="card example" data-kind="AUTH"><h3><span class="method AUTH">AUTH</span>28. last_user_id</h3>
+<pre><code>output = {
+  current_user_id = tonumber(request.user_id),
+  last_user_id = request.last_user_id
+}</code></pre></div>
+
+<div class="card example" data-kind="AUTH"><h3><span class="method AUTH">AUTH</span>29. Язык пользователя</h3>
+<pre><code>local lang = request.lang or "ru"
+
+output = {
+  success = true,
+  lang = lang
+}</code></pre></div>
+
+<div class="card example" data-kind="AUTH"><h3><span class="method AUTH">AUTH</span>30. Анонимная сессия</h3>
+<pre><code>output = {
+  anonymous_session_id = request.anonymous_session_id
+}</code></pre></div>
+
+<div class="card example" data-kind="AUTH"><h3><span class="method AUTH">AUTH</span>31. Login</h3>
+<pre><code>local userId = 123
+local deviceToken = ""
+
+local errText, errCode = Login(userId, deviceToken)
+
+if errCode ~= 0 then
+  http_response_code = 401
+  output = {success = false, error = errText}
+  return
+end
+
+output = {success = true}</code></pre></div>
+
+<div class="card example" data-kind="AUTH"><h3><span class="method AUTH">AUTH</span>32. LoginAs</h3>
+<pre><code>local userId = 123
+local lastUserId = 10
+local deviceToken = ""
+
+local errText, errCode = LoginAs(userId, lastUserId, deviceToken)
+
+if errCode ~= 0 then
+  http_response_code = 401
+  output = {success = false, error = errText}
+  return
+end
+
+output = {success = true}</code></pre></div>
+
+<div class="card example" data-kind="AUTH"><h3><span class="method AUTH">AUTH</span>33. SendEmailOTP</h3>
+<pre><code>local email = request.input.email
+local errText, errCode = SendEmailOTP(email)
+
+if errCode ~= 0 then
+  http_response_code = 400
+  output = {success = false, error = errText}
+  return
+end
+
+output = {success = true}</code></pre></div>
+
+<div class="card example" data-kind="AUTH"><h3><span class="method AUTH">AUTH</span>34. CheckOTP</h3>
+<pre><code>local otp = request.input.otp
+local ok = CheckOTP(otp)
+
+if not ok then
+  http_response_code = 401
+  output = {success = false, error = "Invalid OTP"}
+  return
+end
+
+output = {success = true}</code></pre></div>
+
+<div class="card example" data-kind="AUTH"><h3><span class="method AUTH">AUTH</span>35. NTLM user</h3>
+<pre><code>output = {
+  domain = request.NTLM_DOMAIN,
+  user = request.NTLM_USER,
+  host = request.NTLM_HOST
+}</code></pre></div>
+
+<div class="card example" data-kind="CONFIG"><h3><span class="method CONFIG">CONFIG</span>36. Plain text</h3>
+<pre><code>http_response_code = 200
+output = "OK"</code></pre></div>
+
+<div class="card example" data-kind="CONFIG"><h3><span class="method CONFIG">CONFIG</span>37. HTML-ответ</h3>
+<pre><code>output = [[
+&lt;!doctype html&gt;
+&lt;html&gt;
+&lt;body&gt;
+  &lt;h1&gt;Hello DamuBPM&lt;/h1&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+]]</code></pre><p class="muted">Для такого сервиса выбери MIME <code>text/html</code>.</p></div>
+
+<div class="card example" data-kind="CONFIG"><h3><span class="method CONFIG">CONFIG</span>38. Redirect</h3>
+<pre><code>output = "https://example.kz/dashboard"</code></pre><p class="muted">Используется совместно с <code>is_redirect_output = 1</code>.</p></div>
+
+<div class="card example" data-kind="POST"><h3><span class="method POST">POST</span>39. Единый формат success/error</h3>
+<pre><code>local input = request.input
+
+if not input or not input.title then
+  http_response_code = 400
+  output = {
+    success = false,
+    error = {
+      code = "TITLE_REQUIRED",
+      message = "title is required"
+    }
+  }
+  return
+end
+
+http_response_code = 200
+output = {
+  success = true,
+  data = {
+    title = input.title
+  }
+}</code></pre></div>
+
+<div class="card example" data-kind="POST"><h3><span class="method POST">POST</span>40. Универсальный helper ошибки</h3>
+<pre><code>local function fail(status, code, message)
+  http_response_code = status
+  output = {
+    success = false,
+    error = {
+      code = code,
+      message = message
+    }
+  }
+end
+
+local input = request.input
+
+if not input then
+  fail(400, "INVALID_BODY", "JSON body required")
+  return
+end
+
+output = {success = true}</code></pre></div>
+
+<div class="card example" data-kind="GET"><h3><span class="method GET">GET</span>41. Один endpoint для нескольких методов</h3>
+<pre><code>if request.method == "GET" then
+  output = {action = "read"}
+  return
+end
+
+if request.method == "POST" then
+  output = {action = "create", input = request.input}
+  return
+end
+
+if request.method == "PUT" then
+  output = {action = "update", input = request.input}
+  return
+end
+
+http_response_code = 405
+output = {success = false, error = "Method not allowed"}</code></pre></div>
+
+<div class="card example" data-kind="CONFIG"><h3><span class="method CONFIG">CONFIG</span>42. Версионирование в ответе</h3>
+<pre><code>header = {
+  ["X-API-Version"] = "v1"
+}
+
+output = {
+  success = true,
+  api_version = "v1"
+}</code></pre></div>
+
+<div class="card example" data-kind="CONFIG"><h3><span class="method CONFIG">CONFIG</span>43. Возврат диагностических request-полей</h3>
+<pre><code>output = {
+  method = request.method,
+  host = request.host,
+  lang = request.lang,
+  user_id = request.user_id,
+  remote_addr = request.RemoteAddr
+}</code></pre></div>
+
+<div class="card example" data-kind="POST"><h3><span class="method POST">POST</span>44. Проверка простого токена</h3>
+<pre><code>local expected = "demo-secret"
+local token = request.header["X-Api-Key"]
+
+if token ~= expected then
+  http_response_code = 401
+  output = {success = false, error = "Invalid API key"}
+  return
+end
+
+output = {success = true}</code></pre></div>
+
+<div class="card example" data-kind="POST"><h3><span class="method POST">POST</span>45. Проверка длины строки</h3>
+<pre><code>local title = request.input.title or ""
+
+if #title &lt; 3 then
+  http_response_code = 400
+  output = {success = false, error = "title is too short"}
+  return
+end
+
+output = {success = true, title = title}</code></pre></div>
+
+<div class="card example" data-kind="GET"><h3><span class="method GET">GET</span>46. Значения по умолчанию</h3>
+<pre><code>local sort = request.get.sort or "id"
+local order = request.get.order or "asc"
+
+output = {
+  sort = sort,
+  order = order
+}</code></pre></div>
+
+<div class="card example" data-kind="POST"><h3><span class="method POST">POST</span>47. Булев флаг</h3>
+<pre><code>local enabled = request.input.enabled == true
+
+output = {
+  success = true,
+  enabled = enabled
+}</code></pre></div>
+
+<div class="card example" data-kind="CONFIG"><h3><span class="method CONFIG">CONFIG</span>48. Технический health endpoint</h3>
+<pre><code>http_response_code = 200
+
+output = {
+  status = "ok",
+  service = "damubpm"
+}</code></pre></div>
+
+</div>
+<div id="emptyExamples" class="empty">По выбранному фильтру ничего не найдено.</div>
+</section>
+
+<section id="calls" data-search>
+<h2>7. Примеры вызова REST API</h2>
+
+<div class="card"><h3>1. GET через cURL</h3>
+<pre><code>curl "https://example.kz/restapi/services/run/api/v1/customer/get?id=123"</code></pre></div>
+
+<div class="card"><h3>2. GET с несколькими параметрами</h3>
+<pre><code>curl "https://example.kz/restapi/services/run/api/v1/customer/list?page=1&amp;limit=20"</code></pre></div>
+
+<div class="card"><h3>3. POST JSON</h3>
+<pre><code>curl -X POST \
+  "https://example.kz/restapi/services/run/api/v1/customer/create" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "title": "ТОО Test",
+    "email": "info@test.kz"
+  }'</code></pre></div>
+
+<div class="card"><h3>4. PUT JSON</h3>
+<pre><code>curl -X PUT \
+  "https://example.kz/restapi/services/run/api/v1/customer/update?id=123" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "title": "Новое название"
+  }'</code></pre></div>
+
+<div class="card"><h3>5. POST с X-Api-Key</h3>
+<pre><code>curl -X POST \
+  "https://example.kz/restapi/services/run/api/v1/order/create" \
+  -H "Content-Type: application/json" \
+  -H "X-Api-Key: demo-secret" \
+  -d '{"amount": 1000}'</code></pre></div>
+
+<div class="card"><h3>6. POST async</h3>
+<pre><code>curl -X POST \
+  "https://example.kz/restapi/services/run/import/run?async=1" \
+  -H "Content-Type: application/json" \
+  -d '{"source":"crm"}'</code></pre></div>
+
+<div class="card"><h3>7. GET через fetch</h3>
+<pre><code>const res = await fetch(
+  "/restapi/services/run/api/v1/customer/get?id=123"
+);
+
+const data = await res.json();
+console.log(data);</code></pre></div>
+
+<div class="card"><h3>8. POST через fetch</h3>
+<pre><code>const res = await fetch(
+  "/restapi/services/run/api/v1/customer/create",
+  {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      title: "ТОО Test",
+      email: "info@test.kz"
+    })
+  }
+);
+
+const data = await res.json();</code></pre></div>
+
+<div class="card"><h3>9. PUT через fetch</h3>
+<pre><code>const res = await fetch(
+  "/restapi/services/run/api/v1/customer/update?id=123",
+  {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      title: "Новое название"
+    })
+  }
+);</code></pre></div>
+
+<div class="card"><h3>10. fetch с X-Api-Key</h3>
+<pre><code>const res = await fetch(
+  "/restapi/services/run/api/v1/private/check",
+  {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "X-Api-Key": "demo-secret"
+    },
+    body: JSON.stringify({action: "check"})
+  }
+);</code></pre></div>
+
+<div class="card"><h3>11. Вызов с NTLM-параметром</h3>
+<pre><code>curl "https://example.kz/restapi/services/run/auth/check?sys_ntlm_req=1"</code></pre></div>
+
+<div class="card"><h3>12. Проверка статуса</h3>
+<pre><code>const res = await fetch("/restapi/services/run/health");
+
+if (!res.ok) {
+  console.error("HTTP status:", res.status);
+}</code></pre></div>
+</section>
+
+<section id="auth" data-search>
+<h2>8. Авторизация и сессия</h2>
+<div class="grid">
+<div class="card"><h3>Публичный endpoint</h3><p>Используй только там, где сервис действительно должен вызываться без пользовательской сессии.</p><p><code>is_public = 1</code></p></div>
+<div class="card"><h3>Авторизованный endpoint</h3><p>Для приватных сервисов используй авторизованный режим и при необходимости ограничения по ролям.</p><p><code>request.user_id</code> позволяет получить текущего пользователя.</p></div>
+</div>
+<h3>Встроенные функции сессии</h3>
+<table>
+<thead><tr><th>Функция</th><th>Назначение</th></tr></thead>
+<tbody>
+<tr><td><code>Login(user_id, deviceToken)</code></td><td>Установить пользовательскую сессию</td></tr>
+<tr><td><code>LoginAs(user_id, last_user_id, deviceToken)</code></td><td>Войти как другой пользователь с сохранением предыдущего ID</td></tr>
+<tr><td><code>SendEmailOTP(email)</code></td><td>Создать и отправить OTP на email</td></tr>
+<tr><td><code>CheckOTP(otp)</code></td><td>Проверить OTP текущей сессии</td></tr>
+</tbody>
+</table>
+<div class="note warn"><b>Важно:</b> точный набор остальных функций платформы зависит от зарегистрированного Lua API в конкретной сборке. В этом справочнике не используются не подтверждённые имена функций.</div>
+</section>
+
+<section id="async" data-search>
+<h2>9. Async и <code>no_parallel</code></h2>
+
+<div class="card">
+<h3>Асинхронный запуск</h3>
+<p>Для POST/PUT можно добавить query-параметр:</p>
+<pre><code>?async=1</code></pre>
+<p>Запрос сразу получает ответ <code>ASYNC OK</code>, а сервис запускается отдельно.</p>
+</div>
+
+<div class="card">
+<h3>Запрет параллельного выполнения</h3>
+<p>При <code>no_parallel = 1</code> один и тот же сервис не будет одновременно выполняться несколько раз. Если он уже запущен, возвращается служебная ошибка с кодом <code>7</code> и сообщением <code>Service already started</code>.</p>
+</div>
+
+<div class="grid">
+<div class="card"><h3>Где использовать</h3><p>Импорт, синхронизация, генерация больших отчётов, перерасчёты, интеграционные процедуры.</p></div>
+<div class="card"><h3>Где не нужен</h3><p>Обычные короткие GET/POST-запросы, которые безопасно выполняются параллельно.</p></div>
+</div>
+</section>
+
+<section id="headers" data-search>
+<h2>10. Заголовки и CORS</h2>
+<p>Есть два уровня заголовков: динамические из Lua через <code>header</code> и настроенные для сервиса HTTP-заголовки.</p>
+
+<h3>Lua response headers</h3>
+<pre><code>header = {
+  ["X-Service"] = "customer",
+  ["Cache-Control"] = "no-store"
+}
+
+output = {success = true}</code></pre>
+
+<h3>Подстановка входящего header в настройках</h3>
+<p>В значении настроенного заголовка можно использовать шаблон входящего header:</p>
+<pre><code>Access-Control-Allow-Origin: {{Origin}}</code></pre>
+
+<div class="note"><b>Практика CORS:</b> удобно настроить отдельные headers для нужных HTTP-методов сервиса и обрабатывать OPTIONS тем же набором правил.</div>
+</section>
+
+<section id="patterns" data-search>
+<h2>11. Рекомендуемые шаблоны</h2>
+
+<h3>Шаблон 1 — обычный JSON endpoint</h3>
+<div class="codebox"><div class="codehead">Lua<button class="copy">Копировать</button></div><pre><code>local function fail(status, code, message)
+  http_response_code = status
+  output = {
+    success = false,
+    error = {
+      code = code,
+      message = message
+    }
+  }
+end
+
+local input = request.input
+
+if not input then
+  fail(400, "INVALID_BODY", "JSON body required")
+  return
+end
+
+http_response_code = 200
+output = {
+  success = true,
+  data = {}
+}</code></pre></div>
+
+<h3>Шаблон 2 — GET с обязательным ID</h3>
+<div class="codebox"><div class="codehead">Lua<button class="copy">Копировать</button></div><pre><code>local id = tonumber(request.get.id)
+
+if not id then
+  http_response_code = 400
+  output = {
+    success = false,
+    error = "id is required"
+  }
+  return
+end
+
+output = {
+  success = true,
+  data = {
+    id = id
+  }
+}</code></pre></div>
+
+<h3>Шаблон 3 — приватный POST</h3>
+<div class="codebox"><div class="codehead">Lua<button class="copy">Копировать</button></div><pre><code>local userId = tonumber(request.user_id)
+local input = request.input
+
+if not userId or userId == 0 then
+  http_response_code = 401
+  output = {success = false, error = "Unauthorized"}
+  return
+end
+
+if not input then
+  http_response_code = 400
+  output = {success = false, error = "JSON body required"}
+  return
+end
+
+output = {
+  success = true,
+  user_id = userId,
+  data = input
+}</code></pre></div>
+
+<h3>Шаблон 4 — API-key</h3>
+<div class="codebox"><div class="codehead">Lua<button class="copy">Копировать</button></div><pre><code>local apiKey = request.header["X-Api-Key"]
+
+if apiKey ~= "replace-with-secret" then
+  http_response_code = 401
+  output = {
+    success = false,
+    error = "Invalid API key"
+  }
+  return
+end
+
+output = {success = true}</code></pre></div>
+
+<h3>Шаблон 5 — единый endpoint GET/POST/PUT</h3>
+<div class="codebox"><div class="codehead">Lua<button class="copy">Копировать</button></div><pre><code>if request.method == "GET" then
+  output = {success = true, action = "read"}
+  return
+end
+
+if request.method == "POST" then
+  output = {
+    success = true,
+    action = "create",
+    input = request.input
+  }
+  return
+end
+
+if request.method == "PUT" then
+  output = {
+    success = true,
+    action = "update",
+    input = request.input
+  }
+  return
+end
+
+http_response_code = 405
+output = {
+  success = false,
+  error = "Method not allowed"
+}</code></pre></div>
+</section>
+
+<section id="checklist" data-search>
+<h2>12. Чек-лист перед публикацией</h2>
+<div class="grid">
+<div class="card">
+<div class="step"><b>Код сервиса</b><br><span class="muted">Понятный и версионированный: <code>api/v1/...</code></span></div>
+<div class="step"><b>Content-Type</b><br><span class="muted">Для API обычно <code>application/json</code>.</span></div>
+<div class="step"><b>cut_status_info</b><br><span class="muted">Для чистого REST JSON чаще всего <code>1</code>.</span></div>
+<div class="step"><b>Авторизация</b><br><span class="muted">Проверь public/auth/roles.</span></div>
+</div>
+<div class="card">
+<div class="step"><b>Валидация input</b><br><span class="muted">Проверяй обязательные поля до основной логики.</span></div>
+<div class="step"><b>HTTP status</b><br><span class="muted">Возвращай осмысленные 2xx/4xx/5xx.</span></div>
+<div class="step"><b>no_parallel</b><br><span class="muted">Включай для процедур, которые нельзя запускать одновременно.</span></div>
+<div class="step"><b>Тест</b><br><span class="muted">Проверь cURL, fetch, headers, JSON и ошибочные сценарии.</span></div>
+</div>
+</div>
+</section>
+
+<footer class="footer">
+  <p>DamuBPM REST API + Lua — практический интерактивный справочник.</p>
+  <p><a href="index.html">← Вернуться на Главную</a></p>
+</footer>
+</main>
+</div>
+
+<script>
+function copyText(text, btn){
+  navigator.clipboard.writeText(text).then(()=>{
+    const old=btn.textContent;
+    btn.textContent="Скопировано";
+    setTimeout(()=>btn.textContent=old,1200);
+  });
+}
+document.querySelectorAll(".copy").forEach(btn=>{
+  btn.addEventListener("click",()=>{
+    const box=btn.closest(".codebox");
+    const code=box ? box.querySelector("code") : null;
+    if(code) copyText(code.innerText,btn);
+  });
+});
+
+const search=document.getElementById("search");
+search.addEventListener("input",()=>{
+  const q=search.value.trim().toLowerCase();
+  document.querySelectorAll("[data-search]").forEach(el=>{
+    el.style.display = !q || el.innerText.toLowerCase().includes(q) ? "" : "none";
+  });
+  document.querySelectorAll(".example").forEach(el=>{
+    if(q) el.style.display = el.innerText.toLowerCase().includes(q) ? "" : "none";
+    else el.style.display = "";
+  });
+});
+
+document.querySelectorAll(".filter").forEach(btn=>{
+  btn.addEventListener("click",()=>{
+    document.querySelectorAll(".filter").forEach(b=>b.classList.remove("active"));
+    btn.classList.add("active");
+    const kind=btn.dataset.filter;
+    let shown=0;
+    document.querySelectorAll(".example").forEach(el=>{
+      const ok=kind==="ALL" || el.dataset.kind===kind;
+      el.classList.toggle("hidden",!ok);
+      if(ok) shown++;
+    });
+    document.getElementById("emptyExamples").style.display=shown?"none":"block";
+  });
+});
+
+function build(){
+  const base=document.getElementById("bBase").value.replace(/\/+$/,"");
+  const code=document.getElementById("bCode").value.replace(/^\/+/,"");
+  const method=document.getElementById("bMethod").value;
+  const query=document.getElementById("bQuery").value.trim();
+  const body=document.getElementById("bBody").value.trim();
+  const hdr=document.getElementById("bHeader").value.trim();
+  const url=base+"/restapi/services/run/"+code+(query?("?"+query.replace(/^\?/,"")):"");
+
+  let curl=`curl -X ${method} \\\n  "${url}"`;
+  if(method!=="GET"){
+    curl+=`\n  -H "Content-Type: application/json"`;
+  }
+  if(hdr) curl+=`\n  -H "${hdr.replaceAll('"','\\"')}"`;
+  if(method!=="GET" && body) curl+=`\n  -d '${body.replaceAll("'","'\\''")}'`;
+  document.getElementById("curlOut").textContent=curl;
+
+  let headers={};
+  if(method!=="GET") headers["Content-Type"]="application/json";
+  if(hdr.includes(":")){
+    const i=hdr.indexOf(":");
+    headers[hdr.slice(0,i).trim()]=hdr.slice(i+1).trim();
+  }
+  let opts=`{\n  method: "${method}"`;
+  if(Object.keys(headers).length){
+    opts+=`,\n  headers: ${JSON.stringify(headers,null,2).replace(/\n/g,"\n  ")}`;
+  }
+  if(method!=="GET" && body){
+    opts+=`,\n  body: JSON.stringify(${body})`;
+  }
+  opts+=`\n}`;
+  document.getElementById("fetchOut").textContent=
+`const res = await fetch("${url}", ${opts});
+const data = await res.json();
+console.log(data);`;
+}
+["bBase","bCode","bMethod","bQuery","bBody","bHeader"].forEach(id=>{
+  document.getElementById(id).addEventListener("input",build);
+  document.getElementById(id).addEventListener("change",build);
+});
+build();
+
+const links=[...document.querySelectorAll("#nav a")];
+const sections=links.map(a=>document.querySelector(a.getAttribute("href"))).filter(Boolean);
+const obs=new IntersectionObserver(entries=>{
+  entries.forEach(e=>{
+    if(e.isIntersecting){
+      links.forEach(a=>a.classList.toggle("active",a.getAttribute("href")==="#"+e.target.id));
+    }
+  })
+},{rootMargin:"-20% 0px -70% 0px",threshold:0});
+sections.forEach(s=>obs.observe(s));
+</script>
+</body>
+</html>
