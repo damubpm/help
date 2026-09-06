@@ -1,0 +1,410 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>DamuBPM CRUD/JIT — интерактивное руководство</title>
+<meta name="description" content="Интерактивная инструкция по построению CRUD-страниц DamuBPM на Angular/JIT по реальному исходному коду.">
+<style>
+:root{--bg:#08111f;--bg2:#0c1728;--panel:#101d31;--panel2:#13243b;--line:#263956;--text:#edf4ff;--muted:#9fb1c9;--accent:#58a6ff;--accent2:#7ee787;--warn:#f2cc60;--danger:#ff7b72;--code:#07101d;--shadow:0 16px 44px rgba(0,0,0,.28);--radius:18px}
+*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:radial-gradient(circle at 20% 0,#122846 0,transparent 32%),linear-gradient(180deg,var(--bg),#07101b 60%,#050b13);color:var(--text);font:15px/1.62 Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif}a{color:inherit}.app{min-height:100vh}.topbar{position:sticky;top:0;z-index:50;display:flex;align-items:center;gap:12px;padding:11px 18px;border-bottom:1px solid rgba(255,255,255,.08);background:rgba(8,17,31,.86);backdrop-filter:blur(16px)}.home{display:inline-flex;align-items:center;gap:8px;padding:9px 13px;border:1px solid #365276;border-radius:12px;text-decoration:none;background:#10223b;font-weight:700}.home:hover{border-color:var(--accent);transform:translateY(-1px)}.brand{font-weight:850;letter-spacing:.2px}.brand small{color:var(--muted);font-weight:600}.top-search{margin-left:auto;position:relative;max-width:430px;flex:1}.top-search input{width:100%;border:1px solid var(--line);border-radius:12px;background:#0b1728;color:var(--text);padding:10px 40px 10px 13px;outline:none}.top-search input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(88,166,255,.13)}.kbd{position:absolute;right:10px;top:9px;border:1px solid #334965;border-bottom-width:2px;color:var(--muted);padding:1px 6px;border-radius:6px;font-size:11px}.layout{display:grid;grid-template-columns:280px minmax(0,1fr);max-width:1680px;margin:0 auto}.sidebar{position:sticky;top:63px;height:calc(100vh - 63px);overflow:auto;border-right:1px solid rgba(255,255,255,.07);padding:20px 14px 40px}.sidebar h4{margin:6px 10px 8px;color:#6f89aa;text-transform:uppercase;font-size:11px;letter-spacing:1.3px}.nav a{display:block;text-decoration:none;color:var(--muted);padding:8px 10px;border-radius:10px;margin:2px 0}.nav a:hover,.nav a.active{color:#fff;background:#12243d}.content{min-width:0;padding:32px clamp(18px,4vw,58px) 90px}.hero{display:grid;grid-template-columns:minmax(0,1.45fr) minmax(300px,.75fr);gap:22px;align-items:stretch;margin-bottom:28px}.hero-main,.hero-side,.card{border:1px solid rgba(255,255,255,.08);background:linear-gradient(180deg,rgba(19,36,59,.94),rgba(12,24,42,.94));border-radius:var(--radius);box-shadow:var(--shadow)}.hero-main{padding:34px}.eyebrow{color:var(--accent2);font-weight:800;text-transform:uppercase;letter-spacing:1.2px;font-size:12px}.hero h1{font-size:clamp(30px,4vw,54px);line-height:1.05;margin:10px 0 16px;letter-spacing:-1.7px}.hero p{color:#bed0e5;max-width:850px;font-size:17px}.badges{display:flex;flex-wrap:wrap;gap:8px;margin-top:18px}.badge{padding:6px 10px;border:1px solid #324b6b;border-radius:999px;background:#0b1a2c;color:#bed1e7;font-size:12px}.hero-side{padding:24px}.hero-side h3{margin-top:0}.metric{display:flex;justify-content:space-between;gap:20px;padding:10px 0;border-bottom:1px dashed #29405f}.metric:last-child{border:0}.metric b{color:#fff}.metric span{color:var(--muted)}section{scroll-margin-top:82px;margin:30px 0 44px}h2{font-size:30px;margin:0 0 12px;letter-spacing:-.7px}h3{margin:22px 0 10px}p{margin:8px 0 14px}.lead{color:#b9cbe0;font-size:16px;max-width:1000px}.grid{display:grid;gap:16px}.g2{grid-template-columns:repeat(2,minmax(0,1fr))}.g3{grid-template-columns:repeat(3,minmax(0,1fr))}.card{padding:20px}.card h3{margin-top:0}.muted{color:var(--muted)}.callout{border-left:4px solid var(--accent);background:#0d1d32;padding:14px 16px;border-radius:0 12px 12px 0;margin:16px 0}.callout.warn{border-color:var(--warn)}.callout.good{border-color:var(--accent2)}.callout.danger{border-color:var(--danger)}code{font-family:"SFMono-Regular",Consolas,"Liberation Mono",Menlo,monospace}.inline{background:#081423;border:1px solid #233a58;border-radius:6px;padding:2px 6px;color:#c9e1ff;font-size:.92em}.codebox{position:relative;margin:12px 0 18px;border:1px solid #243a57;border-radius:14px;overflow:hidden;background:var(--code)}.codebar{display:flex;align-items:center;justify-content:space-between;padding:8px 11px;border-bottom:1px solid #20344f;color:#8eabc9;font-size:12px;background:#0b1727}.copy{border:1px solid #315176;background:#10223a;color:#dcecff;border-radius:8px;padding:5px 9px;cursor:pointer}.copy:hover{border-color:var(--accent)}pre{margin:0;padding:16px;overflow:auto;white-space:pre;font-size:13px;line-height:1.55;color:#d7e7fb}.token-key{color:#ff7ab2}.token-str{color:#a8d8a2}.token-fn{color:#8cc8ff}.flow{display:grid;grid-template-columns:repeat(6,minmax(130px,1fr));gap:10px;margin:20px 0}.step{padding:14px;border-radius:13px;border:1px solid #2b4362;background:#0b1a2d;cursor:pointer;min-height:96px}.step:hover,.step.active{border-color:var(--accent);background:#102746}.step .n{display:inline-grid;place-items:center;width:25px;height:25px;border-radius:50%;background:#173657;color:#a8d4ff;font-weight:800;margin-bottom:8px}.step b{display:block}.step small{color:var(--muted)}#flowDetail{min-height:84px}.tabs{display:flex;gap:8px;flex-wrap:wrap;margin:16px 0}.tab{border:1px solid #2d4667;background:#0c192b;color:#bdd0e6;padding:8px 11px;border-radius:10px;cursor:pointer}.tab.active{background:#17375d;border-color:#4e8bc9;color:#fff}.tabpane{display:none}.tabpane.active{display:block}.method-tools{display:flex;gap:10px;flex-wrap:wrap;margin:15px 0}.method-tools input,.method-tools select,.builder input{border:1px solid #2d4564;background:#091625;color:var(--text);border-radius:10px;padding:9px 11px;outline:none}.method-tools input{flex:1;min-width:230px}.method-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.method{border:1px solid #263f5e;background:#0b1829;border-radius:13px;padding:14px;transition:.15s}.method:hover{border-color:#4b78a7}.method-head{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}.method-name{font-family:Consolas,monospace;color:#9cd0ff;font-weight:800}.method-cat{font-size:11px;border:1px solid #365574;color:#a9bdd4;border-radius:999px;padding:3px 7px;white-space:nowrap}.method p{color:#aebfd3;margin-bottom:5px;font-size:13px}.method small{color:#7089a7}.table-wrap{overflow:auto;border:1px solid #263d59;border-radius:14px}.table{width:100%;border-collapse:collapse;min-width:780px}.table th,.table td{padding:11px 13px;text-align:left;border-bottom:1px solid #20344d;vertical-align:top}.table th{position:sticky;top:0;background:#11223a;color:#ddecff}.table tr:hover td{background:#0c1c30}.pill{display:inline-block;padding:3px 8px;border-radius:999px;font-size:11px;background:#133154;border:1px solid #315477;color:#b9dafc}.builder{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.builder label{display:grid;gap:5px;color:#adc0d6}.builder-actions{display:flex;flex-wrap:wrap;gap:10px;margin:13px 0}.btn{border:1px solid #36557a;background:#123258;color:#e8f4ff;padding:9px 12px;border-radius:10px;cursor:pointer;font-weight:700}.btn:hover{border-color:#6aaef4}.btn.secondary{background:#0c1b2f}.checklist{display:grid;gap:9px}.check{display:flex;align-items:flex-start;gap:10px;padding:10px;border:1px solid #233a57;border-radius:11px;background:#0a1728}.check input{margin-top:4px}.check.done{opacity:.55}.accordion{border:1px solid #27415f;border-radius:13px;overflow:hidden;margin:10px 0;background:#0a182a}.accordion button{width:100%;text-align:left;background:#102039;color:#e8f3ff;border:0;padding:13px 15px;font-weight:750;cursor:pointer}.accordion .body{display:none;padding:0 15px 15px;color:#adc0d5}.accordion.open .body{display:block}.quiz-q{border:1px solid #263f5c;border-radius:14px;padding:15px;margin:10px 0;background:#0b192a}.quiz-q button{margin:5px 5px 0 0}.quiz-answer{display:none;margin-top:10px;padding:10px;border-radius:10px;background:#102943;color:#cfe4fa}.quiz-q.revealed .quiz-answer{display:block}.footer{color:#7189a5;border-top:1px solid #1f334c;padding-top:22px;margin-top:50px}.search-hidden{display:none!important}.anchor{color:#6caef0;text-decoration:none;margin-left:6px;font-size:.65em;opacity:.65}.anchor:hover{opacity:1}.mini-list{margin:8px 0 0;padding-left:20px}.mini-list li{margin:5px 0}.diagram{display:grid;grid-template-columns:1fr auto 1fr auto 1fr;gap:10px;align-items:center}.box{border:1px solid #2b4564;background:#0d1d31;border-radius:13px;padding:14px;text-align:center}.arrow{color:#5f93c7;font-size:24px}.ok{color:var(--accent2)}.warning{color:var(--warn)}
+@media(max-width:1100px){.layout{grid-template-columns:1fr}.sidebar{display:none}.hero{grid-template-columns:1fr}.flow{grid-template-columns:repeat(3,1fr)}.g3{grid-template-columns:1fr 1fr}}@media(max-width:760px){.content{padding:22px 14px 70px}.topbar{padding:9px 10px}.brand{display:none}.top-search{max-width:none}.hero-main{padding:24px}.g2,.g3,.method-list,.builder{grid-template-columns:1fr}.flow{grid-template-columns:1fr 1fr}.diagram{grid-template-columns:1fr}.arrow{transform:rotate(90deg)}}
+</style>
+</head>
+<body>
+<div class="app">
+<header class="topbar">
+  <a class="home" href="index.html" title="Вернуться на главную">← Главная</a>
+  <div class="brand">DamuBPM <small>/ CRUD + Angular + JIT</small></div>
+  <div class="top-search"><input id="globalSearch" type="search" placeholder="Поиск по руководству и методам…"><span class="kbd">/</span></div>
+</header>
+<div class="layout">
+<aside class="sidebar">
+  <h4>Руководство</h4>
+  <nav class="nav" id="sideNav">
+    <a href="#overview">1. Архитектура</a>
+    <a href="#lifecycle">2. Жизненный цикл</a>
+    <a href="#configuration">3. Конфигурация</a>
+    <a href="#queries">4. QueryOptions и данные</a>
+    <a href="#template">5. HTML-шаблон</a>
+    <a href="#filters">6. Фильтры</a>
+    <a href="#crud">7. CRUD</a>
+    <a href="#batch">8. Массовые действия</a>
+    <a href="#jit">9. JIT / модальные страницы</a>
+    <a href="#methods">10. Каталог методов</a>
+    <a href="#components">11. Компоненты DamuBPM</a>
+    <a href="#builder">12. Генератор каркаса</a>
+    <a href="#recipe">13. Рецепт новой страницы</a>
+    <a href="#pitfalls">14. Ошибки и диагностика</a>
+    <a href="#quiz">15. Самопроверка</a>
+  </nav>
+</aside>
+<main class="content" id="mainContent">
+<section class="hero" id="overview" data-search="архитектура обзор CRUD JIT Angular DamuBPM">
+  <div class="hero-main">
+    <div class="eyebrow">Практическая документация по вашим исходникам</div>
+    <h1>Как строить CRUD-страницы в DamuBPM через Angular + JIT</h1>
+    <p>Это руководство раскладывает реальную страницу на повторяемые блоки: метаданные сущности, <code class="inline">QueryOptions</code>, загрузка колонок, фильтрацию, таблицу PrimeNG, CRUD через <code class="inline">/update_v_1_1</code>, бизнес-процессы через <code class="inline">bpRun</code>, batch actions, детализацию и JIT.</p>
+    <div class="badges"><span class="badge">Angular template</span><span class="badge">JIT class</span><span class="badge">PrimeNG</span><span class="badge">DamuBPM Models.QueryOptions</span><span class="badge">dbQueryService</span><span class="badge">bpRun</span><span class="badge">/update_v_1_1</span></div>
+  </div>
+  <div class="hero-side">
+    <h3>Ключевая идея</h3>
+    <div class="metric"><span>Метаданные</span><b>entity / query</b></div>
+    <div class="metric"><span>Колонки</span><b>get_filter_cols_by_code</b></div>
+    <div class="metric"><span>Чтение</span><b>dbQueryService.getQuery()</b></div>
+    <div class="metric"><span>Запись</span><b>update_v_1_1</b></div>
+    <div class="metric"><span>Действия</span><b>appComponent.bpRun()</b></div>
+    <div class="metric"><span>UI</span><b>p-table + prime-*</b></div>
+  </div>
+</section>
+
+<section id="lifecycle" data-search="жизненный цикл restartAll update getTableFields getTableSort">
+<h2>Жизненный цикл страницы <a class="anchor" href="#lifecycle">#</a></h2>
+<p class="lead">Самый полезный способ понимать страницу — не по сотням строк шаблона, а по цепочке вызовов.</p>
+<div class="flow" id="flow">
+  <div class="step active" data-step="0"><span class="n">1</span><b>JIT создаёт класс</b><small>GenClass extends vm.constructor</small></div>
+  <div class="step" data-step="1"><span class="n">2</span><b>ngOnInit</b><small>для only_jit_page → restartAll()</small></div>
+  <div class="step" data-step="2"><span class="n">3</span><b>restartAll</b><small>filters → fields → tools</small></div>
+  <div class="step" data-step="3"><span class="n">4</span><b>getTableFields</b><small>метаданные колонок</small></div>
+  <div class="step" data-step="4"><span class="n">5</span><b>update</b><small>QueryOptions + selection reset</small></div>
+  <div class="step" data-step="5"><span class="n">6</span><b>getTableSort</b><small>загрузка items + formatting</small></div>
+</div>
+<div class="card" id="flowDetail"></div>
+<div class="callout good"><b>Ментальная модель:</b> HTML почти ничего не знает о конкретных колонках. Он получает <code class="inline">fields</code> из метаданных и рендерит их по <code class="inline">_data_type_code</code>. Поэтому одна и та же схема масштабируется на разные сущности.</div>
+</section>
+
+<section id="configuration" data-search="entity_id entity_code page_id table_code query_code DATA data show_fields static_filters">
+<h2>Базовая конфигурация JIT-класса <a class="anchor" href="#configuration">#</a></h2>
+<div class="grid g2">
+<div class="card"><h3>Обязательные идентификаторы</h3>
+<div class="codebox"><div class="codebar">JIT / конфигурация <button class="copy">Копировать</button></div><pre><code>entity_id   = '3352';
+entity_code = 'its_d_ga_mnr';
+page_id     = '12583';
+
+table_code = this.entity_code;
+query_code = 'its_d_ga_mnr';</code></pre></div>
+<ul class="mini-list"><li><code class="inline">entity_id</code> — нужен для инструментов и массовых БП.</li><li><code class="inline">entity_code</code> — таблица/сущность для insert/delete и обычно detail route.</li><li><code class="inline">query_code</code> — запрос, из которого читается список.</li><li><code class="inline">table_code</code> — код для метаданных колонок и архивного query.</li></ul>
+</div>
+<div class="card"><h3>JIT-входные данные</h3><p>В начале сохраняется вход:</p>
+<div class="codebox"><div class="codebar">JIT DATA <button class="copy">Копировать</button></div><pre><code>const DATA = data;
+
+get only_jit_page() {
+    return DATA &amp;&amp; Object.keys(DATA).length &gt; 0;
+}</code></pre></div>
+<p class="muted">Вход может передавать <code class="inline">query_code</code>, <code class="inline">flt</code>, <code class="inline">flteq</code>, <code class="inline">fltin</code>, <code class="inline">func22</code>, <code class="inline">limit</code>, <code class="inline">param1</code>, <code class="inline">param2</code>, <code class="inline">static_filters</code>, <code class="inline">show_fields</code>.</p></div>
+</div>
+<div class="callout warn"><b>Важно:</b> в исходнике одновременно используются <code class="inline">DATA</code> и <code class="inline">data</code>. Это работает, потому что <code class="inline">DATA = data</code>, но при создании новых страниц лучше придерживаться одного соглашения, чтобы не путать «сырой вход» и его локальную копию.</div>
+</section>
+
+<section id="queries" data-search="QueryOptions flt flteq fltin func22 param1 param2 page perpage orderBy orderAsc dbQueryService">
+<h2>QueryOptions: центральный объект чтения <a class="anchor" href="#queries">#</a></h2>
+<div class="diagram"><div class="box"><b>UI / URL / DATA</b><br><span class="muted">filters, page, sort</span></div><div class="arrow">→</div><div class="box"><b>Models.QueryOptions</b><br><span class="muted">code + параметры</span></div><div class="arrow">→</div><div class="box"><b>dbQueryService.getQuery()</b><br><span class="muted">table.items + allCount</span></div></div>
+<div class="table-wrap"><table class="table"><thead><tr><th>Свойство</th><th>Назначение в этой странице</th><th>Типичный источник</th></tr></thead><tbody>
+<tr><td><code>code</code></td><td>Код DamuBPM query</td><td><code>query_code</code> / <code>DATA.query_code</code></td></tr>
+<tr><td><code>page</code>, <code>perpage</code></td><td>Пагинация</td><td>query params / pagination</td></tr>
+<tr><td><code>flt</code></td><td>Обычный текстовый фильтр</td><td>string/default fields</td></tr>
+<tr><td><code>flteq</code></td><td>Точное равенство</td><td>boolean</td></tr>
+<tr><td><code>fltin</code></td><td>IN / набор значений</td><td>reference, одиночное число в части логики</td></tr>
+<tr><td><code>func22</code></td><td>Диапазоны / специальные фильтры</td><td>date/time, number range</td></tr>
+<tr><td><code>param1</code>, <code>param2</code></td><td>Параметры серверного query</td><td>JIT DATA</td></tr>
+<tr><td><code>orderBy</code>, <code>orderAsc</code></td><td>Сортировка</td><td><code>field.alias</code>, <code>field.sort</code></td></tr>
+</tbody></table></div>
+<div class="codebox"><div class="codebar">Базовое чтение query <button class="copy">Копировать</button></div><pre><code>const q = new Models.QueryOptions('my_query_code');
+q.page = 1;
+q.perpage = 15;
+q.param1 = '...';
+
+this.dbQueryService.getQuery(q)
+    .pipe(first())
+    .subscribe(table =&gt; {
+        this.table = table;
+        this.filtered = table?.items || [];
+    });</code></pre></div>
+</section>
+
+<section id="template" data-search="HTML p-table columns value ngFor ngSwitch _data_type_code body header summary pagination PrimeNG">
+<h2>HTML-шаблон: динамическая таблица <a class="anchor" href="#template">#</a></h2>
+<div class="tabs" data-tabs="templateTabs"><button class="tab active" data-tab="table">Таблица</button><button class="tab" data-tab="header">Колонки</button><button class="tab" data-tab="body">Строки</button><button class="tab" data-tab="pagination">Пагинация</button></div>
+<div id="templateTabs">
+<div class="tabpane active" data-pane="table"><div class="codebox"><div class="codebar">p-table <button class="copy">Копировать</button></div><pre><code>&lt;p-table #main_table
+    [columns]="fields"
+    [value]="filtered"
+    [contextMenu]="cm"
+    [(contextMenuSelection)]="current_item"
+    dataKey="id"&gt;
+    ...
+&lt;/p-table&gt;</code></pre></div><p>Два главных массива — <code class="inline">fields</code> (описание колонок) и <code class="inline">filtered</code> (строки).</p></div>
+<div class="tabpane" data-pane="header"><div class="codebox"><div class="codebar">Динамический header <button class="copy">Копировать</button></div><pre><code>&lt;ng-container *ngFor="let field of fields; index as field_index"&gt;
+  &lt;th *ngIf="field.is_advanced != 1"&gt;
+    &lt;a (click)="sortByField(field)"&gt;
+      {{ field.title | translate }}
+    &lt;/a&gt;
+  &lt;/th&gt;
+&lt;/ng-container&gt;</code></pre></div><p><code class="inline">is_advanced == 1</code> в текущей реализации фактически означает «колонка скрыта».</p></div>
+<div class="tabpane" data-pane="body"><div class="codebox"><div class="codebar">Рендер по типу поля <button class="copy">Копировать</button></div><pre><code>&lt;td *ngIf="field.is_advanced != 1"
+    [ngSwitch]="field._data_type_code"
+    (click)="goToDetail(rowData)"&gt;
+
+  &lt;span *ngSwitchCase="'boolean'"&gt;...&lt;/span&gt;
+  &lt;span *ngSwitchCase="'double'"&gt;...&lt;/span&gt;
+
+  &lt;span *ngSwitchDefault&gt;
+    &lt;ng-container [ngSwitch]="field._ui_comp_code"&gt;
+      &lt;audio *ngSwitchCase="'audio'" controls
+             [src]="rowData[field.alias]"&gt;&lt;/audio&gt;
+      &lt;span *ngSwitchDefault [innerHtml]="rowData[field.alias]"&gt;&lt;/span&gt;
+    &lt;/ng-container&gt;
+  &lt;/span&gt;
+&lt;/td&gt;</code></pre></div></div>
+<div class="tabpane" data-pane="pagination"><div class="codebox"><div class="codebar">DamuBPM pagination <button class="copy">Копировать</button></div><pre><code>&lt;pagination
+    [row-count]="table?.allCount"
+    [page]="query_options.page"
+    [perpage]="query_options.perpage"
+    (pageChanged)="changePage($event)"
+    (perPageChanged)="changePerPage($event)"&gt;
+&lt;/pagination&gt;</code></pre></div></div>
+</div>
+</section>
+
+<section id="filters" data-search="filters static filters field filter reference boolean date range number prime-select-multi prime-date triStateCheckbox">
+<h2>Фильтры: как тип поля определяет поведение <a class="anchor" href="#filters">#</a></h2>
+<div class="table-wrap"><table class="table"><thead><tr><th>Тип поля</th><th>UI</th><th>QueryOptions</th><th>Преобразование</th></tr></thead><tbody>
+<tr><td><span class="pill">reference</span></td><td><code>prime-select-multi</code></td><td><code>fltin[alias]</code></td><td><code>value.split(',')</code></td></tr>
+<tr><td><span class="pill">boolean</span></td><td><code>p-triStateCheckbox</code> / switch</td><td><code>flteq[alias]</code></td><td>true → "1", false → "0"</td></tr>
+<tr><td><span class="pill">date / timestamp / datetime</span></td><td><code>prime-date selectionMode="range"</code></td><td><code>func22[alias]</code></td><td>массив → <code>join('|')</code></td></tr>
+<tr><td><span class="pill">number / double / serial</span></td><td>input или from/to</td><td><code>func22</code> для диапазона</td><td><code>from|to</code></td></tr>
+<tr><td><span class="pill">default</span></td><td>text input</td><td><code>flt[alias]</code></td><td>строка как есть</td></tr>
+</tbody></table></div>
+<div class="grid g2">
+<div class="card"><h3>Фильтр в заголовке таблицы</h3><p>Поля меняют <code class="inline">field.value</code>, затем вызывается <code class="inline">onSubmitFieldFilter()</code>. В обычной странице значения сериализуются в URL query params с префиксом <code class="inline">search_</code>; в JIT-режиме вызывается <code class="inline">update(params)</code> напрямую.</p></div>
+<div class="card"><h3>Статический фильтр</h3><p><code class="inline">static_filters</code> может прийти через JIT-вход или быть восстановлен из <code class="inline">localStorage</code>. Для фиксированных reference-полей дополнительно загружается справочник через <code class="inline">_def_sel_query_code</code>.</p></div>
+</div>
+<div class="callout"><b>Практический принцип:</b> при добавлении нового типа поля сначала определите 4 вещи: как хранится значение в UI, как оно сериализуется, в какой контейнер QueryOptions попадает и как показывается в таблице.</div>
+</section>
+
+<section id="crud" data-search="CRUD create read update delete add deleteChecked update_v_1_1 goToDetail router">
+<h2>CRUD в текущей реализации <a class="anchor" href="#crud">#</a></h2>
+<div class="grid g2">
+<div class="card"><h3><span class="ok">C</span> — Create</h3><p><code class="inline">add()</code> вызывает <code class="inline">/update_v_1_1</code> с action <code class="inline">insert</code>, создаёт <code class="inline">sys$uuid</code>, затем идёт на detail route по <code class="inline">last_insert_id</code>.</p>
+<div class="codebox"><div class="codebar">Insert <button class="copy">Копировать</button></div><pre><code>const body = JSON.stringify({
+  items: [{
+    table_name: this.entity_code,
+    action: 'insert',
+    values: [{ sys$uuid: uuid.v4(), id: 0 }]
+  }]
+});
+this.httpClient.post(environment.apiUrl + '/update_v_1_1', body)</code></pre></div></div>
+<div class="card"><h3><span class="ok">R</span> — Read</h3><p>Чтение выполняется через <code class="inline">dbQueryService.getQuery(this.query_options)</code>. Результат сохраняется в <code class="inline">table</code>, а строки — в <code class="inline">filtered</code>.</p></div>
+<div class="card"><h3><span class="warning">U</span> — Update</h3><p>Список сам по себе не делает inline-update полей. Переход идёт в detail page через <code class="inline">goToDetail()</code>, либо detail может быть открыт в JIT/modal и сохранён через <code class="inline">jit_page.save()</code>.</p></div>
+<div class="card"><h3><span style="color:var(--danger)">D</span> — Delete</h3><p><code class="inline">deleteChecked()</code> отправляет выбранные ID в <code class="inline">/update_v_1_1</code> с action <code class="inline">delete</code>. Перед этим <code class="inline">confirmDeleteChecked()</code> открывает подтверждение.</p></div>
+</div>
+<div class="callout warn"><b>Отличие от «классического Angular CRUD»:</b> DamuBPM-страница разделяет чтение и запись: чтение идёт через query abstraction, а изменения — через универсальный update API или через detail/JIT page.</div>
+</section>
+
+<section id="batch" data-search="mass batch checked_rows selected_all_rows acts_many doAct getActsMany bpRun tools">
+<h2>Выбор строк и массовые действия <a class="anchor" href="#batch">#</a></h2>
+<div class="diagram"><div class="box"><b>p-checkbox</b><br><span class="muted">rowData.table_row_checked</span></div><div class="arrow">→</div><div class="box"><b>checked_rows[]</b><br><span class="muted">setChecked / setCheckedAll</span></div><div class="arrow">→</div><div class="box"><b>doAct / delete / print</b><br><span class="muted">ids.join()</span></div></div>
+<div class="grid g2">
+<div class="card"><h3>Business process actions</h3><p><code class="inline">getActsMany()</code> выполняет query <code class="inline">entity_acts_many</code> с <code class="inline">param1 = entity_id</code>. Затем <code class="inline">doAct(act)</code> запускает <code class="inline">appComponent.bpRun(act.code, { url: ... })</code>.</p></div>
+<div class="card"><h3>Tools</h3><p><code class="inline">getTools()</code> читает <code class="inline">bp_processes_tools_by_entity_id</code>. В HTML инструменты выводятся как кнопки и запускаются через <code class="inline">appComponent.bpRun(tool.code, {}, bindCallBack)</code>.</p></div>
+</div>
+</section>
+
+<section id="jit" data-search="JIT modal dialog openPagesAsModal saveJitPage closeJitPage only_jit_page DialogTemplateComponent pages">
+<h2>JIT-режим и detail page в модальном окне <a class="anchor" href="#jit">#</a></h2>
+<div class="grid g2">
+<div class="card"><h3>only_jit_page</h3><p>Если в <code class="inline">DATA</code> есть входные данные, подписки на <code class="inline">route.queryParams</code> и <code class="inline">route.params</code> не создаются. Пагинация и фильтры вместо навигации по URL вызывают <code class="inline">update()</code> напрямую.</p></div>
+<div class="card"><h3>openPagesAsModal()</h3><p>Открывает <code class="inline">Components.DialogTemplateComponent</code> с <code class="inline">type: 'pages'</code>, передаёт <code class="inline">code: page</code> и получает ссылку на JIT-компонент через <code class="inline">getJitComponent</code>. Save вызывает <code class="inline">jit_page.save()</code>.</p></div>
+</div>
+<div class="codebox"><div class="codebar">Схема модального detail <button class="copy">Копировать</button></div><pre><code>this.dialog_ref = this.dialogService.open(
+  Components.DialogTemplateComponent,
+  {
+    header: this.modal_title,
+    style: { width: '75%', 'min-height': '75vh' },
+    data: {
+      buttons,
+      data: { detail },
+      type: 'pages',
+      code: page,
+      getJitComponent: jitPage =&gt; { jit_page = jitPage; }
+    }
+  }
+);
+
+this.dialog_ref.onClose.subscribe(_ =&gt; this.update());</code></pre></div>
+</section>
+
+<section id="methods" data-search="методы method catalog функции JIT">
+<h2>Каталог используемых методов <a class="anchor" href="#methods">#</a></h2>
+<p class="lead">Каталог собран из JIT-класса. Используйте поиск и категорию — так быстрее находить нужную точку расширения.</p>
+<div class="method-tools"><input id="methodSearch" type="search" placeholder="Например: filter, modal, delete, page…"><select id="methodCategory"><option value="all">Все категории</option></select><span id="methodCount" class="badge"></span></div>
+<div class="method-list" id="methodList"></div>
+</section>
+
+<section id="components" data-search="components DamuBPM services PrimeNG dbQueryService appComponent alertService confirmationService dialogService router route httpClient moment helper localStorage">
+<h2>Компоненты и сервисы, на которых держится страница <a class="anchor" href="#components">#</a></h2>
+<div class="table-wrap"><table class="table"><thead><tr><th>Объект / компонент</th><th>Роль</th><th>Где используется</th></tr></thead><tbody>
+<tr><td><code>Models.QueryOptions</code></td><td>Описание DamuBPM query и фильтров</td><td>список, tools, acts, archive, reference options</td></tr>
+<tr><td><code>dbQueryService.getQuery()</code></td><td>Чтение серверных query</td><td><code>getTableSort</code>, <code>getTableFields</code>, <code>getTools</code>, <code>getActsMany</code>, <code>upFold</code></td></tr>
+<tr><td><code>httpClient.post()</code></td><td>Универсальная запись</td><td><code>add</code>, <code>deleteChecked</code></td></tr>
+<tr><td><code>appComponent.bpRun()</code></td><td>Запуск БП/действий/печати</td><td>tools, acts_many, print</td></tr>
+<tr><td><code>router / route</code></td><td>URL, query params, detail navigation</td><td>режим обычной страницы</td></tr>
+<tr><td><code>dialogService</code></td><td>Detail page как modal</td><td><code>openPagesAsModal</code></td></tr>
+<tr><td><code>alertService</code></td><td>Успех/ошибки</td><td>delete, JIT save</td></tr>
+<tr><td><code>confirmationService</code></td><td>Подтверждение удаления</td><td><code>confirmDeleteChecked</code></td></tr>
+<tr><td><code>moment</code> + <code>session_parameters</code></td><td>Форматирование дат</td><td>список и archive</td></tr>
+<tr><td><code>helper.formatPrice()</code></td><td>Формат double</td><td>getTableSort / upFold</td></tr>
+<tr><td><code>localStorage</code></td><td>Сохранение фильтров и порядка колонок</td><td><code>getTableFields</code>, <code>saveFieldsOrder</code></td></tr>
+<tr><td><code>p-table</code></td><td>Основная таблица PrimeNG</td><td>header/body/summary</td></tr>
+<tr><td><code>prime-select-multi</code></td><td>Reference filter</td><td>static + column filters</td></tr>
+<tr><td><code>prime-date</code></td><td>Date range filter</td><td>static + column filters</td></tr>
+<tr><td><code>pagination</code></td><td>DamuBPM pagination</td><td>summary template</td></tr>
+</tbody></table></div>
+</section>
+
+<section id="builder" data-search="generator builder scaffold каркас новая страница entity detail">
+<h2>Генератор стартового каркаса <a class="anchor" href="#builder">#</a></h2>
+<p class="lead">Введите параметры новой сущности. Генератор не создаёт серверные query — он формирует безопасный стартовый JIT-каркас и HTML-шапку, которые затем связываются с метаданными DamuBPM.</p>
+<div class="card">
+<div class="builder">
+<label>Entity ID<input id="bEntityId" value="3352"></label>
+<label>Entity code<input id="bEntityCode" value="its_d_ga_mnr"></label>
+<label>Query code<input id="bQueryCode" value="its_d_ga_mnr"></label>
+<label>Page ID<input id="bPageId" value="12583"></label>
+<label>Detail page code<input id="bDetailCode" value="its_d_ga_mnrdetails"></label>
+<label>Заголовок<input id="bTitle" value="Новая CRUD-страница"></label>
+</div>
+<div class="builder-actions"><button class="btn" id="buildBtn">Сгенерировать</button><button class="btn secondary" id="copyJs">Копировать JS</button><button class="btn secondary" id="copyHtml">Копировать HTML</button></div>
+<div class="tabs" data-tabs="builderTabs"><button class="tab active" data-tab="js">JIT JS</button><button class="tab" data-tab="html">HTML header/table</button></div>
+<div id="builderTabs"><div class="tabpane active" data-pane="js"><div class="codebox"><div class="codebar">generated JIT scaffold</div><pre><code id="generatedJs"></code></pre></div></div><div class="tabpane" data-pane="html"><div class="codebox"><div class="codebar">generated HTML scaffold</div><pre><code id="generatedHtml"></code></pre></div></div></div>
+</div>
+</section>
+
+<section id="recipe" data-search="пошагово рецепт новая CRUD страница steps checklist">
+<h2>Рецепт: новая CRUD-страница с нуля <a class="anchor" href="#recipe">#</a></h2>
+<div class="grid g2">
+<div class="card"><h3>Последовательность</h3><ol class="mini-list"><li>Определить <b>entity_id</b>, <b>entity_code</b>, list <b>query_code</b> и detail page code.</li><li>Убедиться, что <code class="inline">get_filter_cols_by_code</code> возвращает метаданные нужных полей.</li><li>Создать JIT-класс: state → lifecycle → <code class="inline">restartAll()</code> → queries.</li><li>Реализовать <code class="inline">setQueryOptions()</code> и типизацию фильтров.</li><li>Подключить <code class="inline">p-table</code> к <code class="inline">fields</code> и <code class="inline">filtered</code>.</li><li>Добавить column filters по <code class="inline">_data_type_code</code>.</li><li>Добавить selection и batch actions, если нужны.</li><li>Подключить detail route / modal JIT.</li><li>Добавить create/delete через <code class="inline">/update_v_1_1</code>, если права и сценарий это допускают.</li><li>Проверить обычный и JIT режим отдельно.</li></ol></div>
+<div class="card"><h3>Контрольный список</h3><div class="checklist" id="checklist">
+<label class="check"><input type="checkbox"> entity_id соответствует сущности для tools/actions</label>
+<label class="check"><input type="checkbox"> entity_code соответствует таблице записи</label>
+<label class="check"><input type="checkbox"> query_code возвращает id и поля списка</label>
+<label class="check"><input type="checkbox"> metadata query возвращает alias/title/_data_type_code</label>
+<label class="check"><input type="checkbox"> reference-поля имеют _def_sel_query_code</label>
+<label class="check"><input type="checkbox"> detail page route/code существует</label>
+<label class="check"><input type="checkbox"> фильтры проверены для boolean/date/reference/number/text</label>
+<label class="check"><input type="checkbox"> batch selection очищается после update</label>
+<label class="check"><input type="checkbox"> ngOnDestroy отписывает route subscriptions</label>
+<label class="check"><input type="checkbox"> empty result не ломает table.items</label>
+</div></div>
+</div>
+</section>
+
+<section id="pitfalls" data-search="ошибки pitfalls diagnostics debug empty items precedence duplicate localStorage event add route">
+<h2>Типичные ловушки и диагностика <a class="anchor" href="#pitfalls">#</a></h2>
+<div class="accordion open"><button>1. Таблица пустая, хотя query работает</button><div class="body">Проверьте: <code class="inline">query_options.code</code>, <code class="inline">param1/param2</code>, сериализацию фильтров, <code class="inline">page/perpage</code>, а затем сам <code class="inline">table_sorted.items</code>. В текущем коде пустой items нормализуется в <code class="inline">[]</code>, чтобы шаблон не падал.</div></div>
+<div class="accordion"><button>2. Reference-фильтр ничего не показывает</button><div class="body">Проверьте <code class="inline">field._def_sel_query_code</code>. И статические reference-поля, и фильтры таблицы завязаны на этот query code.</div></div>
+<div class="accordion"><button>3. Фильтр работает в обычной странице, но не в JIT</button><div class="body">В обычном режиме <code class="inline">onSubmitFieldFilter()</code> делает <code class="inline">router.navigate()</code>, а в JIT — вызывает <code class="inline">update(params)</code>. Проверяйте ветку <code class="inline">only_jit_page</code> и содержимое <code class="inline">DATA</code>.</div></div>
+<div class="accordion"><button>4. После удаления состояние checkbox странное</button><div class="body"><code class="inline">update()</code> сбрасывает <code class="inline">selected_all_rows</code> и вызывает <code class="inline">setCheckedAll()</code>. Если меняете логику selection, сохраняйте этот инвариант или явно очищайте <code class="inline">checked_rows</code>.</div></div>
+<div class="accordion"><button>5. Потерялся порядок колонок</button><div class="body">Порядок хранится под ключом <code class="inline">table_code + '.fields.order'</code>. Если меняется <code class="inline">table_code</code>, это уже другой набор настроек.</div></div>
+<div class="accordion"><button>6. Диапазон number ведёт себя неожиданно</button><div class="body">В условии исходника есть выражение вида <code class="inline">(from || to) &amp;&amp; type == 'double' || type == 'number'</code>. Из-за приоритета операторов ветка для <code class="inline">number</code> может сработать шире, чем визуально читается. Для новых страниц безопаснее писать: <code class="inline">(from || to) &amp;&amp; ['double','number'].includes(type)</code>.</div></div>
+<div class="accordion"><button>7. confirmDeleteChecked использует event</button><div class="body">Метод не принимает <code class="inline">event</code>, но внутри использует <code class="inline">event.target</code>. Если окружение не предоставляет глобальный event, передавайте <code class="inline">$event</code> явно: <code class="inline">confirmDeleteChecked($event)</code>.</div></div>
+<div class="accordion"><button>8. add() есть, но кнопки Create в этом HTML-фрагменте не видно</button><div class="body">Метод создания присутствует в JIT-классе, но в предоставленном шаблоне нет активного вызова <code class="inline">(click)="add()"</code>. Для новой страницы кнопку надо добавить сознательно с учётом прав и UX.</div></div>
+</section>
+
+<section id="quiz" data-search="quiz самопроверка обучение вопросы">
+<h2>Самопроверка <a class="anchor" href="#quiz">#</a></h2>
+<p class="lead">Нажмите «Ответ», чтобы проверить понимание архитектуры.</p>
+<div class="quiz-q"><b>1. Где определяется, какие колонки показывать?</b><br><button class="btn secondary reveal">Ответ</button><div class="quiz-answer">Метаданные приходят через <code>getTableFields()</code> / query <code>get_filter_cols_by_code</code>, а HTML отображает поля, у которых <code>is_advanced != 1</code>.</div></div>
+<div class="quiz-q"><b>2. Чем отличается фильтр reference от text?</b><br><button class="btn secondary reveal">Ответ</button><div class="quiz-answer">Reference идёт в <code>fltin[alias]</code> и использует <code>prime-select-multi</code>; text идёт в <code>flt[alias]</code>.</div></div>
+<div class="quiz-q"><b>3. Как запускается массовый бизнес-процесс?</b><br><button class="btn secondary reveal">Ответ</button><div class="quiz-answer">ID накапливаются в <code>checked_rows</code>, затем <code>doAct(act)</code> вызывает <code>appComponent.bpRun(act.code, { url: '?code=...&ids=...' })</code>.</div></div>
+<div class="quiz-q"><b>4. Что является Write API для add/delete в этой странице?</b><br><button class="btn secondary reveal">Ответ</button><div class="quiz-answer"><code>environment.apiUrl + '/update_v_1_1'</code> с <code>items:[{table_name, action, values}]</code>.</div></div>
+<div class="quiz-q"><b>5. Почему changePage() имеет две ветки?</b><br><button class="btn secondary reveal">Ответ</button><div class="quiz-answer">Обычная страница сохраняет состояние в URL через router; JIT-страница не меняет route и обновляет данные напрямую.</div></div>
+</section>
+
+<div class="footer">DamuBPM CRUD/JIT guide • построено по предоставленным JIT JavaScript и Angular HTML исходникам • <a href="index.html">← Главная</a></div>
+</main>
+</div>
+</div>
+<script>
+const flowInfo=[
+['JIT создаёт класс','Файл начинается с `const vm = this`, импортирует `Models.QueryOptions`, `rxjs.first`, сохраняет вход `DATA = data` и возвращает `class GenClass extends vm.constructor`. Это позволяет странице пользоваться сервисами базового Angular-компонента DamuBPM.'],
+['ngOnInit','В JIT-режиме (`only_jit_page`) lifecycle сразу запускает `restartAll()`. В обычном режиме обновление инициируют подписки на route params/queryParams.'],
+['restartAll','Добавляет вариант perpage, принимает `data.static_filters`, затем запускает `getTableFields(table_code)` и `getTools()`. Критично: список данных грузится после получения metadata полей.'],
+['getTableFields','Читает `get_filter_cols_by_code`, восстанавливает порядок колонок из localStorage, применяет `DATA.show_fields`, подготавливает fixed reference filters, затем вызывает `update()`.'],
+['update','Вызывает `setQueryOptions(params)` или `onSubmitStaticFilter()`, сбрасывает select-all и запускает `getTableSort()`. Это главный публичный refresh страницы.'],
+['getTableSort','Делает `dbQueryService.getQuery(query_options)`, выставляет `table`, `filtered`, считает страницы, восстанавливает checkbox-state, загружает `acts_many` и форматирует double/date/timestamp.']
+];
+function setFlow(i){document.querySelectorAll('.step').forEach((x,n)=>x.classList.toggle('active',n===i)); const f=flowInfo[i];document.getElementById('flowDetail').innerHTML=`<h3>${f[0]}</h3><p class="muted">${f[1].replaceAll('`','<code class="inline">').replaceAll('<code class="inline">','<code class="inline">')}</p>`; let p=document.querySelector('#flowDetail p'); p.innerHTML=f[1].replace(/`([^`]+)`/g,'<code class="inline">$1</code>');}
+document.querySelectorAll('.step').forEach(x=>x.addEventListener('click',()=>setFlow(+x.dataset.step)));setFlow(0);
+
+const methods=[
+['only_jit_page','getter','Режим','Проверяет, есть ли входные DATA. От этого зависит router-навигация, подписки и прямой update.'],
+['hide_if_jit_data','getter','Режим','Аналогичная проверка наличия DATA; предназначена для условного UI.'],
+['restFilters','getter','Фильтры','Возвращает fields, ещё не добавленные в static_filters.'],
+['fieldsNotAdvanced','getter','Колонки','Возвращает видимые/non-advanced fields.'],
+['idTitle','getter','Колонки','Находит title поля с alias=id.'],
+['btnFixedStaticFilters','getter','Фильтры','Фиксированные reference-фильтры для отображения как кнопочные варианты.'],
+['fixedStaticFilters','getter','Фильтры','Отбирает статические фильтры для основного блока.'],
+['setActManyMenu()','','Batch','Строит context menu: открыть, modal, затем entity acts_many.'],
+['openInNewWindow(event)','event','Навигация','Открывает detail текущей записи в новом окне.'],
+['ngOnInit()','','Lifecycle','В JIT-режиме запускает restartAll().'],
+['bindCallBack()','','Lifecycle','Callback после bpRun: вызывает restartAll().'],
+['restartAll()','','Lifecycle','Старт: perpage, входные static_filters, metadata fields, tools.'],
+['setQueryOptions(params)','params','Данные','Создаёт QueryOptions и переводит DATA/URL/field values в flt/flteq/fltin/func22.'],
+['ngOnDestroy()','','Lifecycle','Отписывается от query_sub и param_sub.'],
+['setChecked(checked,id)','checked,id','Batch','Добавляет/удаляет ID в checked_rows и обновляет acts menu.'],
+['setCheckedAll()','','Batch','Синхронизирует select-all со строками текущего filtered.'],
+['confirmDeleteChecked()','','CRUD','Открывает confirmation popup перед удалением.'],
+['deleteChecked()','','CRUD','POST /update_v_1_1, action=delete, values=[{id}].'],
+['update(params)','params optional','Данные','Главная точка refresh: filters → reset selection → getTableSort().'],
+['upFold(item)','item','Архив','Лениво загружает query `${table_code}$archive` по initial_req_uuid.'],
+['getTools()','','Actions','Читает bp_processes_tools_by_entity_id по entity_id.'],
+['getTableSort()','','Данные','Выполняет основной query, ставит table/filtered, форматирует значения.'],
+['getTableFields(code)','code','Метаданные','Читает get_filter_cols_by_code, порядок колонок, show_fields, fixed refs, localStorage.'],
+['getActsMany()','','Actions','Читает entity_acts_many по entity_id.'],
+['doAct(act)','act','Actions','Запускает appComponent.bpRun для выбранных/current ID.'],
+['print()','','Actions','Запускает exp_template для selected IDs или текущего query URL.'],
+['changePage(page)','page','Пагинация','Обычный режим → router.navigate; JIT → update(q_params).'],
+['changePerPage(perpage)','perpage','Пагинация','Меняет page size и перегружает основной query.'],
+['add()','','CRUD','Создаёт пустую запись через /update_v_1_1 и открывает detail last_insert_id.'],
+['addRemoveField(field)','field','Колонки','Переключает is_advanced для показа/скрытия колонки.'],
+['sortByField(field)','field','Колонки','Цикл sort: none → 0 → 1 → none, затем update().'],
+['toggleField(field)','field','Колонки','Дублирует toggle is_advanced.'],
+['chooseFieldForFilter(field)','field','Фильтры','Сбрасывает query_options.flt, когда значение очищено.'],
+['goToDetail(item)','item','Навигация','Переходит на angular_detail_page_url$ или стандартный details route.'],
+['resetStaticFilter(filt)','filt','Фильтры','Очищает value/from/to и все контейнеры QueryOptions для alias.'],
+['addNewStaticFilter(filt)','filt','Фильтры','Сбрасывает поле и добавляет его в static_filters.'],
+['deleteStaticFilter(filt)','filt','Фильтры','Удаляет фильтр, сохраняет localStorage и обновляет список.'],
+['clearStaticFilter()','','Фильтры','Сбрасывает static filters и оставляет fixed варианты.'],
+['onSubmitStaticFilter()','','Фильтры','Пересобирает QueryOptions из static_filters и сохраняет их для non-JIT.'],
+['onSubmitFieldFilter()','','Фильтры','Собирает search_alias params; router.navigate или update(params).'],
+['closeJitPage(item,main_table)','item,main_table','JIT','Закрывает встроенную JIT-detail строку и возвращает scroll.'],
+['saveJitPage(item,main_table)','item,main_table','JIT','jit_page.save(), синхронизация detail → row, alert, close, update.'],
+['openPagesAsModal(page,detail)','page,detail','JIT','Открывает DialogTemplateComponent с type=pages и кнопками Save/Cancel.'],
+['fieldOrderLeft(index)','index','Колонки','Сдвигает видимую колонку влево и сохраняет порядок.'],
+['fieldOrderRight(index)','index','Колонки','Сдвигает видимую колонку вправо и сохраняет порядок.'],
+['saveFieldsOrder()','','Колонки','Пишет alias order в localStorage `${table_code}.fields.order`.']
+];
+const catSel=document.getElementById('methodCategory');[...new Set(methods.map(x=>x[2]))].sort().forEach(c=>catSel.add(new Option(c,c)));
+function renderMethods(){let q=document.getElementById('methodSearch').value.toLowerCase().trim(),c=catSel.value;let rows=methods.filter(m=>(c==='all'||m[2]===c)&&(!q||m.join(' ').toLowerCase().includes(q)));document.getElementById('methodCount').textContent=`${rows.length} / ${methods.length}`;document.getElementById('methodList').innerHTML=rows.map(m=>`<article class="method"><div class="method-head"><span class="method-name">${m[0]}</span><span class="method-cat">${m[2]}</span></div><p>${m[3]}</p>${m[1]?`<small>Аргументы: ${m[1]}</small>`:''}</article>`).join('');}
+document.getElementById('methodSearch').addEventListener('input',renderMethods);catSel.addEventListener('change',renderMethods);renderMethods();
+
+function tabsInit(){document.querySelectorAll('[data-tabs]').forEach(group=>{const id=group.dataset.tabs,target=document.getElementById(id);group.querySelectorAll('.tab').forEach(btn=>btn.addEventListener('click',()=>{group.querySelectorAll('.tab').forEach(b=>b.classList.toggle('active',b===btn));target.querySelectorAll('.tabpane').forEach(p=>p.classList.toggle('active',p.dataset.pane===btn.dataset.tab));}));});}tabsInit();
+
+document.querySelectorAll('.copy').forEach(btn=>btn.addEventListener('click',async()=>{let txt=btn.closest('.codebox').querySelector('code').innerText;await navigator.clipboard.writeText(txt);let old=btn.textContent;btn.textContent='Скопировано ✓';setTimeout(()=>btn.textContent=old,1200);}));
+document.querySelectorAll('.accordion button').forEach(b=>b.addEventListener('click',()=>b.parentElement.classList.toggle('open')));
+document.querySelectorAll('.reveal').forEach(b=>b.addEventListener('click',()=>b.closest('.quiz-q').classList.toggle('revealed')));
+document.querySelectorAll('#checklist input').forEach(i=>i.addEventListener('change',()=>i.closest('.check').classList.toggle('done',i.checked)));
+
+function val(id){return document.getElementById(id).value.trim()}
+function build(){let eid=val('bEntityId'),ec=val('bEntityCode'),qc=val('bQueryCode'),pid=val('bPageId'),dc=val('bDetailCode'),title=val('bTitle');let js=`const vm = this;\nconst { QueryOptions } = Models;\nconst { first } = rxjs;\nconst DATA = data;\n\nreturn class GenClass extends vm.constructor {\n    entity_id = '${eid}';\n    entity_code = '${ec}';\n    page_id = '${pid}';\n    table_code = this.entity_code;\n    query_code = '${qc}';\n\n    query_options = new QueryOptions();\n    fields = [];\n    filtered = [];\n    table;\n    page = 1;\n    perpage = 15;\n    static_filters = [];\n    checked_rows = [];\n\n    get only_jit_page() {\n        return DATA && Object.keys(DATA).length > 0;\n    }\n\n    ngOnInit() {\n        if (this.only_jit_page) this.restartAll();\n    }\n\n    restartAll() {\n        if (data?.static_filters) this.static_filters = data.static_filters;\n        this.getTableFields(this.table_code);\n    }\n\n    getTableFields(code) {\n        const q = new QueryOptions('get_filter_cols_by_code');\n        q.param1 = code;\n        this.dbQueryService.getQuery(q).pipe(first()).subscribe(resp => {\n            this.fields = resp?.items || [];\n            this.update();\n        });\n    }\n\n    setQueryOptions(params = {}) {\n        this.query_options = new QueryOptions(data?.query_code || this.query_code || this.table_code);\n        this.query_options.page = params.page || 1;\n        this.query_options.perpage = params.perpage || this.perpage;\n    }\n\n    update(params = this.route?.snapshot?.queryParams || {}) {\n        this.setQueryOptions(params);\n        this.getTableSort();\n    }\n\n    getTableSort() {\n        this.dbQueryService.getQuery(this.query_options).pipe(first()).subscribe(table => {\n            this.table = table || {};\n            this.filtered = table?.items || [];\n        });\n    }\n\n    goToDetail(item) {\n        this.router.navigate([item.angular_detail_page_url$ || '${dc}/' + item.id]);\n    }\n}`;
+let html=`<div class="flex justify-content-between align-items-center my-3 px-2">\n  <h3 style="margin:0">${title}</h3>\n  <div>\n    <p-button icon="pi pi-sync" (click)="update()" label="Обновить"></p-button>\n  </div>\n</div>\n\n<p-table [columns]="fields" [value]="filtered" dataKey="id">\n  <ng-template pTemplate="header">\n    <tr>\n      <ng-container *ngFor="let field of fields">\n        <th *ngIf="field.is_advanced != 1">{{ field.title | translate }}</th>\n      </ng-container>\n    </tr>\n  </ng-template>\n\n  <ng-template pTemplate="body" let-rowData let-fields="columns">\n    <tr>\n      <ng-container *ngFor="let field of fields">\n        <td *ngIf="field.is_advanced != 1" (click)="goToDetail(rowData)">\n          <span [innerHtml]="rowData[field.alias]"></span>\n        </td>\n      </ng-container>\n    </tr>\n  </ng-template>\n\n  <ng-template pTemplate="emptymessage">\n    <tr><td colspan="100">Ничего не найдено</td></tr>\n  </ng-template>\n</p-table>`;
+document.getElementById('generatedJs').textContent=js;document.getElementById('generatedHtml').textContent=html;}
+document.getElementById('buildBtn').addEventListener('click',build);document.getElementById('copyJs').addEventListener('click',()=>navigator.clipboard.writeText(document.getElementById('generatedJs').innerText));document.getElementById('copyHtml').addEventListener('click',()=>navigator.clipboard.writeText(document.getElementById('generatedHtml').innerText));build();
+
+const gs=document.getElementById('globalSearch');gs.addEventListener('input',()=>{let q=gs.value.toLowerCase().trim();document.querySelectorAll('main section').forEach(s=>{if(!q){s.classList.remove('search-hidden');return}let hit=(s.innerText+' '+(s.dataset.search||'')).toLowerCase().includes(q);s.classList.toggle('search-hidden',!hit);});});document.addEventListener('keydown',e=>{if(e.key==='/'&&document.activeElement!==gs){e.preventDefault();gs.focus();}});
+
+const observer=new IntersectionObserver(entries=>{entries.filter(e=>e.isIntersecting).sort((a,b)=>b.intersectionRatio-a.intersectionRatio).slice(0,1).forEach(e=>{document.querySelectorAll('#sideNav a').forEach(a=>a.classList.toggle('active',a.getAttribute('href')==='#'+e.target.id));});},{rootMargin:'-20% 0px -65% 0px',threshold:[0,.2,.5]});document.querySelectorAll('main section[id]').forEach(s=>observer.observe(s));
+</script>
+</body>
+</html>
