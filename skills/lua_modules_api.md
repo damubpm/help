@@ -1272,13 +1272,13 @@ headers, body, err, code = pkg.put(url, body, headers, timeoutSeconds, returnHea
 {% endraw %}
 **Пример 2**
 
-{% endraw %}
+{% raw %}
     local headers, body, err, code = pkg.put("https://api.example.kz/v1/orders", '{"state":"NEW"}', {Authorization="Bearer TOKEN", ["Content-Type"]="application/json"}, 30, true)
     print("headers =", headers)
     print("body =", body)
     print("err =", err)
     print("code =", code)
-{% raw %}
+{% endraw %}
 ### get
 
 Выполняет HTTP GET.
