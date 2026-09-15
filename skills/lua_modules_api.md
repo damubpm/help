@@ -389,16 +389,16 @@ json = pkg.marshal(value)
 
 **Пример 1**
 
-
+{% raw %}
     local s = pkg.marshal({id=501, state="NEW"})
     print("s =", s)
-
+{% endraw %}
 **Пример 2**
 
-
+{% raw %}
     local s = pkg.marshal({items={{sku="A1", qty=2},{sku="B2", qty=1}}})
     print("s =", s)
-
+{% endraw %}
 ### marshalIndent
 
 Сериализует Lua-таблицу в форматированный JSON с указанным отступом.
@@ -423,16 +423,16 @@ json = pkg.marshalIndent(value, indent)
 
 **Пример 1**
 
-
+{% raw %}
     local s = pkg.marshalIndent({id=501, active=true}, "  ")
     print("s =", s)
-
+{% endraw %}
 **Пример 2**
 
-
+{% raw %}
     local s = pkg.marshalIndent({user={name="Ayan", roles={"admin","user"}}}, "    ")
     print("s =", s)
-
+{% endraw %}
 ### unmarshal
 
 Разбирает JSON-строку в Lua-таблицы/скаляры.
@@ -456,11 +456,11 @@ value = pkg.unmarshal(payload)
 
 **Пример 1**
 
-
+{% raw %}
     local v = pkg.unmarshal('{"id":501,"state":"NEW"}')
     print("v =", v)
     print(v.id, v.state)
-
+{% endraw %}
 **Пример 2**
 
 
@@ -1208,21 +1208,21 @@ headers, body, err, code = pkg.post(url, body, headers, timeoutSeconds, returnHe
 
 **Пример 1**
 
-
+{% raw %}
     local body, err, code = pkg.post("https://api.example.kz/v1/orders", '{"id":501}', {["Content-Type"]="application/json"}, 30)
     print("body =", body)
     print("err =", err)
     print("code =", code)
-
+{% endraw %}
 **Пример 2**
 
-
+{% raw %}
     local headers, body, err, code = pkg.post("https://api.example.kz/v1/orders", '{"state":"NEW"}', {Authorization="Bearer TOKEN", ["Content-Type"]="application/json"}, 30, true)
     print("headers =", headers)
     print("body =", body)
     print("err =", err)
     print("code =", code)
-
+{% endraw %}
 ### put
 
 Выполняет HTTP PUT.
@@ -1264,21 +1264,21 @@ headers, body, err, code = pkg.put(url, body, headers, timeoutSeconds, returnHea
 
 **Пример 1**
 
-
+{% raw %}
     local body, err, code = pkg.put("https://api.example.kz/v1/orders", '{"id":501}', {["Content-Type"]="application/json"}, 30)
     print("body =", body)
     print("err =", err)
     print("code =", code)
-
+{% endraw %}
 **Пример 2**
 
-
+{% endraw %}
     local headers, body, err, code = pkg.put("https://api.example.kz/v1/orders", '{"state":"NEW"}', {Authorization="Bearer TOKEN", ["Content-Type"]="application/json"}, 30, true)
     print("headers =", headers)
     print("body =", body)
     print("err =", err)
     print("code =", code)
-
+{% raw %}
 ### get
 
 Выполняет HTTP GET.
@@ -1374,12 +1374,12 @@ headers, body, err, code = pkg.delete(url, headers, timeoutSeconds, true)
 
 **Пример 1**
 
-
+{% raw %}
     local body, err, code = pkg.delete("https://api.example.kz/v1/orders/501", {Authorization="Bearer TOKEN"}, 20)
     print("body =", body)
     print("err =", err)
     print("code =", code)
-
+{% endraw %}
 **Пример 2**
 
 
@@ -1424,22 +1424,22 @@ values, err, code = pkg.Read(value, path)
 
 **Пример 1**
 
-
+{% raw %}
     local result, err, code = pkg.Read({orders={{id=1,state="NEW"},{id=2,state="DONE"}}}, "$.orders[*].id")
     print("result =", result)
     print("err =", err)
     print("code =", code)
     for _, v in ipairs(result or {}) do print(v) end
-
+{% endraw %}
 **Пример 2**
 
-
+{% raw %}
     local result, err, code = pkg.Read({user={name="Ayan"}}, "$.user.name")
     print("result =", result)
     print("err =", err)
     print("code =", code)
     print(result and result[1], err, code)
-
+{% endraw %}
 
 ## pkg/mxj
 
@@ -1482,12 +1482,12 @@ xml, err, code = pkg.JsonToXml(value)
 
 **Пример 2**
 
-
+{% raw %}
     local xml, err, code = pkg.JsonToXml({root={item={{id=1},{id=2}}}})
     print("xml =", xml)
     print("err =", err)
     print("code =", code)
-
+{% endraw %}
 ### XmlToJson
 
 Разбирает XML в Lua-таблицу.
