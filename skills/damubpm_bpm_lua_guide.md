@@ -396,7 +396,7 @@ local out, instance, task, errText, errNum = BPMSStartProcess(
 #### Пример 4. Передача структуры
 
 Lua-таблица как сложная входная переменная.
-
+{% raw %}
 ```lua
 local input = {
   customer = {id = 10, name = "Aruzhan"},
@@ -405,7 +405,7 @@ local input = {
 local out, instance, task, errText, errNum =
   BPMSStartProcess("order_process", tonumber(sys.user_id), input)
 ```
-
+{% endraw %}
 #### Пример 5. Сохранить task дочернего процесса
 
 Task можно сохранить в переменную родительского процесса.
