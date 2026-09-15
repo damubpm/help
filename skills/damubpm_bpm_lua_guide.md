@@ -638,14 +638,14 @@ if errNum ~= 0 then error(errText) end
 #### Пример 24. Завершить с массивом
 
 Структурированное значение в input.
-
+{% raw %}
 ```lua
 local nextTask, errText, errNum = BPMSRunManualTask(
   var.task_uuid, tonumber(sys.user_id),
   {items={{id=1},{id=2},{id=3}}}
 )
 ```
-
+{% endraw %}
 ### Переменные `var`, `sys`, `request`
 
 #### Пример 25. Изменить переменную процесса
@@ -745,7 +745,7 @@ end
 #### Пример 35. Структура в var
 
 Записываем Lua-таблицу в struct-переменную.
-
+{% raw %}
 ```lua
 var.payload = {
   id = var.id,
@@ -753,7 +753,7 @@ var.payload = {
   meta = {source = "bpm"}
 }
 ```
-
+{% endraw %}
 ### Frontend
 
 #### Пример 36. bpRun минимальный
