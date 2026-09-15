@@ -6354,7 +6354,7 @@ json = JsonToString(s1)
 ### Примеры
 
 #### Пример 1
-
+{% raw %}
 ```lua
 local json = JsonToString({id=1001, state="NEW", total=125000})
 print(json)
@@ -6363,9 +6363,9 @@ print(json)
 print("json:", json)
 -- /Значения всех результирующих переменных
 ```
-
+{% endraw %}
 #### Пример 2
-
+{% raw %}
 ```lua
 local payload = {user={id=101, name="Aruzhan"}, roles={"USER", "EDITOR"}}
 local json = JsonToString(payload)
@@ -6375,7 +6375,7 @@ print("json:", json)
 print("json:", json)
 -- /Значения всех результирующих переменных
 ```
-
+{% endraw %}
 [↑ К оглавлению](#оглавление)
 
 ---
@@ -6410,7 +6410,7 @@ json = JsonToStringIndent(s1, prefix, indent)
 ### Примеры
 
 #### Пример 1
-
+{% raw %}
 ```lua
 local json = JsonToStringIndent({id=1001, state="NEW"}, "", "  ")
 print(json)
@@ -6419,9 +6419,9 @@ print(json)
 print("json:", json)
 -- /Значения всех результирующих переменных
 ```
-
+{% endraw %}
 #### Пример 2
-
+{% raw %}
 ```lua
 local json = JsonToStringIndent({items={{id=1},{id=2}}}, "", "    ")
 print(json)
@@ -6430,7 +6430,7 @@ print(json)
 print("json:", json)
 -- /Значения всех результирующих переменных
 ```
-
+{% endraw %}
 [↑ К оглавлению](#оглавление)
 
 ---
@@ -6463,7 +6463,7 @@ xml = JsonToXML(s1)
 ### Примеры
 
 #### Пример 1
-
+{% raw %}
 ```lua
 local xml = JsonToXML({order={id=1001, state="NEW"}})
 print(xml)
@@ -6472,7 +6472,7 @@ print(xml)
 print("xml:", xml)
 -- /Значения всех результирующих переменных
 ```
-
+{% endraw %}
 #### Пример 2
 
 ```lua
