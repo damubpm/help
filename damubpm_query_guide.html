@@ -1,0 +1,338 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>DamuBPM Query — руководство и 30 примеров</title>
+  <style>
+    :root{--bg:#f6f8fb;--card:#fff;--text:#1f2937;--muted:#64748b;--line:#e2e8f0;--primary:#2563eb;--code:#111827;--note:#eff6ff;--warn:#fff7ed}
+    *{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:var(--bg);color:var(--text);font:15px/1.6 Inter,Segoe UI,Arial,sans-serif}
+    .wrap{max-width:1180px;margin:0 auto;padding:28px 20px 60px}.top{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:18px}
+    .home,.chip{display:inline-flex;align-items:center;border:1px solid var(--line);background:#fff;border-radius:9px;padding:9px 13px;text-decoration:none}.home{color:var(--primary);font-weight:700}.chip{font-size:12px;color:#1d4ed8;background:#eef4ff;font-weight:800}
+    .hero,.card,.example{background:var(--card);border:1px solid var(--line);border-radius:14px;box-shadow:0 8px 24px rgba(15,23,42,.05)}.hero{padding:28px;margin-bottom:18px}.card{padding:17px}.example{padding:18px;margin:14px 0}
+    h1{font-size:34px;line-height:1.15;margin:8px 0 12px}h2{font-size:25px;margin:36px 0 14px}h3{font-size:18px;margin:0 0 8px}.muted{color:var(--muted)}
+    .toc{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px;margin:18px 0 26px}.toc a{display:block;padding:11px 13px;border:1px solid var(--line);border-radius:9px;background:#fff;color:#334155;text-decoration:none}
+    .note,.warn{padding:14px 16px;border-left:4px solid;border-radius:7px;margin:14px 0}.note{border-color:#3b82f6;background:var(--note)}.warn{border-color:#f59e0b;background:var(--warn)}
+    table{width:100%;border-collapse:collapse;background:#fff;margin:12px 0 22px}th,td{border:1px solid var(--line);padding:10px 12px;text-align:left;vertical-align:top}th{background:#f8fafc}
+    code{font-family:Consolas,Monaco,monospace}pre{background:var(--code);color:#e5e7eb;border-radius:10px;padding:15px 16px;overflow:auto;font-size:13px;line-height:1.55;margin:10px 0 0}.flow{white-space:pre-wrap;background:#fff;border:1px solid var(--line);border-radius:10px;padding:16px;font-family:Consolas,monospace}
+    .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:12px}.num{display:inline-flex;width:29px;height:29px;border-radius:50%;align-items:center;justify-content:center;background:#eef4ff;color:#1d4ed8;font-size:13px;font-weight:800;margin-right:8px}
+    .footer{margin-top:36px;padding-top:18px;border-top:1px solid var(--line)}
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <a class="home" href="index.html">← Главная index.html</a>
+    <span class="chip">DamuBPM Query</span>
+  </div>
+
+  <section class="hero">
+    <span class="chip">Практическая инструкция</span>
+    <h1>Query в DamuBPM: логика работы, параметры, фильтры и 30 примеров</h1>
+    <p class="muted">Материал составлен по серверному обработчику Query и штатной CRUD/JIT-логике DamuBPM через <code>Models.QueryOptions</code> и <code>dbQueryService.getQuery()</code>.</p>
+    <div class="note"><b>Важно.</b> Алиасы фильтров должны существовать в конкретном query и его метаданных. В примерах <code>title</code>, <code>status_id</code>, <code>created_at</code>, <code>amount</code> и другие имена используются как демонстрационные.</div>
+  </section>
+
+  <nav class="toc">
+    <a href="#architecture">1. Как работает Query</a>
+    <a href="#server">2. Серверная логика</a>
+    <a href="#options">3. QueryOptions</a>
+    <a href="#filters">4. Фильтрация</a>
+    <a href="#special">5. Спецпараметры</a>
+    <a href="#response">6. Ответ сервера</a>
+    <a href="#examples">7. 30 примеров</a>
+    <a href="#mistakes">8. Ошибки</a>
+  </nav>
+
+  <h2 id="architecture">1. Как работает Query</h2>
+  <div class="flow">Query code
+  ↓
+запись из queries
+  ↓
+SQL + entity_id + need_filter + is_public + extdb
+  ↓
+QueryFilterBuild(...)
+  ↓
+%filter% / %order% / form-параметры
+  ↓
+ReplaceDbTypeSql2(...)
+  ↓
+COUNT + LIMIT/OFFSET при пагинации
+  ↓
+items + allCount + pageCount + metadata</div>
+
+  <div class="grid" style="margin-top:14px">
+    <div class="card"><b>Обычный Query</b><p>Использует подключение <code>default</code>.</p></div>
+    <div class="card"><b>External DB Query</b><p>При наличии <code>extdb_id</code> сервер переключает ORM на внешнюю БД.</p></div>
+    <div class="card"><b>Public Query</b><p>При <code>is_public = 1</code> обязательная проверка авторизации не выполняется.</p></div>
+    <div class="card"><b>Protected Query</b><p>Для остальных query выполняется проверка текущего пользователя.</p></div>
+  </div>
+
+  <h2 id="server">2. Серверная логика</h2>
+  <table>
+    <thead><tr><th>Шаг</th><th>Что происходит</th></tr></thead>
+    <tbody>
+      <tr><td>1</td><td>Читаются <code>perpage</code>, <code>page</code>, <code>code</code>.</td></tr>
+      <tr><td>2</td><td>Код query валидируется.</td></tr>
+      <tr><td>3</td><td>Из <code>queries</code> загружаются <code>is_auto</code>, <code>id</code>, <code>need_filter</code>, <code>entity_id</code>, <code>sql_text</code>, <code>title</code>, <code>is_public</code>, настройки External DB.</td></tr>
+      <tr><td>4</td><td>Для непубличного query проверяется авторизация.</td></tr>
+      <tr><td>5</td><td>При необходимости подключается External DB.</td></tr>
+      <tr><td>6</td><td><code>QueryFilterBuild</code> формирует SQL, count SQL, значения фильтров и form-параметров.</td></tr>
+      <tr><td>7</td><td>При <code>need_filter = 1</code> пустой запрос блокируется и возвращается <code>error = 1</code>.</td></tr>
+      <tr><td>8</td><td><code>:domain</code> заменяется текущим HTTP Host.</td></tr>
+      <tr><td>9</td><td>При <code>perpage = 0</code> запрос выполняется без пагинации.</td></tr>
+      <tr><td>10</td><td>При пагинации вычисляется общее количество записей.</td></tr>
+      <tr><td>11</td><td>PostgreSQL/MySQL/ClickHouse используют <code>limit ? offset ?</code>, Oracle — <code>OFFSET ? ROWS FETCH NEXT ? ROWS ONLY</code>.</td></tr>
+      <tr><td>12</td><td>Колонка <code>total_count$</code> может использоваться как источник <code>allCount</code>.</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Типовой SQL query</h3>
+  <pre><code>select
+    main.id,
+    main.title,
+    main.created_at
+from public.my_entity main
+%filter%
+%order%</code></pre>
+  <p>В реальных query также встречаются <code>:user_id</code>, <code>:lang</code>, <code>:domain</code>, <code>total_count$</code>, а также коды с суффиксами <code>$all</code>, <code>$archive</code>, <code>_select</code>.</p>
+
+  <h2 id="options">3. QueryOptions на frontend</h2>
+  <pre><code>const { QueryOptions } = Models;
+const { first } = rxjs;
+
+let q = new QueryOptions('ai_prompt');
+q.page = 1;
+q.perpage = 15;
+
+this.dbQueryService.getQuery(q)
+    .pipe(first())
+    .subscribe(resp =&gt; {
+        console.log(resp.items);
+    });</code></pre>
+
+  <table>
+    <thead><tr><th>Параметр</th><th>Назначение</th><th>Пример</th></tr></thead>
+    <tbody>
+      <tr><td><code>code</code></td><td>Код query</td><td><code>new QueryOptions('ai_prompt')</code></td></tr>
+      <tr><td><code>page</code></td><td>Номер страницы</td><td><code>q.page = 2</code></td></tr>
+      <tr><td><code>perpage</code></td><td>Размер страницы; 0 = без пагинации</td><td><code>q.perpage = 50</code></td></tr>
+      <tr><td><code>flt</code></td><td>Строковый поиск</td><td><code>q.flt.title = 'Test'</code></td></tr>
+      <tr><td><code>flteq</code></td><td>Точное равенство</td><td><code>q.flteq.status_id = '1'</code></td></tr>
+      <tr><td><code>fltin</code></td><td>Список значений</td><td><code>q.fltin.status_id = ['1','2']</code></td></tr>
+      <tr><td><code>func22</code></td><td>Диапазоны, даты, специальные условия</td><td><code>q.func22.amount = '100|500'</code></td></tr>
+      <tr><td><code>param1</code></td><td>Первый параметр конкретного query</td><td><code>q.param1 = '3352'</code></td></tr>
+      <tr><td><code>param2</code></td><td>Второй параметр</td><td><code>q.param2 = 'active'</code></td></tr>
+      <tr><td><code>orderBy</code></td><td>Алиас сортировки</td><td><code>q.orderBy = 'title'</code></td></tr>
+      <tr><td><code>orderAsc</code></td><td>0 = ASC, 1 = DESC</td><td><code>q.orderAsc = 0</code></td></tr>
+    </tbody>
+  </table>
+
+  <h2 id="filters">4. Виды фильтрации</h2>
+  <h3>4.1 Строковый поиск — flt</h3><pre><code>q.flt.title = 'договор';</code></pre>
+  <h3>4.2 Точное значение — flteq</h3><pre><code>q.flteq.status_id = '10';
+q.flteq.is_active = true;</code></pre>
+  <h3>4.3 Список значений — fltin</h3><pre><code>q.fltin.status_id = ['1', '2', '5'];</code></pre>
+  <h3>4.4 Диапазоны — func22</h3><pre><code>q.func22.amount = '100|500';</code></pre>
+  <h3>4.5 Комбинирование</h3><pre><code>q.flt.title = 'счёт';
+q.flteq.is_active = true;
+q.fltin.status_id = ['10', '20'];
+q.func22.amount = '100000|500000';</code></pre>
+  <div class="warn"><b>Подбирайте тип фильтра по типу поля:</b> строки — <code>flt</code>, boolean/точное значение — <code>flteq</code>, reference/multi-select — <code>fltin</code>, range/date — <code>func22</code>.</div>
+
+  <h2 id="special">5. Специальные параметры backend</h2>
+  <table>
+    <thead><tr><th>Параметр</th><th>Поведение</th></tr></thead>
+    <tbody>
+      <tr><td><code>getTitleById</code></td><td>Читает <code>title</code> записи основной entity по ID и возвращает <code>getSelectedTitle</code>.</td></tr>
+      <tr><td><code>getRowById</code></td><td>Использует исходный SQL, подменяет <code>%filter%</code> на <code>where main.id=?</code>, очищает <code>%order%</code>, подставляет пользователя/язык и возвращает <code>getSelectedRow</code>.</td></tr>
+      <tr><td><code>format=csv</code></td><td>Ответ отдаётся как tab-separated CSV.</td></tr>
+      <tr><td><code>ids</code></td><td>Учитывается защитой <code>need_filter</code>; дальнейшую обработку выполняет <code>QueryFilterBuild</code>.</td></tr>
+      <tr><td><code>:domain</code></td><td>SQL placeholder, заменяется текущим host.</td></tr>
+    </tbody>
+  </table>
+
+  <h2 id="response">6. Ответ сервера</h2>
+  <pre><code>{
+  "isMobile": false,
+  "lang": "",
+  "entityCode": "my_entity",
+  "pageCount": 4,
+  "allCount": 57,
+  "title": "Мой запрос",
+  "error": "0",
+  "getSelectedTitle": "",
+  "getSelectedRow": null,
+  "items": [],
+  "needFilter": 0,
+  "license": "..."
+}</code></pre>
+
+  <h2 id="examples">7. 30 примеров запросов</h2>
+
+  <div class="example"><h3><span class="num">1</span>Минимальный запрос</h3><pre><code>let q = new Models.QueryOptions('ai_prompt');
+this.dbQueryService.getQuery(q).pipe(rxjs.first()).subscribe(r =&gt; console.log(r.items));</code></pre></div>
+  <div class="example"><h3><span class="num">2</span>Первая страница по 15 записей</h3><pre><code>let q = new Models.QueryOptions('ai_prompt');
+q.page = 1;
+q.perpage = 15;
+this.dbQueryService.getQuery(q).pipe(rxjs.first()).subscribe(r =&gt; this.filtered = r.items || []);</code></pre></div>
+  <div class="example"><h3><span class="num">3</span>Третья страница</h3><pre><code>let q = new Models.QueryOptions('ai_prompt');
+q.page = 3;
+q.perpage = 25;
+this.dbQueryService.getQuery(q).pipe(rxjs.first()).subscribe(r =&gt; console.log(r));</code></pre></div>
+  <div class="example"><h3><span class="num">4</span>100 записей</h3><pre><code>let q = new Models.QueryOptions('ai_prompt');
+q.page = 1;
+q.perpage = 100;
+this.dbQueryService.getQuery(q).pipe(rxjs.first()).subscribe(r =&gt; console.log(r.items));</code></pre></div>
+  <div class="example"><h3><span class="num">5</span>Без пагинации</h3><pre><code>let q = new Models.QueryOptions('ai_prompt');
+q.perpage = 0;
+this.dbQueryService.getQuery(q).pipe(rxjs.first()).subscribe(r =&gt; console.log(r.items));</code></pre><p class="muted">Используйте осторожно на больших выборках.</p></div>
+  <div class="example"><h3><span class="num">6</span>Строковый поиск по title</h3><pre><code>let q = new Models.QueryOptions('ai_prompt');
+q.flt.title = 'GPT';
+this.dbQueryService.getQuery(q).pipe(rxjs.first()).subscribe(r =&gt; console.log(r.items));</code></pre></div>
+  <div class="example"><h3><span class="num">7</span>Два строковых фильтра</h3><pre><code>let q = new Models.QueryOptions('my_query');
+q.flt.title = 'договор';
+q.flt.code = 'SUP';
+this.dbQueryService.getQuery(q).pipe(rxjs.first()).subscribe(r =&gt; console.log(r.items));</code></pre></div>
+  <div class="example"><h3><span class="num">8</span>Точное равенство по ID</h3><pre><code>let q = new Models.QueryOptions('my_query');
+q.flteq.id = '125';
+this.dbQueryService.getQuery(q).pipe(rxjs.first()).subscribe(r =&gt; console.log(r.items));</code></pre></div>
+  <div class="example"><h3><span class="num">9</span>Boolean = true</h3><pre><code>let q = new Models.QueryOptions('my_query');
+q.flteq.is_active = true;
+this.dbQueryService.getQuery(q).pipe(rxjs.first()).subscribe(r =&gt; console.log(r.items));</code></pre></div>
+  <div class="example"><h3><span class="num">10</span>Boolean = false</h3><pre><code>let q = new Models.QueryOptions('my_query');
+q.flteq.is_active = false;
+this.dbQueryService.getQuery(q).pipe(rxjs.first()).subscribe(r =&gt; console.log(r.items));</code></pre></div>
+  <div class="example"><h3><span class="num">11</span>Reference: несколько статусов</h3><pre><code>let q = new Models.QueryOptions('my_query');
+q.fltin.status_id = ['10', '20', '30'];
+this.dbQueryService.getQuery(q).pipe(rxjs.first()).subscribe(r =&gt; console.log(r.items));</code></pre></div>
+  <div class="example"><h3><span class="num">12</span>Два multi-select фильтра</h3><pre><code>let q = new Models.QueryOptions('my_query');
+q.fltin.status_id = ['10', '20'];
+q.fltin.company_id = ['1', '5', '9'];
+this.dbQueryService.getQuery(q).pipe(rxjs.first()).subscribe(r =&gt; console.log(r.items));</code></pre></div>
+  <div class="example"><h3><span class="num">13</span>Числовой диапазон</h3><pre><code>let q = new Models.QueryOptions('my_query');
+q.func22.amount = '100000|500000';
+this.dbQueryService.getQuery(q).pipe(rxjs.first()).subscribe(r =&gt; console.log(r.items));</code></pre></div>
+  <div class="example"><h3><span class="num">14</span>Только нижняя граница</h3><pre><code>let q = new Models.QueryOptions('my_query');
+let from = 250;
+let to = null;
+q.func22.amount = (from || to || 0) + '|' + (to || from || 10000000);
+this.dbQueryService.getQuery(q).pipe(rxjs.first()).subscribe(r =&gt; console.log(r.items));</code></pre></div>
+  <div class="example"><h3><span class="num">15</span>Date range из prime-date</h3><pre><code>let q = new Models.QueryOptions('my_query');
+q.func22.created_at = this.createdAtRange;
+this.dbQueryService.getQuery(q).pipe(rxjs.first()).subscribe(r =&gt; console.log(r.items));</code></pre></div>
+  <div class="example"><h3><span class="num">16</span>Строка + точное значение</h3><pre><code>let q = new Models.QueryOptions('my_query');
+q.flt.title = 'заявка';
+q.flteq.is_active = true;
+this.dbQueryService.getQuery(q).pipe(rxjs.first()).subscribe(r =&gt; console.log(r.items));</code></pre></div>
+  <div class="example"><h3><span class="num">17</span>Строка + список + диапазон</h3><pre><code>let q = new Models.QueryOptions('my_query');
+q.flt.title = 'оплата';
+q.fltin.status_id = ['2', '3'];
+q.func22.amount = '50000|300000';
+this.dbQueryService.getQuery(q).pipe(rxjs.first()).subscribe(r =&gt; console.log(r.items));</code></pre></div>
+  <div class="example"><h3><span class="num">18</span>param1</h3><pre><code>let q = new Models.QueryOptions('get_filter_cols_by_code');
+q.param1 = 'ai_prompt';
+this.dbQueryService.getQuery(q).pipe(rxjs.first()).subscribe(r =&gt; this.fields = r.items || []);</code></pre></div>
+  <div class="example"><h3><span class="num">19</span>param1 для массовых действий</h3><pre><code>let q = new Models.QueryOptions('entity_acts_many');
+q.param1 = this.entity_id;
+this.dbQueryService.getQuery(q).pipe(rxjs.first()).subscribe(r =&gt; this.acts_many = r.items || []);</code></pre></div>
+  <div class="example"><h3><span class="num">20</span>param1 для tools сущности</h3><pre><code>let q = new Models.QueryOptions('bp_processes_tools_by_entity_id');
+q.page = 1;
+q.perpage = 100;
+q.param1 = this.entity_id;
+this.dbQueryService.getQuery(q).pipe(rxjs.first()).subscribe(r =&gt; this.tools = r.items || []);</code></pre></div>
+  <div class="example"><h3><span class="num">21</span>param1 + param2</h3><pre><code>let q = new Models.QueryOptions('my_query');
+q.param1 = '100';
+q.param2 = 'active';
+this.dbQueryService.getQuery(q).pipe(rxjs.first()).subscribe(r =&gt; console.log(r.items));</code></pre></div>
+  <div class="example"><h3><span class="num">22</span>Параметры + фильтр</h3><pre><code>let q = new Models.QueryOptions('my_query');
+q.param1 = this.entity_id;
+q.flt.title = 'тест';
+q.flteq.is_active = true;
+this.dbQueryService.getQuery(q).pipe(rxjs.first()).subscribe(r =&gt; console.log(r.items));</code></pre></div>
+  <div class="example"><h3><span class="num">23</span>Сортировка ASC</h3><pre><code>let q = new Models.QueryOptions('ai_prompt');
+q.orderBy = 'title';
+q.orderAsc = 0;
+this.dbQueryService.getQuery(q).pipe(rxjs.first()).subscribe(r =&gt; console.log(r.items));</code></pre></div>
+  <div class="example"><h3><span class="num">24</span>Сортировка DESC</h3><pre><code>let q = new Models.QueryOptions('ai_prompt');
+q.orderBy = 'updated_at';
+q.orderAsc = 1;
+this.dbQueryService.getQuery(q).pipe(rxjs.first()).subscribe(r =&gt; console.log(r.items));</code></pre></div>
+  <div class="example"><h3><span class="num">25</span>Фильтр + сортировка + пагинация</h3><pre><code>let q = new Models.QueryOptions('my_query');
+q.page = 2;
+q.perpage = 20;
+q.flt.title = 'банк';
+q.orderBy = 'created_at';
+q.orderAsc = 1;
+this.dbQueryService.getQuery(q).pipe(rxjs.first()).subscribe(r =&gt; console.log(r.items, r.allCount));</code></pre></div>
+  <div class="example"><h3><span class="num">26</span>JIT: параметры из data</h3><pre><code>let q = new Models.QueryOptions(data.query_code || 'my_query');
+if (data.flt) q.flt = data.flt;
+if (data.flteq) q.flteq = data.flteq;
+if (data.fltin) q.fltin = data.fltin;
+if (data.func22) q.func22 = data.func22;
+if (data.param1) q.param1 = data.param1;
+if (data.param2) q.param2 = data.param2;
+if (data.limit) q.perpage = data.limit;
+this.dbQueryService.getQuery(q).pipe(rxjs.first()).subscribe(r =&gt; console.log(r.items));</code></pre></div>
+  <div class="example"><h3><span class="num">27</span>Архив через $archive</h3><pre><code>let q = new Models.QueryOptions(this.table_code + '$archive');
+q.param1 = item.initial_req_uuid;
+this.dbQueryService.getQuery(q).pipe(rxjs.first()).subscribe(r =&gt; this.archives = r.items || []);</code></pre></div>
+  <div class="example"><h3><span class="num">28</span>Select-query для выпадающего списка</h3><pre><code>let q = new Models.QueryOptions('ai_prompt_select');
+q.page = 1;
+q.perpage = 35;
+q.flt.name = 'sales';
+this.dbQueryService.getQuery(q).pipe(rxjs.first()).subscribe(r =&gt; this.options = r.items || []);</code></pre></div>
+  <div class="example"><h3><span class="num">29</span>Query с need_filter</h3><pre><code>let q = new Models.QueryOptions('heavy_query');
+q.page = 1;
+q.perpage = 50;
+q.flteq.company_id = this.companyId;
+this.dbQueryService.getQuery(q).pipe(rxjs.first()).subscribe(r =&gt; {
+    if (r.error == '1') return;
+    this.filtered = r.items || [];
+});</code></pre></div>
+  <div class="example"><h3><span class="num">30</span>Универсальный helper</h3><pre><code>loadQuery(code, options = {}) {
+    let q = new Models.QueryOptions(code);
+    q.page = options.page || 1;
+    q.perpage = options.perpage === 0 ? 0 : (options.perpage || 15);
+
+    if (options.flt) q.flt = options.flt;
+    if (options.flteq) q.flteq = options.flteq;
+    if (options.fltin) q.fltin = options.fltin;
+    if (options.func22) q.func22 = options.func22;
+    if (options.param1 !== undefined) q.param1 = options.param1;
+    if (options.param2 !== undefined) q.param2 = options.param2;
+    if (options.orderBy) q.orderBy = options.orderBy;
+    if (options.orderAsc !== undefined) q.orderAsc = options.orderAsc;
+
+    return this.dbQueryService.getQuery(q).pipe(rxjs.first());
+}
+
+this.loadQuery('ai_prompt', {
+    page: 1,
+    perpage: 25,
+    flt: { title: 'GPT' },
+    orderBy: 'updated_at',
+    orderAsc: 1
+}).subscribe(r =&gt; this.filtered = r.items || []);</code></pre></div>
+
+  <h2 id="mistakes">8. Типовые ошибки</h2>
+  <table>
+    <thead><tr><th>Ошибка</th><th>Как правильно</th></tr></thead>
+    <tbody>
+      <tr><td>Reference фильтруется через <code>flt</code></td><td>Использовать <code>fltin</code> с массивом ID.</td></tr>
+      <tr><td>Boolean передаётся как строковый поиск</td><td>Использовать <code>flteq</code>.</td></tr>
+      <tr><td>Диапазон собирается двумя независимыми фильтрами</td><td>Использовать <code>func22</code>.</td></tr>
+      <tr><td>Нет фильтра при <code>need_filter=1</code></td><td>Передать фильтр/form-параметр.</td></tr>
+      <tr><td><code>perpage=0</code> на огромной таблице</td><td>Использовать пагинацию.</td></tr>
+      <tr><td>Сортировка по несуществующему alias</td><td><code>orderBy</code> должен соответствовать полю query.</td></tr>
+      <tr><td><code>items.length</code> используется как общее количество</td><td>Для пагинации использовать <code>allCount</code>.</td></tr>
+    </tbody>
+  </table>
+
+  <div class="footer">
+    <a class="home" href="index.html">← Главная index.html</a>
+    <p class="muted">DamuBPM Query — практическое руководство.</p>
+  </div>
+</div>
+</body>
+</html>
