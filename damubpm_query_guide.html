@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>DamuBPM Query — руководство и 30 примеров</title>
+  <title>DamuBPM Query — руководство и 100+ примеров</title>
   <style>
     :root{--bg:#f6f8fb;--card:#fff;--text:#1f2937;--muted:#64748b;--line:#e2e8f0;--primary:#2563eb;--code:#111827;--note:#eff6ff;--warn:#fff7ed}
     *{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:var(--bg);color:var(--text);font:15px/1.6 Inter,Segoe UI,Arial,sans-serif}
@@ -18,6 +18,284 @@
     .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:12px}.num{display:inline-flex;width:29px;height:29px;border-radius:50%;align-items:center;justify-content:center;background:#eef4ff;color:#1d4ed8;font-size:13px;font-weight:800;margin-right:8px}
     .footer{margin-top:36px;padding-top:18px;border-top:1px solid var(--line)}
   </style>
+
+<style id="dark-theme-overrides">
+:root{
+  color-scheme: dark;
+  --bg:#0b1020;
+  --bg-soft:#111827;
+  --panel:#151c2c;
+  --panel-2:#1b2436;
+  --border:#2b364d;
+  --text:#e7edf7;
+  --muted:#9aa8bd;
+  --accent:#6ea8fe;
+  --accent-2:#8bb8ff;
+  --code:#0a0f1a;
+  --note:#10213f;
+  --warn:#31220d;
+}
+html,body{background:var(--bg)!important;color:var(--text)!important}
+body{margin:0}
+.query-doc{color:var(--text)!important;background:transparent!important}
+.query-doc .hero,
+.query-doc .card,
+.query-doc .example,
+.query-doc table,
+.query-doc .toc a,
+.query-doc .home{
+  background:var(--panel)!important;
+  border-color:var(--border)!important;
+  color:var(--text)!important;
+  box-shadow:none!important
+}
+.query-doc .hero{
+  background:linear-gradient(180deg,#151c2c 0%,#111827 100%)!important
+}
+.query-doc .muted,.query-doc .footer{color:var(--muted)!important}
+.query-doc h1,.query-doc h2,.query-doc h3,.query-doc p,
+.query-doc li,.query-doc td,.query-doc th{color:var(--text)!important}
+.query-doc a{color:var(--accent)!important}
+.query-doc a:hover{color:var(--accent-2)!important}
+.query-doc .home:hover,.query-doc .toc a:hover{
+  background:var(--panel-2)!important;
+  border-color:#3a4a68!important
+}
+.query-doc .badge{background:#18305a!important;color:#aecdff!important}
+.query-doc .note{
+  background:var(--note)!important;
+  border-left-color:#4f8cff!important;
+  color:#dce9ff!important
+}
+.query-doc .warn{
+  background:var(--warn)!important;
+  border-left-color:#f6ad3c!important;
+  color:#ffe9bf!important
+}
+.query-doc .flow{
+  background:#0f1728!important;
+  border-color:var(--border)!important;
+  color:#d8e4f5!important
+}
+.query-doc pre{
+  background:var(--code)!important;
+  color:#dbe7f6!important;
+  border:1px solid #253149!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.02)!important
+}
+.query-doc code{color:#b9d4ff!important}
+.query-doc p code,.query-doc td code,.query-doc li code{
+  background:#0f1728!important;
+  border:1px solid #26324a!important;
+  border-radius:4px!important;
+  padding:1px 5px!important
+}
+.query-doc table{background:var(--panel)!important}
+.query-doc th{background:#1a2436!important}
+.query-doc td,.query-doc th{border-color:var(--border)!important}
+.query-doc tr:nth-child(even) td{background:#121a29!important}
+.query-doc .num{background:#19345f!important;color:#b7d3ff!important}
+.query-doc .footer{border-top-color:var(--border)!important}
+::selection{background:#315c9e;color:#fff}
+::-webkit-scrollbar{width:10px;height:10px}
+::-webkit-scrollbar-track{background:#0b1020}
+::-webkit-scrollbar-thumb{background:#33415c;border-radius:10px}
+::-webkit-scrollbar-thumb:hover{background:#435270}
+</style>
+
+
+<style id="dark-theme-fixed">
+:root{
+  color-scheme:dark;
+  --bg:#090d16 !important;
+  --card:#121826 !important;
+  --text:#f3f6fb !important;
+  --muted:#b7c0cf !important;
+  --line:#2b3445 !important;
+  --primary:#8ab4ff !important;
+  --code:#070b12 !important;
+  --note:#10233e !important;
+  --warn:#33230d !important;
+}
+
+html,
+body{
+  background:#090d16 !important;
+  color:#f3f6fb !important;
+}
+
+body,
+.wrap{
+  color:#f3f6fb !important;
+}
+
+.wrap{
+  background:transparent !important;
+}
+
+.wrap h1,
+.wrap h2,
+.wrap h3,
+.wrap h4,
+.wrap p,
+.wrap li,
+.wrap td,
+.wrap th,
+.wrap strong,
+.wrap b,
+.wrap span:not(.chip):not(.num),
+.wrap div{
+  color:#f3f6fb;
+}
+
+.wrap .muted,
+.wrap .muted *,
+.wrap .footer{
+  color:#b7c0cf !important;
+}
+
+.wrap .hero,
+.wrap .card,
+.wrap .example{
+  background:#121826 !important;
+  border-color:#2b3445 !important;
+  box-shadow:0 10px 28px rgba(0,0,0,.25) !important;
+}
+
+.wrap .hero{
+  background:linear-gradient(180deg,#151d2d 0%,#101622 100%) !important;
+}
+
+.wrap .home,
+.wrap .chip,
+.wrap .toc a{
+  background:#151d2d !important;
+  border-color:#33405a !important;
+}
+
+.wrap .home,
+.wrap a{
+  color:#8ab4ff !important;
+}
+
+.wrap .home:hover,
+.wrap .toc a:hover{
+  background:#1b2538 !important;
+  border-color:#4b5f82 !important;
+  color:#b9d1ff !important;
+}
+
+.wrap .chip{
+  color:#b9d1ff !important;
+  background:#183057 !important;
+}
+
+.wrap .note{
+  background:#10233e !important;
+  color:#e8f1ff !important;
+  border-left-color:#5b96ff !important;
+}
+
+.wrap .note *,
+.wrap .warn *{
+  color:inherit !important;
+}
+
+.wrap .warn{
+  background:#33230d !important;
+  color:#ffe8b5 !important;
+  border-left-color:#f4ad3f !important;
+}
+
+.wrap table{
+  background:#111827 !important;
+  color:#f3f6fb !important;
+}
+
+.wrap th{
+  background:#1a2231 !important;
+  color:#ffffff !important;
+}
+
+.wrap td{
+  background:#111827 !important;
+  color:#edf2f8 !important;
+}
+
+.wrap tr:nth-child(even) td{
+  background:#0e1521 !important;
+}
+
+.wrap th,
+.wrap td{
+  border-color:#2b3445 !important;
+}
+
+.wrap pre{
+  background:#070b12 !important;
+  color:#eaf2ff !important;
+  border:1px solid #29344a !important;
+}
+
+.wrap pre code{
+  color:#eaf2ff !important;
+  background:transparent !important;
+  border:0 !important;
+  padding:0 !important;
+}
+
+.wrap code{
+  color:#b9d4ff !important;
+}
+
+.wrap p code,
+.wrap li code,
+.wrap td code,
+.wrap .note code,
+.wrap .warn code{
+  background:#0b1220 !important;
+  border:1px solid #2b3850 !important;
+  color:#cfe0ff !important;
+  border-radius:4px !important;
+  padding:1px 5px !important;
+}
+
+.wrap .flow{
+  background:#0e1521 !important;
+  color:#e8eef8 !important;
+  border-color:#2b3445 !important;
+}
+
+.wrap .num{
+  background:#1a3765 !important;
+  color:#d4e4ff !important;
+}
+
+.wrap .footer{
+  border-top-color:#2b3445 !important;
+}
+
+::selection{
+  background:#355f9d;
+  color:#fff;
+}
+
+::-webkit-scrollbar{
+  width:10px;
+  height:10px;
+}
+::-webkit-scrollbar-track{
+  background:#090d16;
+}
+::-webkit-scrollbar-thumb{
+  background:#344159;
+  border-radius:10px;
+}
+::-webkit-scrollbar-thumb:hover{
+  background:#465673;
+}
+</style>
+
 </head>
 <body>
 <div class="wrap">
@@ -28,7 +306,7 @@
 
   <section class="hero">
     <span class="chip">Практическая инструкция</span>
-    <h1>Query в DamuBPM: логика работы, параметры, фильтры и 30 примеров</h1>
+    <h1>Query в DamuBPM: SQL, параметры, фильтры и 60 примеров</h1>
     <p class="muted">Материал составлен по серверному обработчику Query и штатной CRUD/JIT-логике DamuBPM через <code>Models.QueryOptions</code> и <code>dbQueryService.getQuery()</code>.</p>
     <div class="note"><b>Важно.</b> Алиасы фильтров должны существовать в конкретном query и его метаданных. В примерах <code>title</code>, <code>status_id</code>, <code>created_at</code>, <code>amount</code> и другие имена используются как демонстрационные.</div>
   </section>
@@ -40,8 +318,11 @@
     <a href="#filters">4. Фильтрация</a>
     <a href="#special">5. Спецпараметры</a>
     <a href="#response">6. Ответ сервера</a>
-    <a href="#examples">7. 30 примеров</a>
-    <a href="#mistakes">8. Ошибки</a>
+    <a href="#sql-writing">7. SQL + 30 примеров</a>
+    <a href="#examples">8. QueryOptions: 30 примеров</a>
+    <a href="#sql-placeholders">9. SQL с ? placeholders</a>
+    <a href="#preparams">10. preparam до %filter%</a>
+    <a href="#mistakes">11. Ошибки</a>
   </nav>
 
   <h2 id="architecture">1. Как работает Query</h2>
@@ -168,7 +449,485 @@ q.func22.amount = '100000|500000';</code></pre>
   "license": "..."
 }</code></pre>
 
-  <h2 id="examples">7. 30 примеров запросов</h2>
+
+  <h2 id="sql-writing">7. Как писать SQL для Query в DamuBPM</h2>
+  <p>В <code>queries.sql_text</code> хранится SQL-шаблон. DamuBPM не просто выполняет его как строку: сервер строит фильтры, передает параметры, подставляет служебные значения, считает общее количество и добавляет пагинацию.</p>
+
+  <div class="note"><b>Ключевое правило:</b> основную таблицу алиасьте как <code>main</code>. Обработчик <code>getRowById</code> сам заменяет <code>%filter%</code> на <code>where main.id=?</code>, поэтому другой алиас сломает этот режим.</div>
+
+  <h3>7.1 Базовый шаблон</h3>
+  <pre><code>select
+    main.id,
+    main.title
+from public.my_entity main
+%filter%
+%order%</code></pre>
+
+  <h3>7.2 Служебные конструкции</h3>
+  <table>
+    <thead><tr><th>Конструкция</th><th>Назначение</th></tr></thead>
+    <tbody>
+      <tr><td><code>main</code></td><td>Рекомендуемый алиас основной сущности. Нужен, в частности, для штатного <code>getRowById</code>.</td></tr>
+      <tr><td><code>%filter%</code></td><td>Место, куда <code>QueryFilterBuild</code> вставляет динамические условия из <code>flt</code>, <code>flteq</code>, <code>fltin</code>, <code>func22</code> и других метаданных query.</td></tr>
+      <tr><td><code>%order%</code></td><td>Место для динамической сортировки <code>orderBy/orderAsc</code>.</td></tr>
+      <tr><td><code>:user_id</code></td><td>ID текущего пользователя. Используется в реальных DamuBPM query, например для признака прочтения.</td></tr>
+      <tr><td><code>:domain</code></td><td>В серверном обработчике заменяется на текущий HTTP Host.</td></tr>
+      <tr><td><code>:lang</code></td><td>Язык запроса. В ветке <code>getRowById</code> сервер явно подставляет текущее значение языка.</td></tr>
+      <tr><td><code>total_count$</code></td><td>Если колонка присутствует, сервер может взять из нее <code>allCount</code>. Типовой вариант: <code>count(*) over() as total_count$</code>.</td></tr>
+      <tr><td><code>"sys$uuid"</code></td><td>Системный UUID записи, часто возвращается auto-query.</td></tr>
+      <tr><td><code>"field_id$"</code></td><td>Типовой алиас отображаемого значения reference.</td></tr>
+      <tr><td><code>"field_id$code"</code></td><td>Дополнительный атрибут связанной reference-записи.</td></tr>
+    </tbody>
+  </table>
+
+  <h3>7.3 Где ставить постоянные условия</h3>
+  <p>В реальных auto-query DamuBPM используется паттерн, где <code>%filter%</code> стоит до постоянных ограничений:</p>
+  <pre><code>from public.my_entity main
+%filter%
+    and coalesce(main.in$trash, 0) = 0
+%order%</code></pre>
+  <p>Такой стиль позволяет QueryFilterBuild сформировать базовый блок фильтрации, после чего query добавляет собственные ограничения.</p>
+
+  <h3>7.4 Пагинация: LIMIT писать не нужно</h3>
+  <p>Для обычного Query не добавляйте свой <code>limit/offset</code>: сервер делает это сам по <code>page/perpage</code>. PostgreSQL и MySQL получают <code>limit ? offset ?</code>, Oracle — <code>OFFSET ? ROWS FETCH NEXT ? ROWS ONLY</code>, ClickHouse — свой вариант <code>limit/offset</code>. При <code>perpage=0</code> сервер выполняет SQL без пагинации.</p>
+
+  <h3>7.5 COUNT и total_count$</h3>
+  <p>Для auto-query сервер умеет считать <code>allCount</code> отдельным count SQL. Если запрос уже возвращает <code>total_count$</code>, можно использовать оконную функцию:</p>
+  <pre><code>select
+    count(*) over() as total_count$,
+    main.id,
+    main.title
+from public.my_entity main
+%filter%
+%order%</code></pre>
+
+  <h3>7.6 Reference-поля</h3>
+  <p>Практичный паттерн — оставить ID в исходном поле и отдельно вернуть отображаемое значение:</p>
+  <pre><code>select
+    main.status_id,
+    status_id.title as "status_id$",
+    status_id.code as "status_id$code"
+from public.my_entity main
+left join statuses status_id on status_id.id = main.status_id
+%filter%
+%order%</code></pre>
+
+  <h3>7.7 Параметры param1/param2</h3>
+  <div class="warn"><b>Не придумывайте привязку параметров.</b> Из обработчика видно, что <code>QueryFilterBuild</code> формирует <code>formArray</code>, который передается в prepared query. Но точное соответствие <code>param1/param2</code> SQL-placeholder'ам задается логикой/метаданными конкретной версии QueryFilterBuild. Для существующего query сохраняйте уже используемый порядок placeholder'ов.</div>
+
+  <h3>7.8 PostgreSQL и External DB</h3>
+  <p>Основная DamuBPM БД в этой инструкции — PostgreSQL. Для query на External DB учитывайте его <code>dbtype</code>: PostgreSQL-специфичные функции вроде <code>to_char</code>, <code>date_trunc</code>, JSONB и <code>distinct on</code> могут не работать в Oracle/MySQL/ClickHouse.</p>
+
+  <h3>7.9 Что обязательно проверить</h3>
+  <div class="card">
+    <p>1. Основная таблица имеет алиас <code>main</code>.</p>
+    <p>2. Есть <code>%filter%</code>, если query должен поддерживать штатные фильтры.</p>
+    <p>3. Есть <code>%order%</code>, если нужна динамическая сортировка.</p>
+    <p>4. Вы не добавили ручной <code>LIMIT/OFFSET</code> без необходимости.</p>
+    <p>5. Алиасы выбранных полей совпадают с метаданными фильтрации/таблицы.</p>
+    <p>6. Reference-поля возвращают ID и нужные отображаемые алиасы.</p>
+    <p>7. Для больших выборок используется пагинация или <code>total_count$</code>.</p>
+    <p>8. PostgreSQL-специфичный SQL не переносится вслепую на External DB другого типа.</p>
+  </div>
+
+  <h2 id="sql-examples">7.10 30 примеров SQL для DamuBPM Query</h2>
+  <div class="example">
+    <h3><span class="num">1</span>Минимальный entity query</h3>
+    <p class="muted">Базовый шаблон с обязательным алиасом main и местами для динамического фильтра и сортировки.</p>
+    <pre><code>select
+    main.id,
+    main.title
+from public.my_entity main
+%filter%
+%order%</code></pre>
+  </div>
+  <div class="example">
+    <h3><span class="num">2</span>Query с sys$uuid</h3>
+    <p class="muted">Типовой DamuBPM query часто возвращает системный UUID вместе с id.</p>
+    <pre><code>select
+    main.&quot;sys$uuid&quot; as &quot;sys$uuid&quot;,
+    main.id,
+    main.title
+from public.my_entity main
+%filter%
+%order%</code></pre>
+  </div>
+  <div class="example">
+    <h3><span class="num">3</span>Query с total_count$</h3>
+    <p class="muted">Позволяет серверу взять allCount из первой строки результата и не выполнять отдельный COUNT.</p>
+    <pre><code>select
+    count(*) over() as total_count$,
+    main.&quot;sys$uuid&quot; as &quot;sys$uuid&quot;,
+    main.id,
+    main.title
+from public.my_entity main
+%filter%
+%order%</code></pre>
+  </div>
+  <div class="example">
+    <h3><span class="num">4</span>Select-query для справочника</h3>
+    <p class="muted">Для prime-select/справочника удобно возвращать id и name. Поле two встречается в штатных select-query DamuBPM.</p>
+    <pre><code>select
+    main.title as name,
+    main.&quot;sys$uuid&quot; as &quot;sys$uuid&quot;,
+    main.id,
+    2 as two
+from public.my_entity main
+%filter%
+%order%</code></pre>
+  </div>
+  <div class="example">
+    <h3><span class="num">5</span>Исключение записей в корзине</h3>
+    <p class="muted">Типовой auto-query DamuBPM размещает постоянное условие после %filter%.</p>
+    <pre><code>select
+    count(*) over() as total_count$,
+    main.id,
+    main.title
+from public.my_entity main
+%filter%
+    and coalesce(main.in$trash, 0) = 0
+%order%</code></pre>
+  </div>
+  <div class="example">
+    <h3><span class="num">6</span>Только записи из корзины</h3>
+    <p class="muted">Отдельный query, например с кодом my_entity$archive, может выбирать архив/корзину.</p>
+    <pre><code>select
+    count(*) over() as total_count$,
+    main.id,
+    main.title,
+    main.updated_at
+from public.my_entity main
+%filter%
+    and coalesce(main.in$trash, 0) = 1
+%order%</code></pre>
+  </div>
+  <div class="example">
+    <h3><span class="num">7</span>Reference через LEFT JOIN</h3>
+    <p class="muted">Возвращаем ID ссылки и отображаемое название отдельным DamuBPM-алиасом.</p>
+    <pre><code>select
+    main.id,
+    main.status_id,
+    status_id.title as &quot;status_id$&quot;
+from public.my_entity main
+left join statuses status_id on status_id.id = main.status_id
+%filter%
+%order%</code></pre>
+  </div>
+  <div class="example">
+    <h3><span class="num">8</span>Reference с дополнительными атрибутами</h3>
+    <p class="muted">Можно отдавать код и другие свойства reference-записи через алиасы с $.</p>
+    <pre><code>select
+    main.id,
+    main.status_id,
+    status_id.title as &quot;status_id$&quot;,
+    status_id.code as &quot;status_id$code&quot;,
+    status_id.start_workflow as &quot;status_id$start_workflow&quot;
+from public.my_entity main
+left join statuses status_id on status_id.id = main.status_id
+%filter%
+%order%</code></pre>
+  </div>
+  <div class="example">
+    <h3><span class="num">9</span>Пользователь created_by</h3>
+    <p class="muted">Типовой join к users для отображения автора и связанных атрибутов.</p>
+    <pre><code>select
+    main.id,
+    main.created_by,
+    created_by.title as &quot;created_by$&quot;,
+    created_by.email as &quot;created_by$email&quot;,
+    created_by.login as &quot;created_by$login&quot;
+from public.my_entity main
+left join users created_by on created_by.id = main.created_by
+%filter%
+%order%</code></pre>
+  </div>
+  <div class="example">
+    <h3><span class="num">10</span>Признак прочтения текущим пользователем</h3>
+    <p class="muted">Реальный DamuBPM-паттерн с :user_id и таблицей прочтений.</p>
+    <pre><code>select
+    main.id,
+    main.title,
+    (
+        select rr.read_at
+        from read_rows rr
+        where rr.entity_pk = main.&quot;sys$uuid&quot;
+          and rr.user_id = :user_id
+        limit 1
+    ) as &quot;read_at$&quot;
+from public.my_entity main
+%filter%
+%order%</code></pre>
+  </div>
+  <div class="example">
+    <h3><span class="num">11</span>Только записи текущего пользователя</h3>
+    <p class="muted">Условие по :user_id добавлено как постоянная часть query.</p>
+    <pre><code>select
+    main.id,
+    main.title,
+    main.created_by
+from public.my_entity main
+%filter%
+    and main.created_by = :user_id
+%order%</code></pre>
+  </div>
+  <div class="example">
+    <h3><span class="num">12</span>Фильтрация по текущему host через :domain</h3>
+    <p class="muted">В QueryRestApiGet :domain заменяется на текущий HTTP Host.</p>
+    <pre><code>select
+    main.id,
+    main.title,
+    main.host
+from public.my_entity main
+%filter%
+    and main.host = :domain
+%order%</code></pre>
+  </div>
+  <div class="example">
+    <h3><span class="num">13</span>COALESCE для nullable значений</h3>
+    <p class="muted">Удобно нормализовать NULL прямо в результирующем наборе.</p>
+    <pre><code>select
+    main.id,
+    main.title,
+    coalesce(main.amount, 0) as amount,
+    coalesce(main.comment, &#x27;&#x27;) as comment
+from public.my_entity main
+%filter%
+%order%</code></pre>
+  </div>
+  <div class="example">
+    <h3><span class="num">14</span>CASE для вычисляемого статуса</h3>
+    <p class="muted">Вычисляемые колонки можно фильтровать/сортировать только если соответствующая мета-логика query это допускает.</p>
+    <pre><code>select
+    main.id,
+    main.title,
+    case
+        when main.is_active = 1 then &#x27;Активен&#x27;
+        else &#x27;Неактивен&#x27;
+    end as state_title
+from public.my_entity main
+%filter%
+%order%</code></pre>
+  </div>
+  <div class="example">
+    <h3><span class="num">15</span>Склейка нескольких полей</h3>
+    <p class="muted">Формируем удобное отображаемое поле для таблицы или select-query.</p>
+    <pre><code>select
+    main.id,
+    concat(main.code, &#x27; — &#x27;, main.title) as display_name
+from public.my_entity main
+%filter%
+%order%</code></pre>
+  </div>
+  <div class="example">
+    <h3><span class="num">16</span>Форматирование даты PostgreSQL</h3>
+    <p class="muted">Подходит для основной PostgreSQL БД. Для External DB учитывайте диалект.</p>
+    <pre><code>select
+    main.id,
+    main.title,
+    to_char(main.created_at, &#x27;YYYY-MM-DD HH24:MI:SS&#x27;) as created_at
+from public.my_entity main
+%filter%
+%order%</code></pre>
+  </div>
+  <div class="example">
+    <h3><span class="num">17</span>Год и месяц через EXTRACT</h3>
+    <p class="muted">Полезно для аналитических колонок и группировок.</p>
+    <pre><code>select
+    main.id,
+    main.title,
+    extract(year from main.created_at) as created_year,
+    extract(month from main.created_at) as created_month
+from public.my_entity main
+%filter%
+%order%</code></pre>
+  </div>
+  <div class="example">
+    <h3><span class="num">18</span>Группировка по дню</h3>
+    <p class="muted">PostgreSQL date_trunc удобно применять в отчетных query.</p>
+    <pre><code>select
+    date_trunc(&#x27;day&#x27;, main.created_at) as day,
+    count(*) as cnt
+from public.my_entity main
+%filter%
+group by date_trunc(&#x27;day&#x27;, main.created_at)
+%order%</code></pre>
+  </div>
+  <div class="example">
+    <h3><span class="num">19</span>COUNT по reference</h3>
+    <p class="muted">Пример агрегатного query по статусам.</p>
+    <pre><code>select
+    main.status_id,
+    count(*) as cnt
+from public.my_entity main
+%filter%
+group by main.status_id
+%order%</code></pre>
+  </div>
+  <div class="example">
+    <h3><span class="num">20</span>SUM по компаниям</h3>
+    <p class="muted">Агрегируем сумму и одновременно выводим название reference.</p>
+    <pre><code>select
+    main.company_id,
+    company_id.title as &quot;company_id$&quot;,
+    count(*) as cnt,
+    sum(coalesce(main.amount, 0)) as total_amount
+from public.my_entity main
+left join companies company_id on company_id.id = main.company_id
+%filter%
+group by main.company_id, company_id.title
+%order%</code></pre>
+  </div>
+  <div class="example">
+    <h3><span class="num">21</span>ROW_NUMBER для нумерации</h3>
+    <p class="muted">Window-функции можно использовать без разрушения исходного набора строк.</p>
+    <pre><code>select
+    main.id,
+    main.title,
+    row_number() over(order by main.created_at desc) as row_no
+from public.my_entity main
+%filter%
+%order%</code></pre>
+  </div>
+  <div class="example">
+    <h3><span class="num">22</span>Сумма по группе через window</h3>
+    <p class="muted">Показываем строку и одновременно общую сумму внутри компании.</p>
+    <pre><code>select
+    main.id,
+    main.company_id,
+    main.amount,
+    sum(coalesce(main.amount, 0)) over(partition by main.company_id) as company_total
+from public.my_entity main
+%filter%
+%order%</code></pre>
+  </div>
+  <div class="example">
+    <h3><span class="num">23</span>Последняя запись в каждой группе</h3>
+    <p class="muted">PostgreSQL DISTINCT ON удобен для query «последнее состояние объекта».</p>
+    <pre><code>select distinct on (main.parent_id)
+    main.id,
+    main.parent_id,
+    main.title,
+    main.created_at
+from public.my_entity main
+%filter%
+order by main.parent_id, main.created_at desc</code></pre>
+  </div>
+  <div class="example">
+    <h3><span class="num">24</span>JSONB: чтение поля</h3>
+    <p class="muted">PostgreSQL JSONB можно раскрывать в отдельные колонки.</p>
+    <pre><code>select
+    main.id,
+    main.title,
+    main.payload -&gt;&gt; &#x27;type&#x27; as payload_type,
+    main.payload -&gt;&gt; &#x27;source&#x27; as payload_source
+from public.my_entity main
+%filter%
+%order%</code></pre>
+  </div>
+  <div class="example">
+    <h3><span class="num">25</span>JSONB: вложенное поле</h3>
+    <p class="muted">Оператор #&gt;&gt; возвращает текст по пути внутри JSONB.</p>
+    <pre><code>select
+    main.id,
+    main.payload #&gt;&gt; &#x27;{customer,name}&#x27; as customer_name,
+    main.payload #&gt;&gt; &#x27;{customer,bin}&#x27; as customer_bin
+from public.my_entity main
+%filter%
+%order%</code></pre>
+  </div>
+  <div class="example">
+    <h3><span class="num">26</span>STRING_AGG для дочерних записей</h3>
+    <p class="muted">Собираем названия дочерних строк в одно текстовое поле.</p>
+    <pre><code>select
+    main.id,
+    main.title,
+    string_agg(child.title, &#x27;, &#x27; order by child.title) as child_titles
+from public.my_entity main
+left join my_child child on child.parent_id = main.id
+%filter%
+group by main.id, main.title
+%order%</code></pre>
+  </div>
+  <div class="example">
+    <h3><span class="num">27</span>EXISTS вместо JOIN</h3>
+    <p class="muted">EXISTS удобен, когда нужно проверить наличие дочерней записи без размножения строк.</p>
+    <pre><code>select
+    main.id,
+    main.title
+from public.my_entity main
+%filter%
+    and exists (
+        select 1
+        from my_child child
+        where child.parent_id = main.id
+          and child.is_active = 1
+    )
+%order%</code></pre>
+  </div>
+  <div class="example">
+    <h3><span class="num">28</span>NOT EXISTS</h3>
+    <p class="muted">Выбираем объекты, у которых нет активных дочерних записей.</p>
+    <pre><code>select
+    main.id,
+    main.title
+from public.my_entity main
+%filter%
+    and not exists (
+        select 1
+        from my_child child
+        where child.parent_id = main.id
+          and child.is_active = 1
+    )
+%order%</code></pre>
+  </div>
+  <div class="example">
+    <h3><span class="num">29</span>CTE для сложного отчета</h3>
+    <p class="muted">CTE делает сложный sql_text читаемее. Алиас main сохраняем в основной части.</p>
+    <pre><code>with paid as (
+    select
+        p.parent_id,
+        sum(coalesce(p.amount, 0)) as paid_amount
+    from payments p
+    group by p.parent_id
+)
+select
+    main.id,
+    main.title,
+    coalesce(paid.paid_amount, 0) as paid_amount
+from public.my_entity main
+left join paid on paid.parent_id = main.id
+%filter%
+%order%</code></pre>
+  </div>
+  <div class="example">
+    <h3><span class="num">30</span>Расширенный DamuBPM auto-query</h3>
+    <p class="muted">Комбинация total_count$, sys$uuid, read_at$, reference, created_by и защиты от корзины.</p>
+    <pre><code>select
+    count(*) over() as total_count$,
+    main.&quot;sys$uuid&quot; as &quot;sys$uuid&quot;,
+    (
+        select rr.read_at
+        from read_rows rr
+        where rr.entity_pk = main.&quot;sys$uuid&quot;
+          and rr.user_id = :user_id
+        limit 1
+    ) as &quot;read_at$&quot;,
+    status_id.code as &quot;status_id$code&quot;,
+    status_id.title as &quot;status_id$&quot;,
+    created_by.title as &quot;created_by$&quot;,
+    main.title,
+    main.status_id,
+    main.created_by,
+    main.id
+from public.my_entity main
+left join statuses status_id on status_id.id = main.status_id
+left join users created_by on created_by.id = main.created_by
+%filter%
+    and coalesce(main.in$trash, 0) = 0
+%order%</code></pre>
+  </div>
+
+  <h2 id="examples">8. 30 примеров QueryOptions</h2>
 
   <div class="example"><h3><span class="num">1</span>Минимальный запрос</h3><pre><code>let q = new Models.QueryOptions('ai_prompt');
 this.dbQueryService.getQuery(q).pipe(rxjs.first()).subscribe(r =&gt; console.log(r.items));</code></pre></div>
@@ -315,7 +1074,473 @@ this.loadQuery('ai_prompt', {
     orderAsc: 1
 }).subscribe(r =&gt; this.filtered = r.items || []);</code></pre></div>
 
-  <h2 id="mistakes">8. Типовые ошибки</h2>
+  <h2 id="sql-placeholders">SQL с <code>?</code> placeholders — 30 примеров</h2>
+<div class="note"><b>Bind-параметры.</b> В DamuBPM знак <code>?</code> используется как позиционный placeholder значения. Сервер подготавливает SQL через <code>DbBindReplace(...)</code>, а значения передаёт ORM отдельно. Поэтому пользовательские значения не нужно конкатенировать в SQL.</div>
+<div class="warn"><b>Порядок важен.</b> Первый <code>?</code> получает первое bind-значение, второй — второе и т.д. На frontend обычно это <code>param1</code>, <code>param2</code> и далее; точное сопоставление определяется метаданными Query и <code>QueryFilterBuild</code>.</div>
+<h3>Базовый принцип</h3>
+<pre><code>select main.id, main.title
+from public.my_entity main
+where main.company_id = ?
+  and main.status_id = ?</code></pre>
+<pre><code>let q = new Models.QueryOptions(&#x27;my_query&#x27;);
+q.param1 = 10;
+q.param2 = 2;</code></pre>
+<h3>Что нельзя параметризовать через <code>?</code></h3><ul><li>имя таблицы: <code>from ?</code>;</li><li>имя колонки: <code>select ?</code>;</li><li>направление сортировки: <code>order by title ?</code>;</li><li>динамический список неизвестной длины одним <code>IN (?)</code>; для UI-списков используйте <code>fltin</code>.</li></ul><p>Для сортировки используйте <code>%order%</code> / <code>orderBy</code> / <code>orderAsc</code>, а для динамической фильтрации — <code>%filter%</code> и штатные фильтры QueryOptions.</p>
+<div class="example">
+<h3><span class="num">1</span>Поиск по ID</h3>
+<pre><code>select main.id, main.title
+from public.my_entity main
+where main.id = ?</code></pre>
+<p class="muted"><b>Параметры:</b> <code>param1 = 125</code></p>
+</div>
+<div class="example">
+<h3><span class="num">2</span>Поиск по коду</h3>
+<pre><code>select main.id, main.code, main.title
+from public.my_entity main
+where main.code = ?</code></pre>
+<p class="muted"><b>Параметры:</b> <code>param1 = &#x27;DOC-001&#x27;</code></p>
+</div>
+<div class="example">
+<h3><span class="num">3</span>Компания + статус</h3>
+<pre><code>select main.id, main.title, main.company_id, main.status_id
+from public.my_entity main
+where main.company_id = ?
+  and main.status_id = ?</code></pre>
+<p class="muted"><b>Параметры:</b> <code>param1 = 10</code>; <code>param2 = 2</code></p>
+</div>
+<div class="example">
+<h3><span class="num">4</span>Параметр + фиксированное условие</h3>
+<pre><code>select main.id, main.title
+from public.my_entity main
+where main.company_id = ?
+  and coalesce(main.in$trash, 0) = 0</code></pre>
+<p class="muted"><b>Параметры:</b> <code>param1 = 10</code></p>
+</div>
+<div class="example">
+<h3><span class="num">5</span>ILIKE по названию</h3>
+<pre><code>select main.id, main.title
+from public.my_entity main
+where main.title ilike concat(&#x27;%&#x27;, ?, &#x27;%&#x27;)</code></pre>
+<p class="muted"><b>Параметры:</b> <code>param1 = &#x27;договор&#x27;</code></p>
+</div>
+<div class="example">
+<h3><span class="num">6</span>Дата от указанной</h3>
+<pre><code>select main.id, main.title, main.created_at
+from public.my_entity main
+where main.created_at &gt;= ?</code></pre>
+<p class="muted"><b>Параметры:</b> <code>param1 = &#x27;2026-01-01&#x27;</code></p>
+</div>
+<div class="example">
+<h3><span class="num">7</span>Диапазон дат</h3>
+<pre><code>select main.id, main.title, main.created_at
+from public.my_entity main
+where main.created_at &gt;= ?
+  and main.created_at &lt; ?</code></pre>
+<p class="muted"><b>Параметры:</b> <code>param1 = &#x27;2026-09-01&#x27;</code>; <code>param2 = &#x27;2026-10-01&#x27;</code></p>
+</div>
+<div class="example">
+<h3><span class="num">8</span>Сумма от значения</h3>
+<pre><code>select main.id, main.title, main.amount
+from public.my_entity main
+where main.amount &gt;= ?</code></pre>
+<p class="muted"><b>Параметры:</b> <code>param1 = 100000</code></p>
+</div>
+<div class="example">
+<h3><span class="num">9</span>Диапазон суммы</h3>
+<pre><code>select main.id, main.title, main.amount
+from public.my_entity main
+where main.amount between ? and ?</code></pre>
+<p class="muted"><b>Параметры:</b> <code>param1 = 100000</code>; <code>param2 = 500000</code></p>
+</div>
+<div class="example">
+<h3><span class="num">10</span>Boolean / флаг</h3>
+<pre><code>select main.id, main.title, main.is_active
+from public.my_entity main
+where main.is_active = ?</code></pre>
+<p class="muted"><b>Параметры:</b> <code>param1 = true</code></p>
+</div>
+<div class="example">
+<h3><span class="num">11</span>JOIN + параметр основной таблицы</h3>
+<pre><code>select main.id, main.title, c.title as company_title
+from public.my_entity main
+left join companies c on c.id = main.company_id
+where main.company_id = ?</code></pre>
+<p class="muted"><b>Параметры:</b> <code>param1 = 10</code></p>
+</div>
+<div class="example">
+<h3><span class="num">12</span>JOIN + два параметра</h3>
+<pre><code>select main.id, main.title, c.title as company_title
+from public.my_entity main
+left join companies c on c.id = main.company_id
+where main.company_id = ?
+  and main.status_id = ?</code></pre>
+<p class="muted"><b>Параметры:</b> <code>param1 = 10</code>; <code>param2 = 2</code></p>
+</div>
+<div class="example">
+<h3><span class="num">13</span>EXISTS</h3>
+<pre><code>select main.id, main.title
+from public.my_entity main
+where exists (
+    select 1
+    from public.my_entity_items i
+    where i.parent_id = main.id
+      and i.type_id = ?
+)</code></pre>
+<p class="muted"><b>Параметры:</b> <code>param1 = 5</code></p>
+</div>
+<div class="example">
+<h3><span class="num">14</span>NOT EXISTS</h3>
+<pre><code>select main.id, main.title
+from public.my_entity main
+where not exists (
+    select 1
+    from public.my_entity_items i
+    where i.parent_id = main.id
+      and i.status_id = ?
+)</code></pre>
+<p class="muted"><b>Параметры:</b> <code>param1 = 9</code></p>
+</div>
+<div class="example">
+<h3><span class="num">15</span>IN с фиксированным количеством placeholders</h3>
+<pre><code>select main.id, main.title, main.status_id
+from public.my_entity main
+where main.status_id in (?, ?, ?)</code></pre>
+<p class="muted"><b>Параметры:</b> <code>param1 = 1</code>; <code>param2 = 2</code>; <code>param3 = 5</code></p>
+</div>
+<div class="example">
+<h3><span class="num">16</span>CTE + параметр</h3>
+<pre><code>with selected as (
+    select id
+    from public.companies
+    where parent_id = ?
+)
+select main.id, main.title
+from public.my_entity main
+where main.company_id in (select id from selected)</code></pre>
+<p class="muted"><b>Параметры:</b> <code>param1 = 100</code></p>
+</div>
+<div class="example">
+<h3><span class="num">17</span>Подзапрос с агрегатом</h3>
+<pre><code>select main.id, main.title,
+       (select count(*)
+        from public.my_entity_items i
+        where i.parent_id = main.id
+          and i.type_id = ?) as item_count
+from public.my_entity main</code></pre>
+<p class="muted"><b>Параметры:</b> <code>param1 = 5</code></p>
+</div>
+<div class="example">
+<h3><span class="num">18</span>GROUP BY + HAVING</h3>
+<pre><code>select main.company_id, count(*) as cnt
+from public.my_entity main
+group by main.company_id
+having count(*) &gt;= ?</code></pre>
+<p class="muted"><b>Параметры:</b> <code>param1 = 10</code></p>
+</div>
+<div class="example">
+<h3><span class="num">19</span>JSONB: значение ключа</h3>
+<pre><code>select main.id, main.payload
+from public.my_entity main
+where main.payload -&gt;&gt; &#x27;status&#x27; = ?</code></pre>
+<p class="muted"><b>Параметры:</b> <code>param1 = &#x27;approved&#x27;</code></p>
+</div>
+<div class="example">
+<h3><span class="num">20</span>JSONB: вложенное поле</h3>
+<pre><code>select main.id, main.payload
+from public.my_entity main
+where jsonb_extract_path_text(main.payload, &#x27;client&#x27;, &#x27;bin&#x27;) = ?</code></pre>
+<p class="muted"><b>Параметры:</b> <code>param1 = &#x27;123456789012&#x27;</code></p>
+</div>
+<div class="example">
+<h3><span class="num">21</span>COALESCE для nullable значения</h3>
+<pre><code>select main.id, main.title, main.status_id
+from public.my_entity main
+where coalesce(main.status_id, 0) = ?</code></pre>
+<p class="muted"><b>Параметры:</b> <code>param1 = 0</code></p>
+</div>
+<div class="example">
+<h3><span class="num">22</span>CASE + параметр</h3>
+<pre><code>select main.id,
+       case when main.amount &gt;= ? then &#x27;large&#x27; else &#x27;small&#x27; end as amount_group
+from public.my_entity main</code></pre>
+<p class="muted"><b>Параметры:</b> <code>param1 = 1000000</code></p>
+</div>
+<div class="example">
+<h3><span class="num">23</span>%filter% + свой параметр + %order%</h3>
+<pre><code>select main.id, main.title, main.company_id
+from public.my_entity main
+%filter%
+  and main.company_id = ?
+%order%</code></pre>
+<p class="muted"><b>Параметры:</b> <code>param1 = 10</code>; <code>дополнительные UI-фильтры идут через flt/flteq/fltin/func22</code></p>
+</div>
+<div class="example">
+<h3><span class="num">24</span>total_count$ + placeholder</h3>
+<pre><code>select count(*) over() as total_count$,
+       main.id,
+       main.title
+from public.my_entity main
+%filter%
+  and main.company_id = ?
+%order%</code></pre>
+<p class="muted"><b>Параметры:</b> <code>param1 = 10</code></p>
+</div>
+<div class="example">
+<h3><span class="num">25</span>:user_id + placeholder</h3>
+<pre><code>select main.id, main.title
+from public.my_entity main
+where main.created_by = :user_id
+  and main.company_id = ?</code></pre>
+<p class="muted"><b>Параметры:</b> <code>param1 = 10</code>; <code>:user_id подставляет сервер DamuBPM</code></p>
+</div>
+<div class="example">
+<h3><span class="num">26</span>:lang + placeholder</h3>
+<pre><code>select main.id,
+       case when :lang = &#x27;kk&#x27; then main.title_kk else main.title end as title
+from public.my_entity main
+where main.status_id = ?</code></pre>
+<p class="muted"><b>Параметры:</b> <code>param1 = 2</code>; <code>:lang подставляет сервер DamuBPM</code></p>
+</div>
+<div class="example">
+<h3><span class="num">27</span>:domain + placeholder</h3>
+<pre><code>select main.id, main.title
+from public.my_entity main
+where main.domain = :domain
+  and main.company_id = ?</code></pre>
+<p class="muted"><b>Параметры:</b> <code>param1 = 10</code>; <code>:domain заменяется текущим HTTP Host</code></p>
+</div>
+<div class="example">
+<h3><span class="num">28</span>Select-query: id + name</h3>
+<pre><code>select main.id as id,
+       main.title as name
+from public.my_entity main
+where main.company_id = ?
+order by main.title</code></pre>
+<p class="muted"><b>Параметры:</b> <code>param1 = 10</code></p>
+</div>
+<div class="example">
+<h3><span class="num">29</span>Archive query по UUID</h3>
+<pre><code>select main.id, main.title, main.initial_req_uuid
+from public.my_entity_archive main
+where main.initial_req_uuid = ?
+order by main.id desc</code></pre>
+<p class="muted"><b>Параметры:</b> <code>param1 = &#x27;2a5ec7c0-0000-0000-0000-111111111111&#x27;</code></p>
+</div>
+<div class="example">
+<h3><span class="num">30</span>Два bind-параметра + динамические фильтры</h3>
+<pre><code>select count(*) over() as total_count$,
+       main.id,
+       main.title,
+       main.created_at
+from public.my_entity main
+%filter%
+  and main.company_id = ?
+  and main.created_at &gt;= ?
+%order%</code></pre>
+<p class="muted"><b>Параметры:</b> <code>param1 = 10</code>; <code>param2 = &#x27;2026-01-01&#x27;</code>; <code>flt/flteq/fltin/func22 могут добавлять дополнительные фильтры</code></p>
+</div>
+<h2 id="preparams">preparam1, preparam2 … preparamN — параметры до <code>%filter%</code></h2>
+<div class="note"><b>Главное правило.</b> Если знак <code>?</code> находится в SQL <b>до</b> маркера <code>%filter%</code>, используйте <code>preparam1</code>, <code>preparam2</code> … <code>preparamN</code>. Для <code>?</code>, расположенных <b>после</b> <code>%filter%</code>, используйте обычные <code>param1</code>, <code>param2</code> … <code>paramN</code>.</div>
+<p>Нумерации независимы: первый placeholder до <code>%filter%</code> — это <code>preparam1</code>, а первый placeholder после <code>%filter%</code> — это <code>param1</code>, даже если в одном SQL присутствуют оба вида параметров.</p>
+<h3>Почему нужен отдельный preparam</h3>
+<p>Сервер передаёт весь <code>req.Form</code> в <code>QueryFilterBuild(...)</code>. Именно этот слой строит итоговый SQL, <code>filterArray</code> и <code>formArray</code>. После этого Query endpoint выполняет запрос, передавая ORM сначала <code>filterArray</code>, затем <code>formArray</code>. При пагинации после них добавляются <code>limit</code> и <code>offset</code>.</p>
+<div class="flow">SQL template
+  ?  &lt;-- preparam1
+  ?  &lt;-- preparam2
+%filter%
+  ?  &lt;-- param1
+  ?  &lt;-- param2
+%order%
+
+Conceptual bind order:
+preparam1, preparam2, [dynamic %filter% values], param1, param2, limit, offset</div>
+<h3>Правила</h3>
+<table><thead><tr><th>Ситуация</th><th>Что использовать</th></tr></thead><tbody><tr><td><code>?</code> до <code>%filter%</code></td><td><code>preparam1..N</code></td></tr><tr><td><code>?</code> после <code>%filter%</code></td><td><code>param1..N</code></td></tr><tr><td>Нет <code>?</code> до <code>%filter%</code></td><td><code>preparam*</code> не нужен</td></tr><tr><td>Несколько <code>?</code> до фильтра</td><td>Нумеровать последовательно: <code>preparam1</code>, <code>preparam2</code>, ...</td></tr><tr><td>Несколько <code>?</code> после фильтра</td><td>Отдельно: <code>param1</code>, <code>param2</code>, ...</td></tr><tr><td>Динамические UI-фильтры</td><td><code>flt</code>, <code>flteq</code>, <code>fltin</code>, <code>func22</code></td></tr></tbody></table>
+<div class="warn"><b>Важно для getRowById.</b> В текущем Go-обработчике <code>getRowById</code> берёт исходный SQL, заменяет <code>%filter%</code> на <code>where main.id=?</code> и вызывает ORM с аргументами <code>rowId, formArray</code>. При наличии пользовательских <code>?</code> до <code>%filter%</code> это место нужно обязательно тестировать: порядок bind-параметров для detail-загрузки может отличаться от обычного Query. Для query, который используется с <code>getRowById</code>, безопаснее не ставить дополнительные <code>?</code> до <code>%filter%</code>, пока реализация <code>QueryFilterBuild</code>/detail-path не подтверждена.</div>
+<h3>12 примеров preparam</h3>
+<div class="example">
+<h3><span class="num">1</span>Один preparam до %filter%</h3>
+<pre><code>select main.id, main.title
+from (
+    select *
+    from public.my_entity
+    where company_id = ?
+) main
+%filter%
+%order%</code></pre>
+<pre><code>let q = new Models.QueryOptions(&#x27;my_query&#x27;);
+q.preparam1 = 10;
+q.flt.title = &#x27;банк&#x27;;</code></pre>
+<p class="muted">Первый ? расположен до %filter%, поэтому ему соответствует preparam1.</p>
+</div>
+<div class="example">
+<h3><span class="num">2</span>Два preparam до %filter%</h3>
+<pre><code>select main.id, main.title
+from (
+    select *
+    from public.my_entity
+    where company_id = ?
+      and type_id = ?
+) main
+%filter%
+%order%</code></pre>
+<pre><code>q.preparam1 = 10;
+q.preparam2 = 7;</code></pre>
+<p class="muted">Нумерация preparam идёт слева направо только среди ? до %filter%.</p>
+</div>
+<div class="example">
+<h3><span class="num">3</span>preparam до фильтра и param после фильтра</h3>
+<pre><code>select main.id, main.title, main.status_id
+from (
+    select *
+    from public.my_entity
+    where company_id = ?
+) main
+%filter%
+  and main.status_id = ?
+%order%</code></pre>
+<pre><code>q.preparam1 = 10;
+q.flt.title = &#x27;договор&#x27;;
+q.param1 = 2;</code></pre>
+<p class="muted">preparam1 обслуживает ? до %filter%, param1 — первый ? после %filter%. Нумерации независимы.</p>
+</div>
+<div class="example">
+<h3><span class="num">4</span>Два preparam + два param</h3>
+<pre><code>select main.id, main.title, main.created_at
+from (
+    select *
+    from public.my_entity
+    where company_id = ?
+      and type_id = ?
+) main
+%filter%
+  and main.status_id = ?
+  and main.created_at &gt;= ?
+%order%</code></pre>
+<pre><code>q.preparam1 = 10;
+q.preparam2 = 7;
+q.flteq.is_active = true;
+q.param1 = 2;
+q.param2 = &#x27;2026-01-01&#x27;;</code></pre>
+<p class="muted">Концептуальный порядок bind: preparam1, preparam2, значения динамического фильтра, param1, param2.</p>
+</div>
+<div class="example">
+<h3><span class="num">5</span>preparam в CTE</h3>
+<pre><code>with allowed_rows as (
+    select id
+    from public.my_entity
+    where company_id = ?
+)
+select main.id, main.title
+from public.my_entity main
+join allowed_rows x on x.id = main.id
+%filter%
+%order%</code></pre>
+<pre><code>q.preparam1 = 10;</code></pre>
+<p class="muted">CTE находится до %filter%, поэтому его placeholder относится к preparam.</p>
+</div>
+<div class="example">
+<h3><span class="num">6</span>preparam в JOIN</h3>
+<pre><code>select main.id, main.title, c.title as company_title
+from public.my_entity main
+join companies c
+  on c.id = main.company_id
+ and c.parent_id = ?
+%filter%
+%order%</code></pre>
+<pre><code>q.preparam1 = 100;</code></pre>
+<p class="muted">Placeholder в JOIN текстуально стоит до %filter%.</p>
+</div>
+<div class="example">
+<h3><span class="num">7</span>preparam в SELECT-подзапросе</h3>
+<pre><code>select main.id,
+       main.title,
+       (select count(*)
+          from public.my_entity_items i
+         where i.parent_id = main.id
+           and i.type_id = ?) as item_count
+from public.my_entity main
+%filter%
+%order%</code></pre>
+<pre><code>q.preparam1 = 5;</code></pre>
+<p class="muted">Даже если ? находится в SELECT-списке, решает его позиция относительно %filter%.</p>
+</div>
+<div class="example">
+<h3><span class="num">8</span>preparam для даты внутри CTE</h3>
+<pre><code>with recent as (
+    select *
+    from public.my_entity
+    where created_at &gt;= ?
+)
+select main.id, main.title, main.created_at
+from recent main
+%filter%
+%order%</code></pre>
+<pre><code>q.preparam1 = &#x27;2026-01-01&#x27;;</code></pre>
+<p class="muted">Дата передаётся bind-параметром, без конкатенации SQL.</p>
+</div>
+<div class="example">
+<h3><span class="num">9</span>preparam + total_count$</h3>
+<pre><code>select count(*) over() as total_count$,
+       main.id,
+       main.title
+from (
+    select *
+    from public.my_entity
+    where company_id = ?
+) main
+%filter%
+%order%</code></pre>
+<pre><code>q.preparam1 = 10;
+q.page = 1;
+q.perpage = 50;</code></pre>
+<p class="muted">total_count$ не меняет правило preparam; LIMIT/OFFSET сервер добавит в самом конце.</p>
+</div>
+<div class="example">
+<h3><span class="num">10</span>Только param после %filter%</h3>
+<pre><code>select main.id, main.title
+from public.my_entity main
+%filter%
+  and main.company_id = ?
+%order%</code></pre>
+<pre><code>q.param1 = 10;</code></pre>
+<p class="muted">Здесь preparam не нужен: до %filter% нет ни одного bind-placeholder.</p>
+</div>
+<div class="example">
+<h3><span class="num">11</span>Только preparam, без param после фильтра</h3>
+<pre><code>select main.id, main.title
+from (
+    select *
+    from public.my_entity
+    where company_id = ?
+      and created_at &gt;= ?
+) main
+%filter%
+%order%</code></pre>
+<pre><code>q.preparam1 = 10;
+q.preparam2 = &#x27;2026-01-01&#x27;;</code></pre>
+<p class="muted">После %filter% пользовательских ? нет, поэтому param1/param2 не нужны.</p>
+</div>
+<div class="example">
+<h3><span class="num">12</span>preparamN: много параметров до %filter%</h3>
+<pre><code>select main.*
+from (
+    select *
+    from public.my_entity
+    where company_id = ?
+      and type_id = ?
+      and category_id = ?
+      and created_at &gt;= ?
+) main
+%filter%
+%order%</code></pre>
+<pre><code>q.preparam1 = 10;
+q.preparam2 = 7;
+q.preparam3 = 15;
+q.preparam4 = &#x27;2026-01-01&#x27;;</code></pre>
+<p class="muted">Смысл preparamN: N — порядковый номер placeholder до %filter%.</p>
+</div>
+<h2 id="mistakes">11. Типовые ошибки</h2>
   <table>
     <thead><tr><th>Ошибка</th><th>Как правильно</th></tr></thead>
     <tbody>
