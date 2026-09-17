@@ -1,0 +1,1295 @@
+<!DOCTYPE html>
+
+<html lang="ru"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><meta content="WebSocket в DamuBPM: подключение Frontend и Angular JIT, отправка из Backend Lua, контракты, примеры, диагностика." name="description"/><title>WebSocket — DamuBPM Documentation</title><style>
+/* Reused DamuBPM base rules from new_design_damubpm.css */
+.card {
+  border-radius: var(--border-radius);
+  background: var(--content-bg-color);
+  padding: 12px 16px;
+  box-sizing: border-box;
+  box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.06);
+  -moz-border-radius: 5px;
+  -webkit-border-radius: 5px;
+  border-radius: 5px;
+  margin-bottom: 2rem;
+}
+.card .card-header {
+  display: -ms-flexbox;
+  display: flex;
+  -ms-flex-align: center;
+  align-items: center;
+  -ms-flex-pack: justify;
+  justify-content: space-between;
+  padding-bottom: 6px;
+}
+.p-button {
+  color: var(--primary-color-text);
+  background: var(--primary-color);
+  border: 1px solid var(--primary-color);
+  padding: var(--inline-spacing) var(--content-padding);
+  font-size: var(--content-padding);
+  transition: background-color 0.2s, color 0.2s, border-color 0.2s, box-shadow 0.2s;
+  border-radius: var(--border-radius);
+}
+.p-button:enabled:hover {
+  background: var(--primary-dark-color);
+  color: var(--primary-color-text);
+  border-color: var(--primary-dark-color);
+}
+
+:root{color-scheme:dark;--bg:#081019;--panel:#111c29;--border:#293b50;--text:#edf3fa;--muted:#adbed0;--accent:#8dc6ff;--content-bg-color:#111c29;--text-secondary-color:#adbed0;--primary-color:#225e91;--primary-dark-color:#2b72ab;--primary-color-text:#fff;--content-padding:14px;--inline-spacing:8px;--border-radius:10px}
+*{box-sizing:border-box}html{scroll-behavior:smooth;scroll-padding-top:32px}body{margin:0;background:var(--bg);color:var(--text);font:16px/1.75 -apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif}a{color:var(--accent);text-decoration-thickness:1px;text-underline-offset:3px}a:hover{color:#c5e2ff}button,input{font:inherit}button{cursor:pointer}button:focus-visible,a:focus-visible,input:focus-visible,pre:focus-visible{outline:3px solid #8dc6ff;outline-offset:4px}[hidden]{display:none!important}
+.shell{width:min(1360px,calc(100% - 64px));margin:0 auto}.topbar{display:flex;justify-content:space-between;align-items:center;gap:20px;padding:25px 0;border-bottom:1px solid var(--border)}.brand{display:flex;align-items:center;gap:12px;text-decoration:none;color:var(--text);font-weight:750;line-height:1.25}.brand-mark{display:grid;place-items:center;width:42px;height:42px;background:#17314a;border:1px solid #416584;border-radius:11px;color:var(--accent);font-size:13px}.brand small{display:block;margin-top:5px;color:var(--muted);font-size:10px;letter-spacing:.14em;text-transform:uppercase}.topnav{display:flex;gap:18px;align-items:center;font-size:13px}.topnav a{text-decoration:none}.doc-button{font-size:13px;line-height:1.2;border-radius:8px;white-space:nowrap}.hero{display:grid;grid-template-columns:1.25fr 1fr;gap:50px;align-items:end;padding:56px 0 38px}.eyebrow{display:block;color:var(--accent);font-weight:650;font-size:12px;letter-spacing:.14em;text-transform:uppercase;margin-bottom:18px}h1{font-size:clamp(38px,5vw,66px);line-height:1.06;letter-spacing:-.05em;margin:0;max-width:680px}.hero p{color:var(--muted);font-size:17px;margin:22px 0 0;max-width:620px}.hero-meta{font-size:12px;color:var(--muted);margin-bottom:18px}.facts{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.fact.card{margin:0;border:1px solid var(--border);border-radius:12px;padding:20px 15px;box-shadow:none}.fact strong{display:block;font-size:31px;font-weight:650;line-height:1.2;letter-spacing:-.04em}.fact small{display:block;color:var(--muted);font-size:12px;margin-top:8px}.layout{display:grid;grid-template-columns:258px minmax(0,1fr);gap:44px;align-items:start;padding:25px 0 70px}.sidebar{position:sticky;top:20px;max-height:calc(100vh - 40px);overflow:auto;padding-right:12px;scrollbar-width:thin}.sidebar-label{display:block;font-size:11px;font-weight:700;letter-spacing:.12em;color:var(--muted);text-transform:uppercase;margin:0 0 10px}.search{width:100%;border:1px solid var(--border);border-radius:9px;background:#0e1926;color:var(--text);padding:11px 12px;font-size:13px}.search::placeholder{color:#96aac0}.search-count{font-size:11px;color:var(--muted);min-height:24px;margin:8px 0 12px}.toc{display:grid;gap:3px}.toc a{display:flex;align-items:flex-start;gap:10px;color:var(--muted);text-decoration:none;font-size:13px;line-height:1.45;padding:9px 10px;border-radius:8px}.toc a span{color:#7792ac;min-width:20px;font-variant-numeric:tabular-nums}.toc a:hover,.toc a.active{background:#142438;color:var(--text)}.toc a.active span{color:var(--accent)}.sidebar-footer{border-top:1px solid var(--border);margin-top:20px;padding:16px 10px;color:var(--muted);font-size:11px}.main{min-width:0}.intro{padding:0 0 18px}.intro p{margin-top:0}.intro blockquote{margin-bottom:0}.doc-section{padding:30px 0 10px;border-top:1px solid var(--border);margin-top:25px}.doc-section h2{display:flex;gap:15px;align-items:baseline;line-height:1.3;margin:0 0 25px;font-size:28px;letter-spacing:-.025em}.section-number{font-size:14px;color:var(--accent);font-weight:650;letter-spacing:0}.doc-section h3{font-size:20px;line-height:1.4;margin:32px 0 13px;letter-spacing:-.02em}.doc-section p{margin:0 0 18px}.doc-section strong,.intro strong{color:#f8fbff;font-weight:700}blockquote{border-left:3px solid #8daccb;border-radius:0 10px 10px 0;background:#142131;padding:19px 22px;margin:22px 0;color:#c6d5e5;font-size:14px;line-height:1.8}blockquote p:last-child{margin:0}code{font: .9em/1.7 ui-monospace,SFMono-Regular,Consolas,"Liberation Mono",monospace;background:#172639;border:1px solid #23364b;padding:2px 5px;border-radius:5px;overflow-wrap:anywhere}.table-wrap{overflow:auto;margin:20px 0 26px;border:1px solid var(--border);border-radius:11px;scrollbar-width:thin}table{border-collapse:collapse;width:100%;font-size:13.5px;line-height:1.65;min-width:540px}th{text-align:left;background:#172638;color:#dceafb;font-weight:700;font-size:12px;letter-spacing:.01em}th,td{vertical-align:top;padding:13px 15px;border-bottom:1px solid var(--border)}td{color:#bdcede}tr:last-child td{border-bottom:0}tbody tr:nth-child(even){background:#0d1723}table code{font-size:12px;background:#182b40;white-space:normal;word-break:normal}table th:first-child{min-width:110px}.code-block{margin:20px 0 26px;border:1px solid #2c4057;border-radius:11px;overflow:hidden;background:#0b141f}.code-head{padding:10px 14px;display:flex;justify-content:space-between;align-items:center;gap:20px;border-bottom:1px solid #273a4f;background:#142133;font-size:11px;color:var(--muted);font-weight:650;letter-spacing:.06em}.code-head>span{text-transform:uppercase}.copy{background:#21364d;color:#dceafa;border:1px solid #3b536a;border-radius:6px;padding:5px 10px;font-size:11px;line-height:1.4;letter-spacing:0}.copy:hover{background:#2c4965}pre{padding:21px 22px;margin:0;overflow:auto;tab-size:4;line-height:1.75;font-size:12.5px;max-height:none;scrollbar-width:thin}pre code{border:0;background:transparent;font-size:inherit;line-height:inherit;padding:0;border-radius:0;overflow-wrap:normal;white-space:pre}.no-results{padding:30px;border:1px dashed var(--border);border-radius:12px;color:var(--muted)}footer{border-top:1px solid var(--border);padding:22px 0 35px;font-size:12px;color:var(--muted);display:flex;justify-content:space-between;gap:20px}.progress{position:fixed;top:0;left:0;height:3px;background:#84bdeb;width:0;z-index:100}.sr-only{position:absolute;width:1px;height:1px;padding:0;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+@media(min-width:1500px){.main{max-width:1000px}}
+@media(max-width:1050px){.shell{width:calc(100% - 40px)}.layout{grid-template-columns:218px minmax(0,1fr);gap:26px}.hero{gap:26px}.fact.card{padding:17px 12px}.fact small{font-size:11px}.doc-section h2{font-size:25px}}
+@media(max-width:760px){.shell{width:calc(100% - 32px)}.topbar{padding:18px 0;gap:10px}.topnav{gap:12px}.topnav .home-top{display:none}.hero{grid-template-columns:1fr;gap:25px;padding:33px 0 15px}h1{font-size:46px}.hero p{font-size:15px;line-height:1.65}.hero-meta{margin-bottom:12px}.facts{gap:10px}.fact.card{padding:16px}.layout{grid-template-columns:minmax(0,1fr);gap:23px;padding-top:20px}.sidebar{position:static;max-height:none;padding:0}.toc{grid-template-columns:repeat(2,minmax(0,1fr));gap:2px}.toc a{font-size:12px;padding:9px 6px}.toc a span{min-width:18px}.sidebar-footer{display:none}.search-count{margin-bottom:5px}.intro{font-size:15px}.doc-section{margin-top:18px;padding-top:25px}.doc-section h2{font-size:25px;gap:10px}.doc-section h3{font-size:19px}body{font-size:15px}.doc-section p{margin-bottom:16px}pre{font-size:11.5px;padding:17px}blockquote{padding:16px 17px}.table-wrap{margin:18px 0 23px}table{font-size:12.5px}footer{flex-direction:column;gap:8px}}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*{transition:none!important}}
+@media print{:root{color-scheme:light;--text:#152637;--muted:#465b70;--border:#b7c5d2;--accent:#205f8d}body{background:#fff;color:#152637;font-size:10pt}.shell{width:100%}.sidebar,.topnav,.copy,.progress,.no-results{display:none!important}.hero{padding:0 0 20px;gap:20px}.hero h1{font-size:32pt}.hero p,.hero-meta{color:#465b70}.fact.card{background:#f1f5f8;color:#152637}.fact small{color:#465b70}.layout{display:block;padding-top:0}.doc-section{display:block!important;break-before:auto}.doc-section h2{font-size:19pt}.doc-section h2,.doc-section h3{break-after:avoid}.intro strong,.doc-section strong{color:#102236}blockquote{background:#f1f5f8;color:#294157}.code-head{background:#edf2f7;color:#294157}.code-block{background:#fff;overflow:visible;break-inside:auto}.code-block pre{overflow:visible;white-space:pre-wrap;font-size:8pt;padding:12px}.code-block code,.code-block span{color:#152637!important;background:transparent!important;white-space:pre-wrap;overflow-wrap:anywhere}.table-wrap{overflow:visible}table{min-width:0;font-size:9pt}th,td{padding:8px;color:#24394d}th{background:#eaf0f5}tbody tr:nth-child(even){background:#f6f8fa}code{color:#213d58;background:#f3f6fa}a{color:#205f8d}tr{break-inside:avoid}footer{padding-bottom:0}}
+
+pre { line-height: 125%; }
+td.linenos .normal { color: #6e7681; background-color: #0d1117; padding-left: 5px; padding-right: 5px; }
+span.linenos { color: #6e7681; background-color: #0d1117; padding-left: 5px; padding-right: 5px; }
+td.linenos .special { color: #e6edf3; background-color: #6e7681; padding-left: 5px; padding-right: 5px; }
+span.linenos.special { color: #e6edf3; background-color: #6e7681; padding-left: 5px; padding-right: 5px; }
+.syntax .hll { background-color: #6e7681 }
+.syntax { background: #0d1117; color: #E6EDF3 }
+.syntax .c { color: #8B949E; font-style: italic } /* Comment */
+.syntax .err { color: #F85149 } /* Error */
+.syntax .esc { color: #E6EDF3 } /* Escape */
+.syntax .g { color: #E6EDF3 } /* Generic */
+.syntax .k { color: #FF7B72 } /* Keyword */
+.syntax .l { color: #A5D6FF } /* Literal */
+.syntax .n { color: #E6EDF3 } /* Name */
+.syntax .o { color: #FF7B72; font-weight: bold } /* Operator */
+.syntax .x { color: #E6EDF3 } /* Other */
+.syntax .p { color: #E6EDF3 } /* Punctuation */
+.syntax .ch { color: #8B949E; font-style: italic } /* Comment.Hashbang */
+.syntax .cm { color: #8B949E; font-style: italic } /* Comment.Multiline */
+.syntax .cp { color: #8B949E; font-weight: bold; font-style: italic } /* Comment.Preproc */
+.syntax .cpf { color: #8B949E; font-style: italic } /* Comment.PreprocFile */
+.syntax .c1 { color: #8B949E; font-style: italic } /* Comment.Single */
+.syntax .cs { color: #8B949E; font-weight: bold; font-style: italic } /* Comment.Special */
+.syntax .gd { color: #FFA198; background-color: #490202 } /* Generic.Deleted */
+.syntax .ge { color: #E6EDF3; font-style: italic } /* Generic.Emph */
+.syntax .ges { color: #E6EDF3; font-weight: bold; font-style: italic } /* Generic.EmphStrong */
+.syntax .gr { color: #FFA198 } /* Generic.Error */
+.syntax .gh { color: #79C0FF; font-weight: bold } /* Generic.Heading */
+.syntax .gi { color: #56D364; background-color: #0F5323 } /* Generic.Inserted */
+.syntax .go { color: #8B949E } /* Generic.Output */
+.syntax .gp { color: #8B949E } /* Generic.Prompt */
+.syntax .gs { color: #E6EDF3; font-weight: bold } /* Generic.Strong */
+.syntax .gu { color: #79C0FF } /* Generic.Subheading */
+.syntax .gt { color: #FF7B72 } /* Generic.Traceback */
+.syntax .g-Underline { color: #E6EDF3; text-decoration: underline } /* Generic.Underline */
+.syntax .kc { color: #79C0FF } /* Keyword.Constant */
+.syntax .kd { color: #FF7B72 } /* Keyword.Declaration */
+.syntax .kn { color: #FF7B72 } /* Keyword.Namespace */
+.syntax .kp { color: #79C0FF } /* Keyword.Pseudo */
+.syntax .kr { color: #FF7B72 } /* Keyword.Reserved */
+.syntax .kt { color: #FF7B72 } /* Keyword.Type */
+.syntax .ld { color: #79C0FF } /* Literal.Date */
+.syntax .m { color: #A5D6FF } /* Literal.Number */
+.syntax .s { color: #A5D6FF } /* Literal.String */
+.syntax .na { color: #E6EDF3 } /* Name.Attribute */
+.syntax .nb { color: #E6EDF3 } /* Name.Builtin */
+.syntax .nc { color: #F0883E; font-weight: bold } /* Name.Class */
+.syntax .no { color: #79C0FF; font-weight: bold } /* Name.Constant */
+.syntax .nd { color: #D2A8FF; font-weight: bold } /* Name.Decorator */
+.syntax .ni { color: #FFA657 } /* Name.Entity */
+.syntax .ne { color: #F0883E; font-weight: bold } /* Name.Exception */
+.syntax .nf { color: #D2A8FF; font-weight: bold } /* Name.Function */
+.syntax .nl { color: #79C0FF; font-weight: bold } /* Name.Label */
+.syntax .nn { color: #FF7B72 } /* Name.Namespace */
+.syntax .nx { color: #E6EDF3 } /* Name.Other */
+.syntax .py { color: #79C0FF } /* Name.Property */
+.syntax .nt { color: #7EE787 } /* Name.Tag */
+.syntax .nv { color: #79C0FF } /* Name.Variable */
+.syntax .ow { color: #FF7B72; font-weight: bold } /* Operator.Word */
+.syntax .pm { color: #E6EDF3 } /* Punctuation.Marker */
+.syntax .w { color: #6E7681 } /* Text.Whitespace */
+.syntax .mb { color: #A5D6FF } /* Literal.Number.Bin */
+.syntax .mf { color: #A5D6FF } /* Literal.Number.Float */
+.syntax .mh { color: #A5D6FF } /* Literal.Number.Hex */
+.syntax .mi { color: #A5D6FF } /* Literal.Number.Integer */
+.syntax .mo { color: #A5D6FF } /* Literal.Number.Oct */
+.syntax .sa { color: #79C0FF } /* Literal.String.Affix */
+.syntax .sb { color: #A5D6FF } /* Literal.String.Backtick */
+.syntax .sc { color: #A5D6FF } /* Literal.String.Char */
+.syntax .dl { color: #79C0FF } /* Literal.String.Delimiter */
+.syntax .sd { color: #A5D6FF } /* Literal.String.Doc */
+.syntax .s2 { color: #A5D6FF } /* Literal.String.Double */
+.syntax .se { color: #79C0FF } /* Literal.String.Escape */
+.syntax .sh { color: #79C0FF } /* Literal.String.Heredoc */
+.syntax .si { color: #A5D6FF } /* Literal.String.Interpol */
+.syntax .sx { color: #A5D6FF } /* Literal.String.Other */
+.syntax .sr { color: #79C0FF } /* Literal.String.Regex */
+.syntax .s1 { color: #A5D6FF } /* Literal.String.Single */
+.syntax .ss { color: #A5D6FF } /* Literal.String.Symbol */
+.syntax .bp { color: #E6EDF3 } /* Name.Builtin.Pseudo */
+.syntax .fm { color: #D2A8FF; font-weight: bold } /* Name.Function.Magic */
+.syntax .vc { color: #79C0FF } /* Name.Variable.Class */
+.syntax .vg { color: #79C0FF } /* Name.Variable.Global */
+.syntax .vi { color: #79C0FF } /* Name.Variable.Instance */
+.syntax .vm { color: #79C0FF } /* Name.Variable.Magic */
+.syntax .il { color: #A5D6FF } /* Literal.Number.Integer.Long */</style></head><body><div class="progress" id="progress"></div><div class="shell"><header class="topbar"><a class="brand" href="index.html"><span class="brand-mark">DB</span><span>DamuBPM<small>Documentation</small></span></a><nav aria-label="Документация" class="topnav"><a class="home-top" href="index.html">← Главная</a><a download="" href="damubpm_websocket_guide.md">Markdown ↗</a><button class="p-button doc-button" id="printGuide" type="button">Печать</button></nav></header><header class="hero"><div><span class="eyebrow">Frontend + Backend Lua</span><h1>WebSocket<br/>в DamuBPM</h1><p>Подключение, отправка и обработка событий.<br/>Контракт из исходников и практические примеры.</p></div><div><div class="hero-meta">Руководство разработчика · 18 сентября 2026</div><div class="facts"><div class="fact card"><strong>03</strong><small>маршрута</small></div><div class="fact card"><strong>Lua</strong><small>SendWSAsync</small></div><div class="fact card"><strong>16</strong><small>разделов</small></div></div></div></header><div class="layout"><aside aria-label="Оглавление" class="sidebar"><label class="sidebar-label" for="guideSearch">Найти в руководстве</label><input autocomplete="off" class="search" id="guideSearch" placeholder="Например: Lua, Blob, 42" type="search"/><div aria-live="polite" class="search-count" id="searchCount" role="status"></div><nav class="toc"><a data-section="s01" href="#s01"><span>01</span>Быстрый старт</a><a data-section="s02" href="#s02"><span>02</span>Маршруты и подключение</a><a data-section="s03" href="#s03"><span>03</span>Что делает рассылка AccountChat</a><a data-section="s04" href="#s04"><span>04</span>Backend Lua: SendWSAsync</a><a data-section="s05" href="#s05"><span>05</span>Формат прикладного события</a><a data-section="s06" href="#s06"><span>06</span>Frontend: минимальный браузерный клиент</a><a data-section="s07" href="#s07"><span>07</span>Полный JIT-пример: собственное подключение</a><a data-section="s08" href="#s08"><span>08</span>JIT: встроенный websocketService</a><a data-section="s09" href="#s09"><span>09</span>Backend: тестовый Lua REST-сервис</a><a data-section="s10" href="#s10"><span>10</span>Сообщения пользователю и комнате</a><a data-section="s11" href="#s11"><span>11</span>Надёжность и эффективность</a><a data-section="s12" href="#s12"><span>12</span>Безопасность и конфигурация</a><a data-section="s13" href="#s13"><span>13</span>Диагностика</a><a data-section="s14" href="#s14"><span>14</span>Проверка перед внедрением</a><a data-section="s15" href="#s15"><span>15</span>Размещение руководства и главная index.html</a><a data-section="s16" href="#s16"><span>16</span>Источники, границы и статус проверки</a></nav><div class="sidebar-footer">/ — поиск · Esc — сброс<br/>Примеры не запускаются автоматически.</div></aside><main class="main" id="main"><div class="intro"><p><strong>Основной сценарий:</strong> интерфейс подписывается на события, Lua отправляет уведомление, интерфейс перечитывает необходимые данные через обычный Query или REST. WebSocket используется как канал уведомления, а не как подтверждение сохранения данных.</p>
+<blockquote>
+<p><strong>Граница достоверности.</strong> Предоставлены три маршрута, модуль рассылки <code>hAccountChat</code> и реализация Lua-отправителя. Обработчики подключения, чтения и записи сообщений не приложены. Ниже явно отделены подтверждённый контракт, сведения из документации DamuBPM и предлагаемые прикладные примеры. Формат адресных сообщений и правила доступа не выдумываются.</p>
+</blockquote>
+</div><div class="no-results" hidden="" id="noResults">Совпадений нет. Попробуйте другой термин или код ошибки.</div><section aria-labelledby="heading-s01" class="doc-section" id="s01"><h2 id="heading-s01"><span class="section-number">01</span>Быстрый старт</h2><h3>Что выбрать</h3>
+<div aria-label="Таблица справочника" class="table-wrap" role="region" tabindex="0"><table>
+<thead>
+<tr>
+<th>Задача</th>
+<th>Подход</th>
+<th>Что проверить заранее</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Получать события в существующем JIT-виджете</td>
+<td><code>this.websocketService.messages.subscribe(...)</code></td>
+<td>Какой маршрут и формат использует сервис в вашей сборке</td>
+</tr>
+<tr>
+<td>Проверить конкретный WebSocket-маршрут</td>
+<td>Нативный <code>new WebSocket(...)</code></td>
+<td>Авторизацию и допустимость подключения к этому маршруту</td>
+</tr>
+<tr>
+<td>Отправить событие из Lua</td>
+<td><code>SendWSAsync(wsServer, path, msg)</code></td>
+<td>Доступный внутренний адрес без схемы и действительный путь</td>
+</tr>
+<tr>
+<td>Уведомить конкретного пользователя</td>
+<td>Маршрут <code>/ws/ServeMsgToUser</code></td>
+<td>Контракт адресации отсутствует в присланных исходниках</td>
+</tr>
+<tr>
+<td>Работать с отдельной комнатой</td>
+<td>Маршрут <code>/ws/ServeMsgToRoom/:room</code></td>
+<td>Правила подписки, отправки и проверки участника комнаты</td>
+</tr>
+</tbody>
+</table></div>
+<p><strong>Последовательность для тестового контура:</strong> сначала открыть подписчика и дождаться события <code>open</code>, затем выполнить Lua-отправку, затем проверить получение и разбор сообщения. Успешный возврат из Lua сам по себе не доказывает доставку браузеру.</p>
+<p>Минимальный вызов Lua после уточнения адреса:</p>
+<div class="code-block"><div class="code-head"><span>lua</span><button aria-label="Копировать пример 1" class="copy" data-code="code-1" type="button">Копировать</button></div><pre tabindex="0"><code class="syntax" id="code-1"><span class="c1">-- Адрес и порт ниже иллюстративные, замените на адрес своего контура.</span>
+<span class="kd">local</span><span class="w"> </span><span class="nv">err</span><span class="p">,</span><span class="w"> </span><span class="nv">code</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nf">SendWSAsync</span><span class="p">(</span>
+<span class="w">    </span><span class="s2">"127.0.0.1:8080"</span><span class="p">,</span>
+<span class="w">    </span><span class="s2">"/ws/ServeAccountChat"</span><span class="p">,</span>
+<span class="w">    </span><span class="nf">JsonToString</span><span class="p">({</span>
+<span class="w">        </span><span class="nv">version</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span>
+<span class="w">        </span><span class="nb">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"demo.ping"</span><span class="p">,</span>
+<span class="w">        </span><span class="nv">event_id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nf">UUID</span><span class="p">(),</span>
+<span class="w">        </span><span class="nv">data</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nv">message</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"Test event"</span><span class="p">,</span><span class="w"> </span><span class="nv">items</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nf">array</span><span class="p">({})</span><span class="w"> </span><span class="p">}</span>
+<span class="w">    </span><span class="p">})</span>
+<span class="p">)</span>
+
+<span class="kr">if</span><span class="w"> </span><span class="nv">code</span><span class="w"> </span><span class="o">~=</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="kr">then</span>
+<span class="w">    </span><span class="nb">print</span><span class="p">(</span><span class="s2">"WebSocket send failed"</span><span class="p">,</span><span class="w"> </span><span class="nv">code</span><span class="p">,</span><span class="w"> </span><span class="nv">err</span><span class="p">)</span>
+<span class="kr">else</span>
+<span class="w">    </span><span class="nb">print</span><span class="p">(</span><span class="s2">"WebSocket frame written; delivery is not confirmed"</span><span class="p">)</span>
+<span class="kr">end</span>
+</code></pre></div>
+<p><code>SendWSAsync</code>, <code>JsonToString</code> и <code>UUID</code> — существующие API из справочника DamuBPM. Для JSON-массивов используется <code>array({})</code>. Доступность маршрута для такого подключения необходимо подтвердить в вашем контуре. <a href="#s16">S3, S4</a></p>
+</section><section aria-labelledby="heading-s02" class="doc-section" id="s02"><h2 id="heading-s02"><span class="section-number">02</span>Маршруты и подключение</h2><p>Из регистрации маршрутов подтверждены следующие адреса. <a href="#s16">S1</a></p>
+<div aria-label="Таблица справочника" class="table-wrap" role="region" tabindex="0"><table>
+<thead>
+<tr>
+<th>Путь</th>
+<th>Зарегистрированные HTTP-методы</th>
+<th>Что известно</th>
+<th>Что не установлено</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>/ws/ServeAccountChat</code></td>
+<td>GET, POST</td>
+<td>Путь направлен в обработчик AccountChat; отдельно предоставлен модуль <code>hAccountChat</code></td>
+<td>Авторизация, регистрация соединений, чтение и формат исходящих кадров</td>
+</tr>
+<tr>
+<td><code>/ws/ServeMsgToUser</code></td>
+<td>GET, POST</td>
+<td>Существует отдельный обработчик</td>
+<td>Как определяется пользователь и как указывается получатель</td>
+</tr>
+<tr>
+<td><code>/ws/ServeMsgToRoom/:room</code></td>
+<td>GET, POST</td>
+<td>В пути есть динамический сегмент <code>room</code></td>
+<td>Как создаётся комната, кто может подключаться и кто получает отправку</td>
+</tr>
+</tbody>
+</table></div>
+<p><code>/ws/...</code> — самостоятельные маршруты. Не добавляйте перед ними <code>/restapi/services/run/</code>.</p>
+<p><strong>Регистрация POST не означает, что обычный HTTP POST публикует сообщение.</strong> Без реализации обработчика нельзя утверждать, что <code>fetch('/ws/…', {method: 'POST'})</code> является поддерживаемым способом отправки. Для браузерного WebSocket используйте <code>new WebSocket(...)</code>, а для вызова вашего Lua REST-сервиса — отдельный REST API.</p>
+<h3>Адрес браузера</h3>
+<p>Пример для приложения на том же хосте, без дополнительного внешнего префикса:</p>
+<div class="code-block"><div class="code-head"><span>javascript</span><button aria-label="Копировать пример 2" class="copy" data-code="code-2" type="button">Копировать</button></div><pre tabindex="0"><code class="syntax" id="code-2"><span class="kd">const</span><span class="w"> </span><span class="nx">url</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="ow">new</span><span class="w"> </span><span class="nx">URL</span><span class="p">(</span><span class="nb">window</span><span class="p">.</span><span class="nx">location</span><span class="p">.</span><span class="nx">href</span><span class="p">);</span>
+<span class="nx">url</span><span class="p">.</span><span class="nx">protocol</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">window</span><span class="p">.</span><span class="nx">location</span><span class="p">.</span><span class="nx">protocol</span><span class="w"> </span><span class="o">===</span><span class="w"> </span><span class="s1">'https:'</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="s1">'wss:'</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="s1">'ws:'</span><span class="p">;</span>
+<span class="nx">url</span><span class="p">.</span><span class="nx">pathname</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'/ws/ServeAccountChat'</span><span class="p">;</span>
+<span class="nx">url</span><span class="p">.</span><span class="nx">search</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">''</span><span class="p">;</span>
+<span class="nx">url</span><span class="p">.</span><span class="nx">hash</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">''</span><span class="p">;</span>
+
+<span class="kd">const</span><span class="w"> </span><span class="nx">socket</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="ow">new</span><span class="w"> </span><span class="nx">WebSocket</span><span class="p">(</span><span class="nx">url</span><span class="p">.</span><span class="nx">href</span><span class="p">);</span>
+</code></pre></div>
+<p>Для HTTPS-страницы используйте <code>wss:</code>. Внешний прокси должен передавать WebSocket-подключение нужному обработчику. Если платформа опубликована под префиксом, в <code>pathname</code> нужен фактический внешний путь. Не запускайте этот пример из локального <code>file://</code>-документа: выполняйте его внутри открытого приложения. Общая механика подключения описана в браузерной документации, а не в присланном модуле DamuBPM. <a href="#s16">B1, B4</a></p>
+</section><section aria-labelledby="heading-s03" class="doc-section" id="s03"><h2 id="heading-s03"><span class="section-number">03</span>Что делает рассылка AccountChat</h2><p><strong>Подтверждено только для предоставленного модуля <code>hAccountChat</code>.</strong> <a href="#s16">S2</a></p>
+<div aria-label="Таблица справочника" class="table-wrap" role="region" tabindex="0"><table>
+<thead>
+<tr>
+<th>Событие внутри модуля</th>
+<th>Поведение</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Регистрация соединения</td>
+<td>Соединение добавляется в набор активных</td>
+</tr>
+<tr>
+<td>Удаление соединения</td>
+<td>Соединение исключается, его очередь отправки закрывается</td>
+</tr>
+<tr>
+<td>Входящее событие рассылки</td>
+<td>Одинаковые байты предлагаются каждому зарегистрированному соединению</td>
+</tr>
+<tr>
+<td>Очередь соединения не может немедленно принять сообщение</td>
+<td>Очередь закрывается, соединение исключается из набора</td>
+</tr>
+</tbody>
+</table></div>
+<p>В показанном цикле нет фильтрации по <code>user_id</code>, <code>account_id</code>, <code>room</code> или <code>type</code>. Отправитель также специально не исключается: если его соединение находится в наборе, цикл обрабатывает его наравне с остальными.</p>
+<p><strong>Это не доказывает публичность endpoint.</strong> Допуск соединений может выполняться в отсутствующем обработчике. Но считать сам показанный модуль механизмом изоляции пользователей, организаций или комнат нельзя.</p>
+<p>В модуле нет истории сообщений, подтверждений чтения и восстановления пропущенных событий. Исключение из набора и закрытие очереди не описывают точный код закрытия браузерного соединения: он зависит от отсутствующей части записи.</p>
+<p>Практический вывод: через этот канал безопаснее передавать небольшой сигнал обновления без конфиденциальных данных, а сами данные запрашивать через API с проверкой прав.</p>
+</section><section aria-labelledby="heading-s04" class="doc-section" id="s04"><h2 id="heading-s04"><span class="section-number">04</span>Backend Lua: SendWSAsync</h2><h3>Сигнатура</h3>
+<div class="code-block"><div class="code-head"><span>lua</span><button aria-label="Копировать пример 3" class="copy" data-code="code-3" type="button">Копировать</button></div><pre tabindex="0"><code class="syntax" id="code-3"><span class="kd">local</span><span class="w"> </span><span class="nv">err</span><span class="p">,</span><span class="w"> </span><span class="nv">code</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nf">SendWSAsync</span><span class="p">(</span><span class="nv">wsServer</span><span class="p">,</span><span class="w"> </span><span class="nv">path</span><span class="p">,</span><span class="w"> </span><span class="nv">msg</span><span class="p">)</span>
+</code></pre></div>
+<p>Публичное Lua-имя подтверждено справочником API. Детали транспорта ниже взяты из предоставленной реализации отправителя. <a href="#s16">S3, S4</a></p>
+<div aria-label="Таблица справочника" class="table-wrap" role="region" tabindex="0"><table>
+<thead>
+<tr>
+<th>Аргумент</th>
+<th>Передавать</th>
+<th>Не передавать</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>wsServer</code></td>
+<td>Строку <code>host:port</code>, например <code>127.0.0.1:8080</code></td>
+<td>Полный URL со схемой <code>ws://</code>, <code>wss://</code>, <code>http://</code> или <code>https://</code></td>
+</tr>
+<tr>
+<td><code>path</code></td>
+<td>Путь, начинающийся с <code>/</code>, например <code>/ws/ServeAccountChat</code></td>
+<td>Полный URL или объект параметров</td>
+</tr>
+<tr>
+<td><code>msg</code></td>
+<td>Строку, например результат <code>JsonToString(payload)</code></td>
+<td>Lua-таблицу без сериализации</td>
+</tr>
+</tbody>
+</table></div>
+<p><strong>Важное расхождение со справочником:</strong> там <code>wsServer</code> назван URL, а отправка — асинхронной. Предоставленная реализация отдельно задаёт схему <code>ws</code>, подключается и записывает сообщение до возврата. Поэтому в этом руководстве используются <code>host:port</code> и фактическое поведение, без обещания фонового выполнения.</p>
+<h3>Последовательность одного вызова</h3>
+<div class="code-block"><div class="code-head"><span>text</span><button aria-label="Копировать пример 4" class="copy" data-code="code-4" type="button">Копировать</button></div><pre tabindex="0"><code class="syntax" id="code-4">Lua → новое ws-подключение → один бинарный кадр → закрытие подключения → возврат err, code
+</code></pre></div>
+<p>Закрытие относится к успешной ветке. В ветке ошибки записи явное закрытие в присланном фрагменте не показано.</p>
+<p>Отправитель не читает ответ, не ждёт подтверждения получателя и не сохраняет соединение для следующего вызова. В реализации не передаются пользовательские заголовки, Cookie или Authorization. Тайм-аут не настраивается аргументами функции.</p>
+<h3>Возвращаемые значения</h3>
+<div aria-label="Таблица справочника" class="table-wrap" role="region" tabindex="0"><table>
+<thead>
+<tr>
+<th><code>code</code></th>
+<th>Значение <code>err</code></th>
+<th>Значение результата</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>0</code></td>
+<td>Пустая строка</td>
+<td>Подключение установлено, операция записи кадра завершилась без ошибки</td>
+</tr>
+<tr>
+<td><code>2</code></td>
+<td><code>err LuaSendWSAsync</code></td>
+<td>Не прошла проверка преобразования аргумента сообщения</td>
+</tr>
+<tr>
+<td><code>3</code></td>
+<td>Текст ошибки подключения</td>
+<td>Ошибка адреса, сети или установления WebSocket-соединения</td>
+</tr>
+<tr>
+<td><code>42</code></td>
+<td>Текст ошибки записи</td>
+<td>Не удалось записать бинарное сообщение</td>
+</tr>
+</tbody>
+</table></div>
+<p>В исходнике итоговая проверка преобразования относится к последнему аргументу, поэтому код <code>2</code> нельзя считать полноценной валидацией всех трёх аргументов. Передавайте строки явно. Тестовые и недостижимые ветки не включены в рабочий контракт.</p>
+<p><strong><code>code == 0</code> не равно «сообщение доставлено», «получатель онлайн» или «пользователь прочитал сообщение».</strong> Принимающая сторона могла отвергнуть данные после записи, получателей могло не быть, соединение могло оборваться позднее.</p>
+<h3>Ограничение ws / wss</h3>
+<p>Схема отправителя жёстко задана как <code>ws</code>. Передача <code>wss://</code> в первом аргументе не включает TLS. Допустимая схема развёртывания — браузер подключается по <code>wss</code> к внешнему защищённому адресу, а Lua использует отдельно разрешённый внутренний <code>ws</code>-адрес. Его доступность и контроль доступа должны быть настроены в инфраструктуре; это не готовая возможность, подтверждённая исходниками.</p>
+<p><code>path</code> используется именно как компонент пути, не как конструктор query string. Не рассчитывайте на передачу токена через <code>path .. '?token=...'</code>: отдельной настройки query string или заголовков здесь нет.</p>
+<h3>Объекты и массивы</h3>
+<div class="code-block"><div class="code-head"><span>lua</span><button aria-label="Копировать пример 5" class="copy" data-code="code-5" type="button">Копировать</button></div><pre tabindex="0"><code class="syntax" id="code-5"><span class="kd">local</span><span class="w"> </span><span class="nv">payload</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nv">version</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span>
+<span class="w">    </span><span class="nb">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"demo.ping"</span><span class="p">,</span>
+<span class="w">    </span><span class="nv">event_id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nf">UUID</span><span class="p">(),</span>
+<span class="w">    </span><span class="nv">data</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nv">message</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"Test event"</span><span class="p">,</span>
+<span class="w">        </span><span class="nv">items</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nf">array</span><span class="p">({</span>
+<span class="w">            </span><span class="p">{</span><span class="w"> </span><span class="nv">id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">101</span><span class="p">,</span><span class="w"> </span><span class="nv">title</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"Demo A"</span><span class="w"> </span><span class="p">},</span>
+<span class="w">            </span><span class="p">{</span><span class="w"> </span><span class="nv">id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">102</span><span class="p">,</span><span class="w"> </span><span class="nv">title</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"Demo B"</span><span class="w"> </span><span class="p">}</span>
+<span class="w">        </span><span class="p">}),</span>
+<span class="w">        </span><span class="nv">errors</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nf">array</span><span class="p">({})</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">}</span>
+
+<span class="kd">local</span><span class="w"> </span><span class="nv">message</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nf">JsonToString</span><span class="p">(</span><span class="nv">payload</span><span class="p">)</span>
+</code></pre></div>
+<p><code>data</code> — объект. <code>items</code> и <code>errors</code> — массивы, включая пустой массив <code>[]</code>. Не собирайте JSON конкатенацией строк и не используйте текстовые замены для экранирования данных.</p>
+</section><section aria-labelledby="heading-s05" class="doc-section" id="s05"><h2 id="heading-s05"><span class="section-number">05</span>Формат прикладного события</h2><p><strong>Предлагаемое соглашение примеров, не встроенный протокол DamuBPM.</strong> В предоставленном модуле рассылки нет разбора JSON. Возможные требования отсутствующих обработчиков этим примером не заменяются.</p>
+<div class="code-block"><div class="code-head"><span>json</span><button aria-label="Копировать пример 6" class="copy" data-code="code-6" type="button">Копировать</button></div><pre tabindex="0"><code class="syntax" id="code-6"><span class="p">{</span>
+<span class="w">  </span><span class="nt">"version"</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"demo.ping"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"event_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"0a783932-f310-45cc-89c9-af47a02f4a18"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"data"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">"message"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Test event"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"items"</span><span class="p">:</span><span class="w"> </span><span class="p">[]</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
+<div aria-label="Таблица справочника" class="table-wrap" role="region" tabindex="0"><table>
+<thead>
+<tr>
+<th>Поле</th>
+<th>Назначение в примерах</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>version</code></td>
+<td>Версия вашего формата; здесь <code>1</code></td>
+</tr>
+<tr>
+<td><code>type</code></td>
+<td>Тип прикладного события; здесь <code>demo.ping</code></td>
+</tr>
+<tr>
+<td><code>event_id</code></td>
+<td>Стабильный идентификатор события для устранения повторов</td>
+</tr>
+<tr>
+<td><code>data</code></td>
+<td>Небольшой JSON-объект с содержимым</td>
+</tr>
+</tbody>
+</table></div>
+<p>Один JSON-объект на одно WebSocket-сообщение — соглашение этих примеров. Перед внедрением проверьте, не объединяет ли фактический серверный writer несколько событий и не добавляет ли собственную оболочку. Не делите поток по переводам строк без документированного формата.</p>
+<p>Добавление полей <code>user_id</code>, <code>room</code> или <code>recipient</code> само по себе не создаёт адресную доставку. Клиентская фильтрация типа события нужна для интерфейса, но не является контролем доступа.</p>
+</section><section aria-labelledby="heading-s06" class="doc-section" id="s06"><h2 id="heading-s06"><span class="section-number">06</span>Frontend: минимальный браузерный клиент</h2><p>Фрагмент предназначен для консоли тестового приложения. Он не выполняется автоматически при открытии этой документации.</p>
+<div class="code-block"><div class="code-head"><span>javascript</span><button aria-label="Копировать пример 7" class="copy" data-code="code-7" type="button">Копировать</button></div><pre tabindex="0"><code class="syntax" id="code-7"><span class="kd">const</span><span class="w"> </span><span class="nx">url</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="ow">new</span><span class="w"> </span><span class="nx">URL</span><span class="p">(</span><span class="nb">window</span><span class="p">.</span><span class="nx">location</span><span class="p">.</span><span class="nx">href</span><span class="p">);</span>
+<span class="nx">url</span><span class="p">.</span><span class="nx">protocol</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">window</span><span class="p">.</span><span class="nx">location</span><span class="p">.</span><span class="nx">protocol</span><span class="w"> </span><span class="o">===</span><span class="w"> </span><span class="s1">'https:'</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="s1">'wss:'</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="s1">'ws:'</span><span class="p">;</span>
+<span class="nx">url</span><span class="p">.</span><span class="nx">pathname</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'/ws/ServeAccountChat'</span><span class="p">;</span>
+<span class="nx">url</span><span class="p">.</span><span class="nx">search</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">''</span><span class="p">;</span>
+<span class="nx">url</span><span class="p">.</span><span class="nx">hash</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">''</span><span class="p">;</span>
+
+<span class="kd">const</span><span class="w"> </span><span class="nx">socket</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="ow">new</span><span class="w"> </span><span class="nx">WebSocket</span><span class="p">(</span><span class="nx">url</span><span class="p">.</span><span class="nx">href</span><span class="p">);</span>
+<span class="nx">socket</span><span class="p">.</span><span class="nx">binaryType</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'arraybuffer'</span><span class="p">;</span>
+<span class="kd">const</span><span class="w"> </span><span class="nx">decoder</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="ow">new</span><span class="w"> </span><span class="nx">TextDecoder</span><span class="p">(</span><span class="s1">'utf-8'</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">fatal</span><span class="o">:</span><span class="w"> </span><span class="kc">true</span><span class="w"> </span><span class="p">});</span>
+
+<span class="nx">socket</span><span class="p">.</span><span class="nx">onopen</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">()</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s1">'WebSocket: connected'</span><span class="p">);</span>
+<span class="nx">socket</span><span class="p">.</span><span class="nx">onerror</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">()</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="nx">console</span><span class="p">.</span><span class="nx">warn</span><span class="p">(</span><span class="s1">'WebSocket: inspect Network / WS'</span><span class="p">);</span>
+<span class="nx">socket</span><span class="p">.</span><span class="nx">onclose</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">event</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s1">'WebSocket: closed'</span><span class="p">,</span><span class="w"> </span><span class="nx">event</span><span class="p">.</span><span class="nx">code</span><span class="p">,</span><span class="w"> </span><span class="nx">event</span><span class="p">.</span><span class="nx">reason</span><span class="p">);</span>
+<span class="p">};</span>
+
+<span class="nx">socket</span><span class="p">.</span><span class="nx">onmessage</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">event</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">try</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="kd">const</span><span class="w"> </span><span class="nx">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="ow">typeof</span><span class="w"> </span><span class="nx">event</span><span class="p">.</span><span class="nx">data</span><span class="w"> </span><span class="o">===</span><span class="w"> </span><span class="s1">'string'</span>
+<span class="w">            </span><span class="o">?</span><span class="w"> </span><span class="nx">event</span><span class="p">.</span><span class="nx">data</span>
+<span class="w">            </span><span class="o">:</span><span class="w"> </span><span class="nx">decoder</span><span class="p">.</span><span class="nx">decode</span><span class="p">(</span><span class="nx">event</span><span class="p">.</span><span class="nx">data</span><span class="p">);</span>
+<span class="w">        </span><span class="kd">const</span><span class="w"> </span><span class="nx">message</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">JSON</span><span class="p">.</span><span class="nx">parse</span><span class="p">(</span><span class="nx">text</span><span class="p">);</span>
+<span class="w">        </span><span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s1">'WebSocket event:'</span><span class="p">,</span><span class="w"> </span><span class="nx">message</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span><span class="w"> </span><span class="k">catch</span><span class="w"> </span><span class="p">(</span><span class="nx">error</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nx">console</span><span class="p">.</span><span class="nx">warn</span><span class="p">(</span><span class="s1">'Unsupported frame or invalid JSON'</span><span class="p">,</span><span class="w"> </span><span class="nx">error</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">};</span>
+
+<span class="c1">// После завершения проверки:</span>
+<span class="c1">// socket.close(1000, 'test finished');</span>
+</code></pre></div>
+<p>Отправитель Lua посылает <strong>бинарный</strong> кадр на сервер. Но тип кадра, который сервер отправляет браузеру, по модулю рассылки не определяется. Поэтому пример принимает как строку, так и <code>ArrayBuffer</code>. Значение <code>binaryType</code> по умолчанию — <code>blob</code>; прямой <code>JSON.parse(event.data)</code> для такого случая не подходит. <code>binaryType</code> управляет представлением получаемых бинарных данных, а не переводит исходящую отправку в бинарный режим. <a href="#s16">S2, S3, B2</a></p>
+<h3>Отправка из браузера</h3>
+<p>Использовать только после подтверждения, что выбранный обработчик разрешает клиенту публиковать такой формат:</p>
+<div class="code-block"><div class="code-head"><span>javascript</span><button aria-label="Копировать пример 8" class="copy" data-code="code-8" type="button">Копировать</button></div><pre tabindex="0"><code class="syntax" id="code-8"><span class="kd">function</span><span class="w"> </span><span class="nx">sendDemo</span><span class="p">(</span><span class="nx">socket</span><span class="p">,</span><span class="w"> </span><span class="nx">payload</span><span class="p">,</span><span class="w"> </span><span class="nx">binary</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">false</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nx">socket</span><span class="p">.</span><span class="nx">readyState</span><span class="w"> </span><span class="o">!==</span><span class="w"> </span><span class="nx">WebSocket</span><span class="p">.</span><span class="nx">OPEN</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="k">throw</span><span class="w"> </span><span class="ow">new</span><span class="w"> </span><span class="ne">Error</span><span class="p">(</span><span class="s1">'WebSocket is not open'</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="kd">const</span><span class="w"> </span><span class="nx">bytes</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="ow">new</span><span class="w"> </span><span class="nx">TextEncoder</span><span class="p">().</span><span class="nx">encode</span><span class="p">(</span><span class="nb">JSON</span><span class="p">.</span><span class="nx">stringify</span><span class="p">(</span><span class="nx">payload</span><span class="p">));</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nx">bytes</span><span class="p">.</span><span class="nx">byteLength</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mf">65536</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="k">throw</span><span class="w"> </span><span class="ow">new</span><span class="w"> </span><span class="ne">Error</span><span class="p">(</span><span class="s1">'Example message limit exceeded'</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nx">socket</span><span class="p">.</span><span class="nx">bufferedAmount</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="nx">bytes</span><span class="p">.</span><span class="nx">byteLength</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mf">262144</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="k">throw</span><span class="w"> </span><span class="ow">new</span><span class="w"> </span><span class="ne">Error</span><span class="p">(</span><span class="s1">'Example output buffer limit exceeded'</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="nx">socket</span><span class="p">.</span><span class="nx">send</span><span class="p">(</span><span class="nx">binary</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="nx">bytes</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="ow">new</span><span class="w"> </span><span class="nx">TextDecoder</span><span class="p">().</span><span class="nx">decode</span><span class="p">(</span><span class="nx">bytes</span><span class="p">));</span>
+<span class="p">}</span>
+</code></pre></div>
+<p><code>send()</code> со строкой отправляет текст; с <code>Uint8Array</code> — бинарные данные. Вызов до <code>OPEN</code> недопустим. Возврат из <code>send()</code> означает постановку данных на отправку, а не подтверждение получателя. Лимиты 64 КиБ на сообщение и 256 КиБ на исходящий буфер — выбранные ограничения примера, не лимиты DamuBPM. <a href="#s16">B3</a></p>
+</section><section aria-labelledby="heading-s07" class="doc-section" id="s07"><h2 id="heading-s07"><span class="section-number">07</span>Полный JIT-пример: собственное подключение</h2><p>Этот вариант подходит для проверки конкретного маршрута. Он создаёт <strong>одно собственное соединение на экземпляр виджета</strong>. Если проект уже получает нужные события через <code>websocketService</code>, сначала используйте вариант из следующего раздела, чтобы не создавать лишние подключения.</p>
+<p>Пример показывает новые события <code>demo.ping</code>, выполняет ограниченное переподключение, последовательно разбирает сообщения и освобождает ресурсы при уходе со страницы. Кнопка отправки вызывает <strong>ваш тестовый</strong> сервис <code>ws_demo_publish</code> из раздела 09. Ни сервис, ни виджет этим документом не публикуются.</p>
+<h3>Logic / JavaScript</h3>
+<p>Вставляется в поле логики JIT, не в обычный <code>&lt;script&gt;</code> статической страницы. Конструкция класса соответствует документации виджетов DamuBPM. <a href="#s16">S5</a></p>
+<div class="code-block"><div class="code-head"><span>javascript</span><button aria-label="Копировать пример 9" class="copy" data-code="code-9" type="button">Копировать</button></div><pre tabindex="0"><code class="syntax" id="code-9"><span class="kd">const</span><span class="w"> </span><span class="nx">vm</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">this</span><span class="p">;</span>
+
+<span class="k">return</span><span class="w"> </span><span class="kd">class</span><span class="w"> </span><span class="nx">GenClass</span><span class="w"> </span><span class="k">extends</span><span class="w"> </span><span class="nx">vm</span><span class="p">.</span><span class="kr">constructor</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nx">wsPath</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'/ws/ServeAccountChat'</span><span class="p">;</span>
+<span class="w">    </span><span class="nx">status</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'Не подключено'</span><span class="p">;</span>
+<span class="w">    </span><span class="nx">notice</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">''</span><span class="p">;</span>
+<span class="w">    </span><span class="nx">publishResult</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">''</span><span class="p">;</span>
+<span class="w">    </span><span class="nx">publishing</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">false</span><span class="p">;</span>
+<span class="w">    </span><span class="nx">events</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[];</span>
+
+<span class="w">    </span><span class="nx">ngOnInit</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="k">this</span><span class="p">.</span><span class="nx">_alive</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span><span class="p">;</span>
+<span class="w">        </span><span class="k">this</span><span class="p">.</span><span class="nx">_socket</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">null</span><span class="p">;</span>
+<span class="w">        </span><span class="k">this</span><span class="p">.</span><span class="nx">_retry</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">0</span><span class="p">;</span>
+<span class="w">        </span><span class="k">this</span><span class="p">.</span><span class="nx">_retryTimer</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">null</span><span class="p">;</span>
+<span class="w">        </span><span class="k">this</span><span class="p">.</span><span class="nx">_openTimer</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">null</span><span class="p">;</span>
+<span class="w">        </span><span class="k">this</span><span class="p">.</span><span class="nx">_stableTimer</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">null</span><span class="p">;</span>
+<span class="w">        </span><span class="k">this</span><span class="p">.</span><span class="nx">_publishSub</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">null</span><span class="p">;</span>
+<span class="w">        </span><span class="k">this</span><span class="p">.</span><span class="nx">_seen</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="ow">new</span><span class="w"> </span><span class="nb">Set</span><span class="p">();</span>
+<span class="w">        </span><span class="k">this</span><span class="p">.</span><span class="nx">_decoder</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="ow">new</span><span class="w"> </span><span class="nx">TextDecoder</span><span class="p">(</span><span class="s1">'utf-8'</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">fatal</span><span class="o">:</span><span class="w"> </span><span class="kc">true</span><span class="w"> </span><span class="p">});</span>
+<span class="w">        </span><span class="k">this</span><span class="p">.</span><span class="nx">connect</span><span class="p">();</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="nx">isCurrent</span><span class="p">(</span><span class="nx">socket</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="k">this</span><span class="p">.</span><span class="nx">_alive</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="k">this</span><span class="p">.</span><span class="nx">_socket</span><span class="w"> </span><span class="o">===</span><span class="w"> </span><span class="nx">socket</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="nx">clearConnectionTimers</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nx">clearTimeout</span><span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">_openTimer</span><span class="p">);</span>
+<span class="w">        </span><span class="nx">clearTimeout</span><span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">_stableTimer</span><span class="p">);</span>
+<span class="w">        </span><span class="k">this</span><span class="p">.</span><span class="nx">_openTimer</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">null</span><span class="p">;</span>
+<span class="w">        </span><span class="k">this</span><span class="p">.</span><span class="nx">_stableTimer</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">null</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="nx">connect</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="k">this</span><span class="p">.</span><span class="nx">_alive</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="k">this</span><span class="p">.</span><span class="nx">_socket</span><span class="p">)</span><span class="w"> </span><span class="k">return</span><span class="p">;</span>
+<span class="w">        </span><span class="nx">clearTimeout</span><span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">_retryTimer</span><span class="p">);</span>
+<span class="w">        </span><span class="k">this</span><span class="p">.</span><span class="nx">_retryTimer</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">null</span><span class="p">;</span>
+
+<span class="w">        </span><span class="kd">let</span><span class="w"> </span><span class="nx">socket</span><span class="p">;</span>
+<span class="w">        </span><span class="k">try</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="kd">const</span><span class="w"> </span><span class="nx">url</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="ow">new</span><span class="w"> </span><span class="nx">URL</span><span class="p">(</span><span class="nb">window</span><span class="p">.</span><span class="nx">location</span><span class="p">.</span><span class="nx">href</span><span class="p">);</span>
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="p">[</span><span class="s1">'http:'</span><span class="p">,</span><span class="w"> </span><span class="s1">'https:'</span><span class="p">].</span><span class="nx">includes</span><span class="p">(</span><span class="nx">url</span><span class="p">.</span><span class="nx">protocol</span><span class="p">))</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                </span><span class="k">throw</span><span class="w"> </span><span class="ow">new</span><span class="w"> </span><span class="ne">Error</span><span class="p">(</span><span class="s1">'Откройте виджет внутри приложения'</span><span class="p">);</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">            </span><span class="nx">url</span><span class="p">.</span><span class="nx">protocol</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">url</span><span class="p">.</span><span class="nx">protocol</span><span class="w"> </span><span class="o">===</span><span class="w"> </span><span class="s1">'https:'</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="s1">'wss:'</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="s1">'ws:'</span><span class="p">;</span>
+<span class="w">            </span><span class="nx">url</span><span class="p">.</span><span class="nx">pathname</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">this</span><span class="p">.</span><span class="nx">wsPath</span><span class="p">;</span>
+<span class="w">            </span><span class="nx">url</span><span class="p">.</span><span class="nx">search</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">''</span><span class="p">;</span>
+<span class="w">            </span><span class="nx">url</span><span class="p">.</span><span class="nx">hash</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">''</span><span class="p">;</span>
+<span class="w">            </span><span class="nx">socket</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="ow">new</span><span class="w"> </span><span class="nx">WebSocket</span><span class="p">(</span><span class="nx">url</span><span class="p">.</span><span class="nx">href</span><span class="p">);</span>
+<span class="w">        </span><span class="p">}</span><span class="w"> </span><span class="k">catch</span><span class="w"> </span><span class="p">(</span><span class="nx">error</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="k">this</span><span class="p">.</span><span class="nx">status</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'Ошибка адреса'</span><span class="p">;</span>
+<span class="w">            </span><span class="k">this</span><span class="p">.</span><span class="nx">notice</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">String</span><span class="p">(</span><span class="nx">error</span><span class="p">.</span><span class="nx">message</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="nx">error</span><span class="p">);</span>
+<span class="w">            </span><span class="k">return</span><span class="p">;</span>
+<span class="w">        </span><span class="p">}</span>
+
+<span class="w">        </span><span class="k">this</span><span class="p">.</span><span class="nx">_socket</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">socket</span><span class="p">;</span>
+<span class="w">        </span><span class="nx">socket</span><span class="p">.</span><span class="nx">binaryType</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'arraybuffer'</span><span class="p">;</span>
+<span class="w">        </span><span class="k">this</span><span class="p">.</span><span class="nx">status</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'Подключение'</span><span class="p">;</span>
+<span class="w">        </span><span class="kd">let</span><span class="w"> </span><span class="nx">pending</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">0</span><span class="p">;</span>
+<span class="w">        </span><span class="kd">let</span><span class="w"> </span><span class="nx">chain</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">Promise</span><span class="p">.</span><span class="nx">resolve</span><span class="p">();</span>
+
+<span class="w">        </span><span class="k">this</span><span class="p">.</span><span class="nx">_openTimer</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">setTimeout</span><span class="p">(()</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">isCurrent</span><span class="p">(</span><span class="nx">socket</span><span class="p">)</span><span class="w"> </span><span class="o">&amp;&amp;</span>
+<span class="w">                </span><span class="nx">socket</span><span class="p">.</span><span class="nx">readyState</span><span class="w"> </span><span class="o">===</span><span class="w"> </span><span class="nx">WebSocket</span><span class="p">.</span><span class="nx">CONNECTING</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                </span><span class="k">this</span><span class="p">.</span><span class="nx">notice</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'Истекло время подключения'</span><span class="p">;</span>
+<span class="w">                </span><span class="nx">socket</span><span class="p">.</span><span class="nx">close</span><span class="p">();</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">        </span><span class="p">},</span><span class="w"> </span><span class="mf">10000</span><span class="p">);</span>
+
+<span class="w">        </span><span class="nx">socket</span><span class="p">.</span><span class="nx">onopen</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">()</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="k">this</span><span class="p">.</span><span class="nx">isCurrent</span><span class="p">(</span><span class="nx">socket</span><span class="p">))</span><span class="w"> </span><span class="k">return</span><span class="p">;</span>
+<span class="w">            </span><span class="nx">clearTimeout</span><span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">_openTimer</span><span class="p">);</span>
+<span class="w">            </span><span class="k">this</span><span class="p">.</span><span class="nx">_openTimer</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">null</span><span class="p">;</span>
+<span class="w">            </span><span class="k">this</span><span class="p">.</span><span class="nx">status</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'Подключено'</span><span class="p">;</span>
+<span class="w">            </span><span class="k">this</span><span class="p">.</span><span class="nx">notice</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'Показываются только новые события. '</span><span class="w"> </span><span class="o">+</span>
+<span class="w">                </span><span class="s1">'Рабочие данные после подключения нужно перечитать через API.'</span><span class="p">;</span>
+<span class="w">            </span><span class="k">this</span><span class="p">.</span><span class="nx">_stableTimer</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">setTimeout</span><span class="p">(()</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">isCurrent</span><span class="p">(</span><span class="nx">socket</span><span class="p">))</span><span class="w"> </span><span class="k">this</span><span class="p">.</span><span class="nx">_retry</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">0</span><span class="p">;</span>
+<span class="w">            </span><span class="p">},</span><span class="w"> </span><span class="mf">30000</span><span class="p">);</span>
+<span class="w">        </span><span class="p">};</span>
+
+<span class="w">        </span><span class="nx">socket</span><span class="p">.</span><span class="nx">onmessage</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">event</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="k">this</span><span class="p">.</span><span class="nx">isCurrent</span><span class="p">(</span><span class="nx">socket</span><span class="p">))</span><span class="w"> </span><span class="k">return</span><span class="p">;</span>
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nx">pending</span><span class="w"> </span><span class="o">&gt;=</span><span class="w"> </span><span class="mf">64</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                </span><span class="k">this</span><span class="p">.</span><span class="nx">notice</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'Очередь обработки переполнена; нужна синхронизация'</span><span class="p">;</span>
+<span class="w">                </span><span class="nx">socket</span><span class="p">.</span><span class="nx">close</span><span class="p">(</span><span class="mf">1000</span><span class="p">,</span><span class="w"> </span><span class="s1">'receive queue overflow'</span><span class="p">);</span>
+<span class="w">                </span><span class="k">return</span><span class="p">;</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">            </span><span class="kd">const</span><span class="w"> </span><span class="nx">raw</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">event</span><span class="p">.</span><span class="nx">data</span><span class="p">;</span>
+<span class="w">            </span><span class="nx">pending</span><span class="o">++</span><span class="p">;</span>
+<span class="w">            </span><span class="nx">chain</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">chain</span><span class="p">.</span><span class="nx">then</span><span class="p">(</span><span class="k">async</span><span class="w"> </span><span class="p">()</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="k">this</span><span class="p">.</span><span class="nx">isCurrent</span><span class="p">(</span><span class="nx">socket</span><span class="p">))</span><span class="w"> </span><span class="k">return</span><span class="p">;</span>
+<span class="w">                </span><span class="kd">const</span><span class="w"> </span><span class="nx">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">await</span><span class="w"> </span><span class="k">this</span><span class="p">.</span><span class="nx">decodeFrame</span><span class="p">(</span><span class="nx">raw</span><span class="p">);</span>
+<span class="w">                </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="k">this</span><span class="p">.</span><span class="nx">isCurrent</span><span class="p">(</span><span class="nx">socket</span><span class="p">))</span><span class="w"> </span><span class="k">return</span><span class="p">;</span>
+<span class="w">                </span><span class="kd">const</span><span class="w"> </span><span class="nx">msg</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">JSON</span><span class="p">.</span><span class="nx">parse</span><span class="p">(</span><span class="nx">text</span><span class="p">);</span>
+<span class="w">                </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="nx">msg</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="ow">typeof</span><span class="w"> </span><span class="nx">msg</span><span class="w"> </span><span class="o">!==</span><span class="w"> </span><span class="s1">'object'</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="nb">Array</span><span class="p">.</span><span class="nx">isArray</span><span class="p">(</span><span class="nx">msg</span><span class="p">))</span><span class="w"> </span><span class="k">return</span><span class="p">;</span>
+<span class="w">                </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nx">msg</span><span class="p">.</span><span class="nx">version</span><span class="w"> </span><span class="o">!==</span><span class="w"> </span><span class="mf">1</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="nx">msg</span><span class="p">.</span><span class="nx">type</span><span class="w"> </span><span class="o">!==</span><span class="w"> </span><span class="s1">'demo.ping'</span><span class="p">)</span><span class="w"> </span><span class="k">return</span><span class="p">;</span>
+<span class="w">                </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="ow">typeof</span><span class="w"> </span><span class="nx">msg</span><span class="p">.</span><span class="nx">event_id</span><span class="w"> </span><span class="o">!==</span><span class="w"> </span><span class="s1">'string'</span><span class="w"> </span><span class="o">||</span>
+<span class="w">                    </span><span class="o">!</span><span class="nx">msg</span><span class="p">.</span><span class="nx">event_id</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="nx">msg</span><span class="p">.</span><span class="nx">event_id</span><span class="p">.</span><span class="nx">length</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mf">128</span><span class="p">)</span><span class="w"> </span><span class="k">return</span><span class="p">;</span>
+<span class="w">                </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="nx">msg</span><span class="p">.</span><span class="nx">data</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="ow">typeof</span><span class="w"> </span><span class="nx">msg</span><span class="p">.</span><span class="nx">data</span><span class="w"> </span><span class="o">!==</span><span class="w"> </span><span class="s1">'object'</span><span class="w"> </span><span class="o">||</span>
+<span class="w">                    </span><span class="nb">Array</span><span class="p">.</span><span class="nx">isArray</span><span class="p">(</span><span class="nx">msg</span><span class="p">.</span><span class="nx">data</span><span class="p">))</span><span class="w"> </span><span class="k">return</span><span class="p">;</span>
+<span class="w">                </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">_seen</span><span class="p">.</span><span class="nx">has</span><span class="p">(</span><span class="nx">msg</span><span class="p">.</span><span class="nx">event_id</span><span class="p">))</span><span class="w"> </span><span class="k">return</span><span class="p">;</span>
+
+<span class="w">                </span><span class="k">this</span><span class="p">.</span><span class="nx">_seen</span><span class="p">.</span><span class="nx">add</span><span class="p">(</span><span class="nx">msg</span><span class="p">.</span><span class="nx">event_id</span><span class="p">);</span>
+<span class="w">                </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">_seen</span><span class="p">.</span><span class="nx">size</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mf">1000</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                    </span><span class="k">this</span><span class="p">.</span><span class="nx">_seen</span><span class="p">.</span><span class="ow">delete</span><span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">_seen</span><span class="p">.</span><span class="nx">values</span><span class="p">().</span><span class="nx">next</span><span class="p">().</span><span class="nx">value</span><span class="p">);</span>
+<span class="w">                </span><span class="p">}</span>
+<span class="w">                </span><span class="kd">const</span><span class="w"> </span><span class="nx">preview</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="ow">typeof</span><span class="w"> </span><span class="nx">msg</span><span class="p">.</span><span class="nx">data</span><span class="p">.</span><span class="nx">message</span><span class="w"> </span><span class="o">===</span><span class="w"> </span><span class="s1">'string'</span>
+<span class="w">                    </span><span class="o">?</span><span class="w"> </span><span class="nx">msg</span><span class="p">.</span><span class="nx">data</span><span class="p">.</span><span class="nx">message</span>
+<span class="w">                    </span><span class="o">:</span><span class="w"> </span><span class="nb">JSON</span><span class="p">.</span><span class="nx">stringify</span><span class="p">(</span><span class="nx">msg</span><span class="p">.</span><span class="nx">data</span><span class="p">);</span>
+<span class="w">                </span><span class="k">this</span><span class="p">.</span><span class="nx">events</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[{</span>
+<span class="w">                    </span><span class="nx">id</span><span class="o">:</span><span class="w"> </span><span class="nx">msg</span><span class="p">.</span><span class="nx">event_id</span><span class="p">,</span>
+<span class="w">                    </span><span class="nx">type</span><span class="o">:</span><span class="w"> </span><span class="nx">msg</span><span class="p">.</span><span class="nx">type</span><span class="p">,</span>
+<span class="w">                    </span><span class="nx">preview</span><span class="o">:</span><span class="w"> </span><span class="nx">preview</span><span class="p">.</span><span class="nx">slice</span><span class="p">(</span><span class="mf">0</span><span class="p">,</span><span class="w"> </span><span class="mf">200</span><span class="p">)</span>
+<span class="w">                </span><span class="p">},</span><span class="w"> </span><span class="p">...</span><span class="k">this</span><span class="p">.</span><span class="nx">events</span><span class="p">].</span><span class="nx">slice</span><span class="p">(</span><span class="mf">0</span><span class="p">,</span><span class="w"> </span><span class="mf">100</span><span class="p">);</span>
+<span class="w">            </span><span class="p">}).</span><span class="k">catch</span><span class="p">(</span><span class="nx">error</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">isCurrent</span><span class="p">(</span><span class="nx">socket</span><span class="p">))</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                    </span><span class="k">this</span><span class="p">.</span><span class="nx">notice</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'Сообщение пропущено: '</span><span class="w"> </span><span class="o">+</span>
+<span class="w">                        </span><span class="nb">String</span><span class="p">(</span><span class="nx">error</span><span class="p">.</span><span class="nx">message</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="nx">error</span><span class="p">);</span>
+<span class="w">                </span><span class="p">}</span>
+<span class="w">            </span><span class="p">}).</span><span class="k">finally</span><span class="p">(()</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">pending</span><span class="o">--</span><span class="p">;</span><span class="w"> </span><span class="p">});</span>
+<span class="w">        </span><span class="p">};</span>
+
+<span class="w">        </span><span class="nx">socket</span><span class="p">.</span><span class="nx">onerror</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">()</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">isCurrent</span><span class="p">(</span><span class="nx">socket</span><span class="p">))</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                </span><span class="k">this</span><span class="p">.</span><span class="nx">notice</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'Ошибка WebSocket. Проверьте Network / WS.'</span><span class="p">;</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">        </span><span class="p">};</span>
+
+<span class="w">        </span><span class="nx">socket</span><span class="p">.</span><span class="nx">onclose</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">event</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="k">this</span><span class="p">.</span><span class="nx">isCurrent</span><span class="p">(</span><span class="nx">socket</span><span class="p">))</span><span class="w"> </span><span class="k">return</span><span class="p">;</span>
+<span class="w">            </span><span class="k">this</span><span class="p">.</span><span class="nx">clearConnectionTimers</span><span class="p">();</span>
+<span class="w">            </span><span class="k">this</span><span class="p">.</span><span class="nx">_socket</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">null</span><span class="p">;</span>
+<span class="w">            </span><span class="k">this</span><span class="p">.</span><span class="nx">status</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'Отключено'</span><span class="p">;</span>
+<span class="w">            </span><span class="k">this</span><span class="p">.</span><span class="nx">notice</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'Соединение закрыто, код '</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="nx">event</span><span class="p">.</span><span class="nx">code</span><span class="p">;</span>
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">([</span><span class="mf">1003</span><span class="p">,</span><span class="w"> </span><span class="mf">1007</span><span class="p">,</span><span class="w"> </span><span class="mf">1008</span><span class="p">,</span><span class="w"> </span><span class="mf">1009</span><span class="p">].</span><span class="nx">includes</span><span class="p">(</span><span class="nx">event</span><span class="p">.</span><span class="nx">code</span><span class="p">))</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                </span><span class="k">this</span><span class="p">.</span><span class="nx">notice</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="s1">'. Проверьте формат, доступ и размер сообщения.'</span><span class="p">;</span>
+<span class="w">                </span><span class="k">return</span><span class="p">;</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">            </span><span class="k">this</span><span class="p">.</span><span class="nx">scheduleReconnect</span><span class="p">();</span>
+<span class="w">        </span><span class="p">};</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="k">async</span><span class="w"> </span><span class="nx">decodeFrame</span><span class="p">(</span><span class="nx">raw</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="kd">const</span><span class="w"> </span><span class="nx">limit</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">65536</span><span class="p">;</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="ow">typeof</span><span class="w"> </span><span class="nx">raw</span><span class="w"> </span><span class="o">===</span><span class="w"> </span><span class="s1">'string'</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="ow">new</span><span class="w"> </span><span class="nx">TextEncoder</span><span class="p">().</span><span class="nx">encode</span><span class="p">(</span><span class="nx">raw</span><span class="p">).</span><span class="nx">byteLength</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="nx">limit</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                </span><span class="k">throw</span><span class="w"> </span><span class="ow">new</span><span class="w"> </span><span class="ne">Error</span><span class="p">(</span><span class="s1">'Сообщение больше 64 КиБ'</span><span class="p">);</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">            </span><span class="k">return</span><span class="w"> </span><span class="nx">raw</span><span class="p">;</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nx">raw</span><span class="w"> </span><span class="ow">instanceof</span><span class="w"> </span><span class="nx">Blob</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nx">raw</span><span class="p">.</span><span class="nx">size</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="nx">limit</span><span class="p">)</span><span class="w"> </span><span class="k">throw</span><span class="w"> </span><span class="ow">new</span><span class="w"> </span><span class="ne">Error</span><span class="p">(</span><span class="s1">'Сообщение больше 64 КиБ'</span><span class="p">);</span>
+<span class="w">            </span><span class="k">return</span><span class="w"> </span><span class="k">this</span><span class="p">.</span><span class="nx">_decoder</span><span class="p">.</span><span class="nx">decode</span><span class="p">(</span><span class="k">await</span><span class="w"> </span><span class="nx">raw</span><span class="p">.</span><span class="nx">arrayBuffer</span><span class="p">());</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nx">raw</span><span class="w"> </span><span class="ow">instanceof</span><span class="w"> </span><span class="nb">ArrayBuffer</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nx">raw</span><span class="p">.</span><span class="nx">byteLength</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="nx">limit</span><span class="p">)</span><span class="w"> </span><span class="k">throw</span><span class="w"> </span><span class="ow">new</span><span class="w"> </span><span class="ne">Error</span><span class="p">(</span><span class="s1">'Сообщение больше 64 КиБ'</span><span class="p">);</span>
+<span class="w">            </span><span class="k">return</span><span class="w"> </span><span class="k">this</span><span class="p">.</span><span class="nx">_decoder</span><span class="p">.</span><span class="nx">decode</span><span class="p">(</span><span class="nx">raw</span><span class="p">);</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">        </span><span class="k">throw</span><span class="w"> </span><span class="ow">new</span><span class="w"> </span><span class="ne">Error</span><span class="p">(</span><span class="s1">'Неизвестный тип кадра'</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="nx">scheduleReconnect</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="k">this</span><span class="p">.</span><span class="nx">_alive</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="k">this</span><span class="p">.</span><span class="nx">_retryTimer</span><span class="w"> </span><span class="o">!==</span><span class="w"> </span><span class="kc">null</span><span class="p">)</span><span class="w"> </span><span class="k">return</span><span class="p">;</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">_retry</span><span class="w"> </span><span class="o">&gt;=</span><span class="w"> </span><span class="mf">8</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="k">this</span><span class="p">.</span><span class="nx">status</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'Повторы остановлены'</span><span class="p">;</span>
+<span class="w">            </span><span class="k">this</span><span class="p">.</span><span class="nx">notice</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'Проверьте подключение и нажмите «Подключить».'</span><span class="p">;</span>
+<span class="w">            </span><span class="k">return</span><span class="p">;</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">        </span><span class="kd">const</span><span class="w"> </span><span class="nx">delay</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">Math</span><span class="p">.</span><span class="nx">min</span><span class="p">(</span><span class="mf">30000</span><span class="p">,</span>
+<span class="w">            </span><span class="mf">500</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="nb">Math</span><span class="p">.</span><span class="nx">pow</span><span class="p">(</span><span class="mf">2</span><span class="p">,</span><span class="w"> </span><span class="k">this</span><span class="p">.</span><span class="nx">_retry</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="nb">Math</span><span class="p">.</span><span class="nx">random</span><span class="p">()</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="mf">300</span><span class="p">);</span>
+<span class="w">        </span><span class="k">this</span><span class="p">.</span><span class="nx">_retry</span><span class="o">++</span><span class="p">;</span>
+<span class="w">        </span><span class="k">this</span><span class="p">.</span><span class="nx">status</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'Ожидание повтора '</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="k">this</span><span class="p">.</span><span class="nx">_retry</span><span class="p">;</span>
+<span class="w">        </span><span class="k">this</span><span class="p">.</span><span class="nx">_retryTimer</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">setTimeout</span><span class="p">(()</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="k">this</span><span class="p">.</span><span class="nx">_retryTimer</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">null</span><span class="p">;</span>
+<span class="w">            </span><span class="k">this</span><span class="p">.</span><span class="nx">connect</span><span class="p">();</span>
+<span class="w">        </span><span class="p">},</span><span class="w"> </span><span class="nx">delay</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="nx">retryNow</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="k">this</span><span class="p">.</span><span class="nx">_alive</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="k">this</span><span class="p">.</span><span class="nx">_socket</span><span class="p">)</span><span class="w"> </span><span class="k">return</span><span class="p">;</span>
+<span class="w">        </span><span class="k">this</span><span class="p">.</span><span class="nx">_retry</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">0</span><span class="p">;</span>
+<span class="w">        </span><span class="k">this</span><span class="p">.</span><span class="nx">connect</span><span class="p">();</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="nx">publishFromLua</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">publishing</span><span class="p">)</span><span class="w"> </span><span class="k">return</span><span class="p">;</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="k">this</span><span class="p">.</span><span class="nx">_socket</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="k">this</span><span class="p">.</span><span class="nx">_socket</span><span class="p">.</span><span class="nx">readyState</span><span class="w"> </span><span class="o">!==</span><span class="w"> </span><span class="nx">WebSocket</span><span class="p">.</span><span class="nx">OPEN</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="k">this</span><span class="p">.</span><span class="nx">publishResult</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'Сначала дождитесь подключения подписчика'</span><span class="p">;</span>
+<span class="w">            </span><span class="k">return</span><span class="p">;</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">        </span><span class="k">this</span><span class="p">.</span><span class="nx">publishing</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span><span class="p">;</span>
+<span class="w">        </span><span class="k">this</span><span class="p">.</span><span class="nx">publishResult</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">''</span><span class="p">;</span>
+<span class="w">        </span><span class="k">this</span><span class="p">.</span><span class="nx">_publishSub</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">this</span><span class="p">.</span><span class="nx">dbQueryService</span><span class="p">.</span><span class="nx">restapiPost</span><span class="p">(</span>
+<span class="w">            </span><span class="s1">'ws_demo_publish'</span><span class="p">,</span>
+<span class="w">            </span><span class="p">{},</span>
+<span class="w">            </span><span class="kc">true</span>
+<span class="w">        </span><span class="p">).</span><span class="nx">subscribe</span><span class="p">({</span>
+<span class="w">            </span><span class="nx">next</span><span class="o">:</span><span class="w"> </span><span class="nx">resp</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="k">this</span><span class="p">.</span><span class="nx">_alive</span><span class="p">)</span><span class="w"> </span><span class="k">return</span><span class="p">;</span>
+<span class="w">                </span><span class="k">this</span><span class="p">.</span><span class="nx">publishing</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">false</span><span class="p">;</span>
+<span class="w">                </span><span class="k">this</span><span class="p">.</span><span class="nx">publishResult</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">resp</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="nx">resp</span><span class="p">.</span><span class="nx">success</span>
+<span class="w">                    </span><span class="o">?</span><span class="w"> </span><span class="s1">'Lua: кадр записан. Подтверждение доставки отсутствует.'</span>
+<span class="w">                    </span><span class="o">:</span><span class="w"> </span><span class="s1">'Lua: отправка не выполнена'</span><span class="p">;</span>
+<span class="w">            </span><span class="p">},</span>
+<span class="w">            </span><span class="nx">error</span><span class="o">:</span><span class="w"> </span><span class="p">()</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="k">this</span><span class="p">.</span><span class="nx">_alive</span><span class="p">)</span><span class="w"> </span><span class="k">return</span><span class="p">;</span>
+<span class="w">                </span><span class="k">this</span><span class="p">.</span><span class="nx">publishing</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">false</span><span class="p">;</span>
+<span class="w">                </span><span class="k">this</span><span class="p">.</span><span class="nx">publishResult</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'Ошибка REST. Проверьте ответ и журнал сервера.'</span><span class="p">;</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">        </span><span class="p">});</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="nx">ngOnDestroy</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="k">this</span><span class="p">.</span><span class="nx">_alive</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">false</span><span class="p">;</span>
+<span class="w">        </span><span class="nx">clearTimeout</span><span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">_retryTimer</span><span class="p">);</span>
+<span class="w">        </span><span class="k">this</span><span class="p">.</span><span class="nx">clearConnectionTimers</span><span class="p">();</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">_publishSub</span><span class="p">)</span><span class="w"> </span><span class="k">this</span><span class="p">.</span><span class="nx">_publishSub</span><span class="p">.</span><span class="nx">unsubscribe</span><span class="p">();</span>
+<span class="w">        </span><span class="kd">const</span><span class="w"> </span><span class="nx">socket</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">this</span><span class="p">.</span><span class="nx">_socket</span><span class="p">;</span>
+<span class="w">        </span><span class="k">this</span><span class="p">.</span><span class="nx">_socket</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">null</span><span class="p">;</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nx">socket</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="nx">socket</span><span class="p">.</span><span class="nx">onopen</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">null</span><span class="p">;</span>
+<span class="w">            </span><span class="nx">socket</span><span class="p">.</span><span class="nx">onmessage</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">null</span><span class="p">;</span>
+<span class="w">            </span><span class="nx">socket</span><span class="p">.</span><span class="nx">onerror</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">null</span><span class="p">;</span>
+<span class="w">            </span><span class="nx">socket</span><span class="p">.</span><span class="nx">onclose</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">null</span><span class="p">;</span>
+<span class="w">            </span><span class="nx">socket</span><span class="p">.</span><span class="nx">close</span><span class="p">(</span><span class="mf">1000</span><span class="p">,</span><span class="w"> </span><span class="s1">'widget destroyed'</span><span class="p">);</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">};</span>
+</code></pre></div>
+<h3>HTML Template</h3>
+<p>Используются классы стандартного оформления DamuBPM: <code>card</code>, <code>card-header</code>, <code>p-button</code>, <code>p-component</code>. Дополнительный CSS для примера не требуется. Значения выводятся интерполяцией, не через <code>[innerHTML]</code>.</p>
+<div class="code-block"><div class="code-head"><span>html</span><button aria-label="Копировать пример 10" class="copy" data-code="code-10" type="button">Копировать</button></div><pre tabindex="0"><code class="syntax" id="code-10"><span class="p">&lt;</span><span class="nt">section</span> <span class="na">class</span><span class="o">=</span><span class="s">"card"</span><span class="p">&gt;</span>
+    <span class="p">&lt;</span><span class="nt">div</span> <span class="na">class</span><span class="o">=</span><span class="s">"card-header"</span><span class="p">&gt;</span>
+        <span class="p">&lt;</span><span class="nt">h3</span><span class="p">&gt;</span>WebSocket · тестовые события<span class="p">&lt;/</span><span class="nt">h3</span><span class="p">&gt;</span>
+    <span class="p">&lt;/</span><span class="nt">div</span><span class="p">&gt;</span>
+
+    <span class="p">&lt;</span><span class="nt">p</span> <span class="na">role</span><span class="o">=</span><span class="s">"status"</span> <span class="na">aria-live</span><span class="o">=</span><span class="s">"polite"</span><span class="p">&gt;</span>Статус: {{ status }}<span class="p">&lt;/</span><span class="nt">p</span><span class="p">&gt;</span>
+    <span class="p">&lt;</span><span class="nt">p</span><span class="p">&gt;</span>{{ notice }}<span class="p">&lt;/</span><span class="nt">p</span><span class="p">&gt;</span>
+
+    <span class="p">&lt;</span><span class="nt">button</span> <span class="na">type</span><span class="o">=</span><span class="s">"button"</span> <span class="na">class</span><span class="o">=</span><span class="s">"p-button p-component"</span>
+            <span class="err">(</span><span class="na">click</span><span class="err">)="</span><span class="na">retryNow</span><span class="err">()"</span><span class="p">&gt;</span>
+        Подключить
+    <span class="p">&lt;/</span><span class="nt">button</span><span class="p">&gt;</span>
+    <span class="p">&lt;</span><span class="nt">button</span> <span class="na">type</span><span class="o">=</span><span class="s">"button"</span> <span class="na">class</span><span class="o">=</span><span class="s">"p-button p-component"</span>
+            <span class="err">[</span><span class="na">disabled</span><span class="err">]="</span><span class="na">publishing</span><span class="err">"</span> <span class="err">(</span><span class="na">click</span><span class="err">)="</span><span class="na">publishFromLua</span><span class="err">()"</span><span class="p">&gt;</span>
+        {{ publishing ? 'Отправка…' : 'Отправить через Lua' }}
+    <span class="p">&lt;/</span><span class="nt">button</span><span class="p">&gt;</span>
+
+    <span class="p">&lt;</span><span class="nt">p</span> <span class="na">role</span><span class="o">=</span><span class="s">"status"</span><span class="p">&gt;</span>{{ publishResult }}<span class="p">&lt;/</span><span class="nt">p</span><span class="p">&gt;</span>
+    <span class="p">&lt;</span><span class="nt">p</span> <span class="err">*</span><span class="na">ngIf</span><span class="o">=</span><span class="s">"events.length === 0"</span><span class="p">&gt;</span>Новых событий пока нет.<span class="p">&lt;/</span><span class="nt">p</span><span class="p">&gt;</span>
+
+    <span class="p">&lt;</span><span class="nt">article</span> <span class="na">class</span><span class="o">=</span><span class="s">"card"</span> <span class="err">*</span><span class="na">ngFor</span><span class="o">=</span><span class="s">"let item of events"</span><span class="p">&gt;</span>
+        <span class="p">&lt;</span><span class="nt">strong</span><span class="p">&gt;</span>{{ item.type }}<span class="p">&lt;/</span><span class="nt">strong</span><span class="p">&gt;</span>
+        <span class="p">&lt;</span><span class="nt">p</span><span class="p">&gt;</span>{{ item.preview }}<span class="p">&lt;/</span><span class="nt">p</span><span class="p">&gt;</span>
+        <span class="p">&lt;</span><span class="nt">small</span><span class="p">&gt;</span>{{ item.id }}<span class="p">&lt;/</span><span class="nt">small</span><span class="p">&gt;</span>
+    <span class="p">&lt;/</span><span class="nt">article</span><span class="p">&gt;</span>
+<span class="p">&lt;/</span><span class="nt">section</span><span class="p">&gt;</span>
+</code></pre></div>
+<h3>Что в этом примере настраивается</h3>
+<div aria-label="Таблица справочника" class="table-wrap" role="region" tabindex="0"><table>
+<thead>
+<tr>
+<th>Параметр</th>
+<th>Значение примера</th>
+<th>Назначение</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Ожидание подключения</td>
+<td>10 секунд</td>
+<td>Завершить зависшую попытку</td>
+</tr>
+<tr>
+<td>Повторы</td>
+<td>До 8 подряд</td>
+<td>Не создавать бесконечный поток переподключений</td>
+</tr>
+<tr>
+<td>Задержка повторов</td>
+<td>От 0,5 секунды, до 30 секунд</td>
+<td>Увеличение интервала и небольшой случайный сдвиг</td>
+</tr>
+<tr>
+<td>Стабильное подключение</td>
+<td>30 секунд</td>
+<td>Только после него сбрасывается счётчик неудач</td>
+</tr>
+<tr>
+<td>Размер сообщения</td>
+<td>До 64 КиБ</td>
+<td>Ограничить нагрузку разбора</td>
+</tr>
+<tr>
+<td>Очередь разбора</td>
+<td>До 64 сообщений</td>
+<td>Не накапливать неограниченное число задач</td>
+</tr>
+<tr>
+<td>Память событий</td>
+<td>100 строк и 1000 идентификаторов</td>
+<td>Ограничить объём интерфейса и локальное устранение повторов</td>
+</tr>
+</tbody>
+</table></div>
+<p>Это параметры прикладного кода, не настройки или гарантии платформы. Дедупликация действует только в памяти текущего виджета и в пределах окна из 1000 идентификаторов. Код не отправляет сообщения повторно при reconnect и не заявляет восстановление истории.</p>
+</section><section aria-labelledby="heading-s08" class="doc-section" id="s08"><h2 id="heading-s08"><span class="section-number">08</span>JIT: встроенный websocketService</h2><p>Документация виджетов подтверждает поток <code>this.websocketService.messages</code> и отписку через <code>unsubscribe()</code>. Она приводит пример проверки <code>msg.type === 'url_notification'</code>. Однако маршрут подключения, преобразование кадров, переподключение и жизненный цикл самого сервиса там не раскрыты. <a href="#s16">S5</a></p>
+<p>Для существующей платформенной интеграции используйте её фактический контракт, а не одновременно собственный socket и сервис для одного и того же события.</p>
+<div class="code-block"><div class="code-head"><span>javascript</span><button aria-label="Копировать пример 11" class="copy" data-code="code-11" type="button">Копировать</button></div><pre tabindex="0"><code class="syntax" id="code-11"><span class="kd">const</span><span class="w"> </span><span class="nx">vm</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">this</span><span class="p">;</span>
+
+<span class="k">return</span><span class="w"> </span><span class="kd">class</span><span class="w"> </span><span class="nx">GenClass</span><span class="w"> </span><span class="k">extends</span><span class="w"> </span><span class="nx">vm</span><span class="p">.</span><span class="kr">constructor</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nx">notificationText</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'Ожидание уведомления'</span><span class="p">;</span>
+
+<span class="w">    </span><span class="nx">ngOnInit</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="k">this</span><span class="p">.</span><span class="nx">_wsSub</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">this</span><span class="p">.</span><span class="nx">websocketService</span><span class="p">.</span><span class="nx">messages</span><span class="p">.</span><span class="nx">subscribe</span><span class="p">(</span><span class="nx">msg</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="nx">msg</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="nx">msg</span><span class="p">.</span><span class="nx">type</span><span class="w"> </span><span class="o">!==</span><span class="w"> </span><span class="s1">'url_notification'</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="o">!</span><span class="nx">msg</span><span class="p">.</span><span class="nx">data</span><span class="p">)</span><span class="w"> </span><span class="k">return</span><span class="p">;</span>
+<span class="w">            </span><span class="k">this</span><span class="p">.</span><span class="nx">notificationText</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'Получено уведомление об обновлении'</span><span class="p">;</span>
+<span class="w">            </span><span class="c1">// Здесь вызовите существующий метод чтения данных своего виджета.</span>
+<span class="w">        </span><span class="p">});</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="nx">ngOnDestroy</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">_wsSub</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="k">this</span><span class="p">.</span><span class="nx">_wsSub</span><span class="p">.</span><span class="nx">unsubscribe</span><span class="p">();</span>
+<span class="w">            </span><span class="k">this</span><span class="p">.</span><span class="nx">_wsSub</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">null</span><span class="p">;</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">};</span>
+</code></pre></div>
+<div class="code-block"><div class="code-head"><span>html</span><button aria-label="Копировать пример 12" class="copy" data-code="code-12" type="button">Копировать</button></div><pre tabindex="0"><code class="syntax" id="code-12"><span class="p">&lt;</span><span class="nt">section</span> <span class="na">class</span><span class="o">=</span><span class="s">"card"</span><span class="p">&gt;</span>
+    <span class="p">&lt;</span><span class="nt">h3</span><span class="p">&gt;</span>Уведомления платформы<span class="p">&lt;/</span><span class="nt">h3</span><span class="p">&gt;</span>
+    <span class="p">&lt;</span><span class="nt">p</span> <span class="na">role</span><span class="o">=</span><span class="s">"status"</span><span class="p">&gt;</span>{{ notificationText }}<span class="p">&lt;/</span><span class="nt">p</span><span class="p">&gt;</span>
+<span class="p">&lt;/</span><span class="nt">section</span><span class="p">&gt;</span>
+</code></pre></div>
+<p>В этом варианте виджет владеет подпиской, но не обязательно общим соединением приложения. Поэтому он отписывается от потока, а не вызывает вымышленный метод закрытия <code>websocketService</code>.</p>
+<p><code>url_notification</code> из документации сервиса и <code>demo.ping</code> из нашего примера — разные контракты. Не предполагается, что сервис автоматически получит и обработает <code>demo.ping</code> или что публикация в AccountChat обязательно попадает в его поток.</p>
+</section><section aria-labelledby="heading-s09" class="doc-section" id="s09"><h2 id="heading-s09"><span class="section-number">09</span>Backend: тестовый Lua REST-сервис</h2><p><strong>Прикладной пример для создания в тестовом контуре, не существующий встроенный сервис.</strong> Он публикует только фиксированное обезличенное событие. Бизнес-данные и произвольный адрес назначения от клиента не принимаются.</p>
+<p>Сначала ограничьте доступ к тестовому сервису нужной ролью штатными средствами вашего проекта. Флаг авторизации сам по себе не является проверкой бизнес-полномочий.</p>
+<h3>Настройки</h3>
+<div aria-label="Таблица справочника" class="table-wrap" role="region" tabindex="0"><table>
+<thead>
+<tr>
+<th>Поле</th>
+<th>Значение</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>code</code></td>
+<td><code>ws_demo_publish</code></td>
+</tr>
+<tr>
+<td><code>only_auth</code></td>
+<td><code>1</code></td>
+</tr>
+<tr>
+<td><code>is_public</code></td>
+<td><code>0</code></td>
+</tr>
+<tr>
+<td><code>cut_status_info</code></td>
+<td><code>1</code></td>
+</tr>
+<tr>
+<td>Тип ответа</td>
+<td><code>application/json</code></td>
+</tr>
+<tr>
+<td>HTTP-метод</td>
+<td>POST; дополнительно проверяется в Lua</td>
+</tr>
+</tbody>
+</table></div>
+<p>Вызов: <code>POST /restapi/services/run/ws_demo_publish</code>, JSON body: <code>{}</code>. Поля <code>request</code>, <code>output</code>, <code>http_response_code</code> и перечисленные настройки описаны в руководстве REST API DamuBPM. <a href="#s16">S6</a></p>
+<h3>Lua-код</h3>
+<div class="code-block"><div class="code-head"><span>lua</span><button aria-label="Копировать пример 13" class="copy" data-code="code-13" type="button">Копировать</button></div><pre tabindex="0"><code class="syntax" id="code-13"><span class="kd">local</span><span class="w"> </span><span class="nv">WS_SERVER</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">""</span>
+<span class="kd">local</span><span class="w"> </span><span class="nv">WS_PATH</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"/ws/ServeAccountChat"</span>
+
+<span class="nv">header</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="p">[</span><span class="s2">"Cache-Control"</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"no-store"</span>
+<span class="p">}</span>
+
+<span class="kr">if</span><span class="w"> </span><span class="nv">request</span><span class="p">.</span><span class="py">method</span><span class="w"> </span><span class="o">~=</span><span class="w"> </span><span class="s2">"POST"</span><span class="w"> </span><span class="kr">then</span>
+<span class="w">    </span><span class="nv">header</span><span class="p">[</span><span class="s2">"Allow"</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"POST"</span>
+<span class="w">    </span><span class="nv">http_response_code</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">405</span>
+<span class="w">    </span><span class="nv">output</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nv">success</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span><span class="w"> </span><span class="nb">error</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"POST_REQUIRED"</span><span class="w"> </span><span class="p">}</span>
+<span class="w">    </span><span class="kr">return</span>
+<span class="kr">end</span>
+
+<span class="kd">local</span><span class="w"> </span><span class="nv">userId</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">tonumber</span><span class="p">(</span><span class="nv">request</span><span class="p">.</span><span class="py">user_id</span><span class="p">)</span>
+<span class="kr">if</span><span class="w"> </span><span class="nv">userId</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="kc">nil</span><span class="w"> </span><span class="ow">or</span><span class="w"> </span><span class="nv">userId</span><span class="w"> </span><span class="o">&lt;=</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="kr">then</span>
+<span class="w">    </span><span class="nv">http_response_code</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">401</span>
+<span class="w">    </span><span class="nv">output</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nv">success</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span><span class="w"> </span><span class="nb">error</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"AUTH_REQUIRED"</span><span class="w"> </span><span class="p">}</span>
+<span class="w">    </span><span class="kr">return</span>
+<span class="kr">end</span>
+
+<span class="kr">if</span><span class="w"> </span><span class="nv">WS_SERVER</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s2">""</span><span class="w"> </span><span class="kr">then</span>
+<span class="w">    </span><span class="nv">http_response_code</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">500</span>
+<span class="w">    </span><span class="nv">output</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nv">success</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span><span class="w"> </span><span class="nb">error</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"WS_SERVER_NOT_CONFIGURED"</span><span class="w"> </span><span class="p">}</span>
+<span class="w">    </span><span class="kr">return</span>
+<span class="kr">end</span>
+
+<span class="kd">local</span><span class="w"> </span><span class="nv">eventId</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nf">UUID</span><span class="p">()</span>
+<span class="kd">local</span><span class="w"> </span><span class="nv">payload</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nv">version</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span>
+<span class="w">    </span><span class="nb">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"demo.ping"</span><span class="p">,</span>
+<span class="w">    </span><span class="nv">event_id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">eventId</span><span class="p">,</span>
+<span class="w">    </span><span class="nv">data</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nv">message</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"Test event from Lua"</span><span class="p">,</span>
+<span class="w">        </span><span class="nv">items</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nf">array</span><span class="p">({})</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">}</span>
+
+<span class="kd">local</span><span class="w"> </span><span class="nv">err</span><span class="p">,</span><span class="w"> </span><span class="nv">code</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nf">SendWSAsync</span><span class="p">(</span>
+<span class="w">    </span><span class="nv">WS_SERVER</span><span class="p">,</span>
+<span class="w">    </span><span class="nv">WS_PATH</span><span class="p">,</span>
+<span class="w">    </span><span class="nf">JsonToString</span><span class="p">(</span><span class="nv">payload</span><span class="p">)</span>
+<span class="p">)</span>
+
+<span class="kr">if</span><span class="w"> </span><span class="nv">code</span><span class="w"> </span><span class="o">~=</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="kr">then</span>
+<span class="w">    </span><span class="nb">print</span><span class="p">(</span><span class="s2">"ws_demo_publish failed"</span><span class="p">,</span><span class="w"> </span><span class="nv">eventId</span><span class="p">,</span><span class="w"> </span><span class="nv">code</span><span class="p">,</span><span class="w"> </span><span class="nv">err</span><span class="p">)</span>
+<span class="w">    </span><span class="nv">http_response_code</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">502</span>
+<span class="w">    </span><span class="nv">output</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nv">success</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span>
+<span class="w">        </span><span class="nb">error</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"WS_SEND_FAILED"</span><span class="p">,</span>
+<span class="w">        </span><span class="nv">transport_code</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">code</span><span class="p">,</span>
+<span class="w">        </span><span class="nv">event_id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">eventId</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="kr">return</span>
+<span class="kr">end</span>
+
+<span class="nv">http_response_code</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">200</span>
+<span class="nv">output</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nv">success</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
+<span class="w">    </span><span class="nv">state</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"transport_written"</span><span class="p">,</span>
+<span class="w">    </span><span class="nv">event_id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">eventId</span><span class="p">,</span>
+<span class="w">    </span><span class="nv">transport_code</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">code</span><span class="p">,</span>
+<span class="w">    </span><span class="nv">delivery_confirmed</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">false</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>Задайте <code>WS_SERVER</code> вручную, например <code>127.0.0.1:8080</code>, <strong>только если это действительный разрешённый адрес</strong> вашего контура. Пустое значение намеренно останавливает пример, чтобы не угадывать инфраструктуру.</p>
+<p>Проверка авторизации REST-запроса не передаёт сессию в <code>SendWSAsync</code>: это отдельное исходящее WebSocket-подключение без пользовательских заголовков. Если обработчик требует сессию, вызов может не пройти; не отключайте защиту ради теста.</p>
+<h3>Вызов с Frontend</h3>
+<p>Кнопка в полном JIT-примере уже использует этот вызов:</p>
+<div class="code-block"><div class="code-head"><span>javascript</span><button aria-label="Копировать пример 14" class="copy" data-code="code-14" type="button">Копировать</button></div><pre tabindex="0"><code class="syntax" id="code-14"><span class="k">this</span><span class="p">.</span><span class="nx">dbQueryService</span><span class="p">.</span><span class="nx">restapiPost</span><span class="p">(</span>
+<span class="w">    </span><span class="s1">'ws_demo_publish'</span><span class="p">,</span>
+<span class="w">    </span><span class="p">{},</span>
+<span class="w">    </span><span class="kc">true</span>
+<span class="p">).</span><span class="nx">subscribe</span><span class="p">({</span>
+<span class="w">    </span><span class="nx">next</span><span class="o">:</span><span class="w"> </span><span class="nx">response</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">response</span><span class="p">),</span>
+<span class="w">    </span><span class="nx">error</span><span class="o">:</span><span class="w"> </span><span class="nx">error</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="nx">console</span><span class="p">.</span><span class="nx">warn</span><span class="p">(</span><span class="s1">'REST call failed'</span><span class="p">,</span><span class="w"> </span><span class="nx">error</span><span class="p">)</span>
+<span class="p">});</span>
+</code></pre></div>
+<p>Третий аргумент <code>true</code> отключает загрузчик DamuBPM. Такой же третий аргумент нужно передавать в <code>this.dbQueryService.restapiGet(...)</code> при чтении данных в обработчике событий.</p>
+<p>Ответ <code>state: "transport_written"</code> описывает транспортную запись. Он не сообщает, сколько подписчиков получили событие. Факт получения проверяется отдельно на стороне подписчика по <code>event_id</code>.</p>
+</section><section aria-labelledby="heading-s10" class="doc-section" id="s10"><h2 id="heading-s10"><span class="section-number">10</span>Сообщения пользователю и комнате</h2><h3>Комната: что можно показать достоверно</h3>
+<p>Из маршрута известен путь с одним параметром <code>room</code>. Такой код правильно формирует URL для отдельного сегмента, но <strong>не доказывает</strong> наличие подписки, публикации или изоляции участников. <a href="#s16">S1</a></p>
+<div class="code-block"><div class="code-head"><span>javascript</span><button aria-label="Копировать пример 15" class="copy" data-code="code-15" type="button">Копировать</button></div><pre tabindex="0"><code class="syntax" id="code-15"><span class="kd">const</span><span class="w"> </span><span class="nx">room</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'demo-room-001'</span><span class="p">;</span>
+<span class="kd">const</span><span class="w"> </span><span class="nx">path</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'/ws/ServeMsgToRoom/'</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="nb">encodeURIComponent</span><span class="p">(</span><span class="nx">room</span><span class="p">);</span>
+<span class="kd">const</span><span class="w"> </span><span class="nx">url</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="ow">new</span><span class="w"> </span><span class="nx">URL</span><span class="p">(</span><span class="nb">window</span><span class="p">.</span><span class="nx">location</span><span class="p">.</span><span class="nx">href</span><span class="p">);</span>
+<span class="nx">url</span><span class="p">.</span><span class="nx">protocol</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">url</span><span class="p">.</span><span class="nx">protocol</span><span class="w"> </span><span class="o">===</span><span class="w"> </span><span class="s1">'https:'</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="s1">'wss:'</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="s1">'ws:'</span><span class="p">;</span>
+<span class="nx">url</span><span class="p">.</span><span class="nx">pathname</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">path</span><span class="p">;</span>
+<span class="nx">url</span><span class="p">.</span><span class="nx">search</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">''</span><span class="p">;</span>
+<span class="nx">url</span><span class="p">.</span><span class="nx">hash</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">''</span><span class="p">;</span>
+
+<span class="kd">const</span><span class="w"> </span><span class="nx">roomSocket</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="ow">new</span><span class="w"> </span><span class="nx">WebSocket</span><span class="p">(</span><span class="nx">url</span><span class="p">.</span><span class="nx">href</span><span class="p">);</span>
+<span class="c1">// Добавьте обработчики, проверку доступа и закрытие по примеру выше.</span>
+</code></pre></div>
+<p>Для Lua используйте заранее определённый безопасный идентификатор, без произвольных фрагментов URL:</p>
+<div class="code-block"><div class="code-head"><span>lua</span><button aria-label="Копировать пример 16" class="copy" data-code="code-16" type="button">Копировать</button></div><pre tabindex="0"><code class="syntax" id="code-16"><span class="kd">local</span><span class="w"> </span><span class="nv">room</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"demo-room-001"</span>
+<span class="kd">local</span><span class="w"> </span><span class="nv">path</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"/ws/ServeMsgToRoom/"</span><span class="w"> </span><span class="o">..</span><span class="w"> </span><span class="nv">room</span>
+
+<span class="c1">-- Только после подтверждения контракта обработчика комнаты:</span>
+<span class="c1">-- local err, code = SendWSAsync(wsServer, path, JsonToString(payload))</span>
+</code></pre></div>
+<p>Переменные <code>wsServer</code> и <code>payload</code> в закомментированном вызове относятся к вашей конфигурации и подтверждённому формату сообщения. Пустой <code>room</code> не соответствует показанному маршруту. Использование <code>/</code> внутри идентификатора требует отдельной проверки маршрутизатора; проще ограничить прикладные room ID буквами ASCII, цифрами, дефисом и подчёркиванием.</p>
+<h3>Пользователь: чего нельзя заключать из имени</h3>
+<p>Подтверждён только путь <code>/ws/ServeMsgToUser</code>, без параметра в URL. Нет оснований документировать <code>/ws/ServeMsgToUser/123</code>, <code>?user_id=123</code>, JSON-поле <code>to</code> или автоматически подставляемую текущую сессию.</p>
+<p>Перед рабочей адресной интеграцией нужно установить по обработчику или проверке контура: откуда берётся ID пользователя, кто может отправлять ему сообщения, какой JSON ожидается, какие вкладки и устройства получают событие и как отклоняются чужие подписки.</p>
+<p><strong>Не заменяйте адресную доставку общей рассылкой с фильтром на Frontend.</strong> К этому моменту сообщение уже поступило браузеру, который не должен был его получать.</p>
+</section><section aria-labelledby="heading-s11" class="doc-section" id="s11"><h2 id="heading-s11"><span class="section-number">11</span>Надёжность и эффективность</h2><p>Ниже — проектные рекомендации, вытекающие из ограничений показанного модуля и отправителя, а не описание уже реализованных гарантий.</p>
+<h3>Сначала сохранить данные, затем уведомить</h3>
+<div class="code-block"><div class="code-head"><span>text</span><button aria-label="Копировать пример 17" class="copy" data-code="code-17" type="button">Копировать</button></div><pre tabindex="0"><code class="syntax" id="code-17">Команда пользователя
+    → обычный REST / бизнес-процесс с проверкой прав
+    → успешное сохранение и фиксация данных
+    → небольшое WebSocket-событие
+    → интерфейс перечитывает доступное ему состояние
+</code></pre></div>
+<p>Не отправляйте сигнал до фактической фиксации изменений: подписчик может успеть прочитать старое состояние. Точная граница транзакции в вашем REST-сервисе или бизнес-процессе должна быть установлена отдельно — её нельзя вывести из данного WebSocket-кода.</p>
+<p>Когда потеря уведомления недопустима, нужен отдельный устойчивый механизм: например, сохранение задания на публикацию вместе с бизнес-изменением и последующая контролируемая отправка. Такой механизм в представленных фрагментах не показан и не реализован примерами.</p>
+<h3>Переподключение не восстанавливает историю</h3>
+<p>После каждого нового подключения перечитывайте актуальное состояние через защищённый API. Для строгой синхронизации потребуется серверная версия состояния или курсор событий и способ обнаруживать пропуски. Одного <code>event_id</code> недостаточно для доказательства непрерывности потока.</p>
+<p>Не отправляйте автоматически повторно пользовательские команды после потери соединения: первая попытка могла уже выполниться. Повторяемые команды требуют прикладного ключа идемпотентности. Это отдельная логика сервера, не свойство <code>SendWSAsync</code>.</p>
+<h3>Ограничивайте частоту и объём</h3>
+<p>Каждый вызов <code>SendWSAsync</code> создаёт новое подключение. Не используйте его как высокочастотный поток координат, аудио или постоянных промежуточных изменений формы. Для уведомлений объединяйте несколько изменений в один сигнал «данные обновились».</p>
+<p>На Frontend объединяйте пачку сигналов в одно перечитывание и не запускайте параллельно десятки одинаковых Query. В полном примере ограничены очередь, история и размер сообщений; для конкретной формы аналогично ограничьте частоту обновления данных.</p>
+<h3>Несколько серверных узлов</h3>
+<p>В присланном модуле список соединений хранится в памяти этого экземпляра. Общая доставка между узлами или процессами не показана. Поэтому нельзя предполагать, что Lua, подключённый к одному узлу, уведомит браузеры другого. Проверьте маршрутизацию и фактический механизм межузловой доставки. Привязка сессии к узлу сама по себе не создаёт общую шину событий.</p>
+<h3>Heartbeat</h3>
+<p>Поддержка прикладных <code>ping</code> / <code>pong</code> не установлена. Строка <code>"ping"</code>, отправленная через <code>send()</code>, — обычное прикладное сообщение, а не управляющий WebSocket Ping-кадр. Не включайте таймер такого обмена без согласованного обработчика. Управляющие кадры протокола и сообщения приложения — разные уровни. <a href="#s16">B3, B6</a></p>
+</section><section aria-labelledby="heading-s12" class="doc-section" id="s12"><h2 id="heading-s12"><span class="section-number">12</span>Безопасность и конфигурация</h2><p><strong>Права проверяются на сервере.</strong> Имя комнаты, поле пользователя и фильтр JavaScript не являются разрешением на доступ. Для всех трёх обработчиков отдельно проверьте аутентификацию, допуск отправителя и подписчика, проверку Origin и границы организации. В присланном коде эти проверки не показаны.</p>
+<p><strong>Адрес отправителя задаёт администратор.</strong> Не принимайте <code>wsServer</code> и произвольный <code>path</code> из <code>request.input</code>, из имени комнаты без проверки или из <code>request.host</code>. Иначе тестовый издатель может стать способом подключения к нежелательным внутренним адресам.</p>
+<p><strong>Транспорт не переносит сессию автоматически.</strong> Lua-отправитель не передаёт Cookie/Authorization. У браузерного конструктора <code>WebSocket(url, protocols)</code> нет аргумента для объекта произвольных HTTP-заголовков. Способ авторизации должен соответствовать фактическому обработчику. <a href="#s16">S3, B1</a></p>
+<p><strong>Содержимое события минимально.</strong> До подтверждения изоляции не публикуйте документы, телефоны, токены, персональные данные, названия закрытых объектов или другие чувствительные сведения. Даже ID объекта может быть чувствительным. Для теста используйте фиксированный текст из примеров.</p>
+<p><strong>Вывод — как текст.</strong> В JIT используйте интерполяцию, в обычном DOM — <code>textContent</code>. Не вставляйте входящее сообщение через <code>innerHTML</code>. Не переходите автоматически по URL из события без проверки разрешённых адресов.</p>
+<p><strong>Логи — без содержимого документов и секретов.</strong> Обычно достаточно <code>event_id</code>, типа события, транспортного кода, статуса подключения и времени. Это предложенный состав диагностики; встроенного аудита доставки в исходниках нет.</p>
+</section><section aria-labelledby="heading-s13" class="doc-section" id="s13"><h2 id="heading-s13"><span class="section-number">13</span>Диагностика</h2><p>Начните с браузерной вкладки Network / WS: проверьте адрес, успешность установления соединения, входящие сообщения и момент закрытия. Для классического HTTP Upgrade ожидается статус <code>101</code>; сам факт наличия GET/POST-маршрута ещё не гарантирует успешный Upgrade. <a href="#s16">B6</a></p>
+<div aria-label="Таблица справочника" class="table-wrap" role="region" tabindex="0"><table>
+<thead>
+<tr>
+<th>Симптом</th>
+<th>Что проверить</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>JSON.parse</code> получает Blob или падает на типе данных</td>
+<td><code>binaryType</code>, декодирование UTF-8, фактическую оболочку сообщения</td>
+</tr>
+<tr>
+<td><code>code == 0</code>, но интерфейс ничего не показал</td>
+<td>Был ли подписчик подключён; тот ли узел и путь; ожидает ли обработчик иной формат; не отфильтровал ли событие клиент</td>
+</tr>
+<tr>
+<td>Lua возвращает <code>3</code></td>
+<td><code>host:port</code> без схемы, доступность адреса, правильность пути, требования handshake и авторизации</td>
+</tr>
+<tr>
+<td>Lua возвращает <code>42</code></td>
+<td>Закрытие соединения во время записи, сетевую ошибку, журналы принимающей стороны</td>
+</tr>
+<tr>
+<td>Браузер видит HTTP-ошибку вместо WebSocket</td>
+<td>Маршрут, прокси и доступ; не подменён ли <code>/ws/...</code> обычным REST URL</td>
+</tr>
+<tr>
+<td>События дублируются</td>
+<td>Несколько соединений или подписок, повторную публикацию, отсутствие стабильного <code>event_id</code></td>
+</tr>
+<tr>
+<td>После возврата на страницу события приходят несколько раз</td>
+<td>Выполняется ли <code>ngOnDestroy</code>; закрыт ли собственный socket; снята ли подписка сервиса</td>
+</tr>
+<tr>
+<td>После восстановления сети данные устарели</td>
+<td>Выполняется ли повторное чтение состояния через API</td>
+</tr>
+<tr>
+<td>Сообщение комнаты видно чужому пользователю</td>
+<td>Серверные проверки доступа и фактическую изоляцию; остановите отправку чувствительных данных</td>
+</tr>
+<tr>
+<td>REST возвращает <code>WS_SERVER_NOT_CONFIGURED</code></td>
+<td>Заполнен ли разрешённый внутренний адрес в тестовом Lua-коде</td>
+</tr>
+</tbody>
+</table></div>
+<h3>Коды закрытия браузера</h3>
+<p>Это коды WebSocket, <strong>не</strong> коды возврата Lua <code>0 / 2 / 3 / 42</code>. Значения определены протоколом и браузерным API. <a href="#s16">B5</a></p>
+<div aria-label="Таблица справочника" class="table-wrap" role="region" tabindex="0"><table>
+<thead>
+<tr>
+<th>Код</th>
+<th>Значение</th>
+<th>Практическое действие</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>1000</code></td>
+<td>Нормальное закрытие</td>
+<td>Сопоставить с уходом со страницы или штатным завершением</td>
+</tr>
+<tr>
+<td><code>1003</code></td>
+<td>Неподдерживаемый тип данных</td>
+<td>Проверить допустимость бинарного или текстового сообщения</td>
+</tr>
+<tr>
+<td><code>1006</code></td>
+<td>Аварийное завершение без корректного Close-кадра</td>
+<td>Проверить сеть, прокси, сервер; этот код не сообщает конкретную первопричину</td>
+</tr>
+<tr>
+<td><code>1007</code></td>
+<td>Недопустимые данные сообщения</td>
+<td>Проверить кодировку и формат</td>
+</tr>
+<tr>
+<td><code>1008</code></td>
+<td>Нарушение политики</td>
+<td>Проверить правила доступа и ограничения обработчика</td>
+</tr>
+<tr>
+<td><code>1009</code></td>
+<td>Слишком большое сообщение</td>
+<td>Уменьшить размер и уточнить серверный лимит</td>
+</tr>
+</tbody>
+</table></div>
+<p>Код <code>1006</code> не доказывает ошибку авторизации, а <code>1008</code> не обязательно означает истечение сессии. В полном примере автоматические повторы после <code>1003</code>, <code>1007</code>, <code>1008</code>, <code>1009</code> останавливаются: это выбранная политика клиента, а не требование DamuBPM.</p>
+</section><section aria-labelledby="heading-s14" class="doc-section" id="s14"><h2 id="heading-s14"><span class="section-number">14</span>Проверка перед внедрением</h2><p>Используйте обезличенные данные и разрешённый тестовый контур. Проверки ниже — план интеграционного тестирования, <strong>не заявление, что они уже выполнены на вашем сервере</strong>.</p>
+<div aria-label="Таблица справочника" class="table-wrap" role="region" tabindex="0"><table>
+<thead>
+<tr>
+<th>Проверка</th>
+<th>Ожидаемый результат</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Открыть виджет</td>
+<td>Одно собственное соединение либо одна подписка на общий сервис</td>
+</tr>
+<tr>
+<td>Отправить тестовое событие после <code>open</code></td>
+<td>Входящее сообщение видно; <code>event_id</code> совпадает с опубликованным</td>
+</tr>
+<tr>
+<td>Отправить UTF-8-текст</td>
+<td>Кириллица и казахские символы отображаются без повреждения</td>
+</tr>
+<tr>
+<td>Передать пустой список из Lua</td>
+<td>В JSON действительно <code>[]</code>, а не <code>{}</code></td>
+</tr>
+<tr>
+<td>Передать текстовый и бинарный кадры на разрешённом тестовом endpoint</td>
+<td>Клиент разбирает оба либо явно сообщает несовместимость</td>
+</tr>
+<tr>
+<td>Отправить повреждённый JSON</td>
+<td>Клиент сообщает об ошибке, последующие корректные сообщения продолжают обрабатываться</td>
+</tr>
+<tr>
+<td>Повторить тот же <code>event_id</code></td>
+<td>Полный JIT-пример не добавляет повторную строку в пределах своего окна дедупликации</td>
+</tr>
+<tr>
+<td>Создать кратковременный обрыв сети</td>
+<td>Не возникает нескольких таймеров; переподключение ограничено</td>
+</tr>
+<tr>
+<td>Уйти со страницы</td>
+<td>Собственное соединение закрыто; таймеры и подписки не продолжают работу</td>
+</tr>
+<tr>
+<td>Вернуться на страницу</td>
+<td>Нет удвоенного получения событий</td>
+</tr>
+<tr>
+<td>Проверить пользователя без доступа</td>
+<td>Сервер отклоняет подключение или публикацию согласно политике проекта</td>
+</tr>
+<tr>
+<td>Проверить двух пользователей и две комнаты</td>
+<td>Получатели строго соответствуют подтверждённому серверному контракту</td>
+</tr>
+<tr>
+<td>Проверить два узла приложения</td>
+<td>Установлено, как событие достигает подписчиков каждого узла</td>
+</tr>
+<tr>
+<td>Проверить сохранение и немедленное уведомление</td>
+<td>Перечитывание не возвращает состояние до фиксации изменений</td>
+</tr>
+</tbody>
+</table></div>
+<p><strong>Критерий готовности:</strong> установлены авторизация, фактический формат сообщения и область доставки; выполнены положительные и отрицательные проверки; после обрыва интерфейс может восстановить актуальное состояние без доверия к пропущенным уведомлениям.</p>
+</section><section aria-labelledby="heading-s15" class="doc-section" id="s15"><h2 id="heading-s15"><span class="section-number">15</span>Размещение руководства и главная index.html</h2><div class="code-block"><div class="code-head"><span>text</span><button aria-label="Копировать пример 18" class="copy" data-code="code-18" type="button">Копировать</button></div><pre tabindex="0"><code class="syntax" id="code-18">Каталог существующей документации/
+    index.html
+    damubpm_websocket_guide.html
+    damubpm_websocket_guide.md
+    ... ранее существовавшие материалы ...
+</code></pre></div>
+<p>В обновлённой главной добавлен отдельный раздел <strong>WebSocket и события</strong> со ссылкой на HTML-руководство и ключевыми словами для поиска. Счётчик увеличен с 12 до 13 материалов. Предыдущие разделы и их ссылки сохранены.</p>
+<p>Положите три файла в тот же каталог документации, заменив <code>index.html</code> обновлённой версией. Архив этого дополнения содержит только эти три файла, а не весь прежний набор документации. Существующие страницы и <code>skill.zip</code> должны оставаться на месте.</p>
+<p>HTML-руководство автономно: оформление и скрипты навигации находятся внутри файла, внешние библиотеки не загружаются. Есть оглавление, поиск по разделам, копирование примеров, печать и переход на главную. Исходный Markdown содержит тот же текст и примеры. Открытие руководства не подключается к WebSocket и не запускает Lua.</p>
+</section><section aria-labelledby="heading-s16" class="doc-section" id="s16"><h2 id="heading-s16"><span class="section-number">16</span>Источники, границы и статус проверки</h2><h3>Основа контракта</h3>
+<div aria-label="Таблица справочника" class="table-wrap" role="region" tabindex="0"><table>
+<thead>
+<tr>
+<th>Метка</th>
+<th>Материал</th>
+<th>Какие утверждения подтверждает</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>S1</td>
+<td>Регистрация маршрутов, предоставленная в сообщении</td>
+<td>Три пути; GET/POST; наличие <code>:room</code></td>
+</tr>
+<tr>
+<td>S2</td>
+<td>Приложенный модуль <code>hAccountChat</code>, строки 12–30 и 34–50</td>
+<td>Реестр соединений, широковещательный цикл, удаление соединения и закрытие очереди</td>
+</tr>
+<tr>
+<td>S3</td>
+<td>Предоставленная реализация отправителя <code>LuaSendWSAsync</code></td>
+<td>Порядок аргументов, фиксированная схема <code>ws</code>, бинарная запись, отсутствие чтения ответа, возвраты</td>
+</tr>
+<tr>
+<td>S4</td>
+<td>Локальный справочник <code>lua_api_quotes.md</code>: <code>SendWSAsync</code>, <code>JsonToString</code>, <code>UUID</code>; правила разработки DamuBPM</td>
+<td>Публичные имена API, сериализация, UUID, <code>array({})</code></td>
+</tr>
+<tr>
+<td>S5</td>
+<td><code>damubpm_widget_developer_guide.md</code>, разделы архитектуры JIT, REST и WebSocket</td>
+<td><code>GenClass</code>, жизненный цикл, <code>websocketService.messages</code>, подписки</td>
+</tr>
+<tr>
+<td>S6</td>
+<td><code>damubpm_restapi_lua_guide.md</code></td>
+<td>Адрес REST-сервиса, <code>request</code>, <code>output</code>, HTTP-коды и настройки</td>
+</tr>
+<tr>
+<td>S7</td>
+<td>Сохранённая главная документации <code>index(5).html</code></td>
+<td>Исходная навигация и набор из 12 материалов для обновления</td>
+</tr>
+</tbody>
+</table></div>
+<p>HTML использует существующие базовые правила <code>.card</code> и <code>.p-button</code> из оформления DamuBPM <code>new_design_damubpm.css</code>, дополняя их локальным оформлением документации.</p>
+<h3>Справка браузерного API</h3>
+<p>Эти источники использованы только для общих свойств браузера и протокола. Они не подтверждают поведение отсутствующих обработчиков DamuBPM.</p>
+<div aria-label="Таблица справочника" class="table-wrap" role="region" tabindex="0"><table>
+<thead>
+<tr>
+<th>Метка</th>
+<th>Документ</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>B1</td>
+<td><a href="https://developer.mozilla.org/en-US/docs/Web/API/WebSocket/WebSocket" rel="noopener noreferrer" target="_blank">MDN: WebSocket constructor</a></td>
+</tr>
+<tr>
+<td>B2</td>
+<td><a href="https://developer.mozilla.org/en-US/docs/Web/API/WebSocket/binaryType" rel="noopener noreferrer" target="_blank">MDN: binaryType</a></td>
+</tr>
+<tr>
+<td>B3</td>
+<td><a href="https://developer.mozilla.org/en-US/docs/Web/API/WebSocket/send" rel="noopener noreferrer" target="_blank">MDN: send()</a></td>
+</tr>
+<tr>
+<td>B4</td>
+<td><a href="https://developer.mozilla.org/en-US/docs/Web/API/WebSockets_API/Writing_WebSocket_client_applications" rel="noopener noreferrer" target="_blank">MDN: Writing WebSocket client applications</a></td>
+</tr>
+<tr>
+<td>B5</td>
+<td><a href="https://developer.mozilla.org/en-US/docs/Web/API/CloseEvent/code" rel="noopener noreferrer" target="_blank">MDN: CloseEvent.code</a></td>
+</tr>
+<tr>
+<td>B6</td>
+<td><a href="https://www.rfc-editor.org/rfc/rfc6455.html" rel="noopener noreferrer" target="_blank">RFC 6455: The WebSocket Protocol</a></td>
+</tr>
+</tbody>
+</table></div>
+<h3>Что остаётся проверить по серверным обработчикам</h3>
+<p>Не предоставлены: реализации <code>ServeAccountChat</code>, <code>ServeMsgToUser</code>, <code>ServeMsgToRoom</code>; логика чтения и записи соединения; авторизация и Origin; параметры адресной доставки; преобразование кадров; ограничения размеров; heartbeat; межузловая доставка. Эти пробелы не заполнены предположениями о скрытом API.</p>
+<p>Примеры <code>demo.ping</code> и <code>ws_demo_publish</code>, их лимиты, повторы и формат ответа — авторский прикладной слой. Это не встроенные методы или гарантии DamuBPM. Интеграция с живым сервером и Angular runtime данным руководством не подтверждается.</p>
+<p><a href="#s01">↑ К началу</a> · <a href="index.html">← Главная</a> · <a href="damubpm_websocket_guide.html">HTML-версия</a></p>
+</section></main></div><footer><span>DamuBPM Documentation · WebSocket</span><span>Frontend / Angular JIT + Backend Lua</span></footer></div><div aria-live="polite" class="sr-only" id="copyStatus" role="status"></div><script>
+(() => {
+  const search = document.getElementById('guideSearch');
+  const sections = Array.from(document.querySelectorAll('.doc-section'));
+  const links = Array.from(document.querySelectorAll('.toc a'));
+  const status = document.getElementById('searchCount');
+  const normalize = text => text.toLowerCase().replace(/ё/g, 'е').trim();
+  const indexed = sections.map(el => normalize(el.textContent));
+  function filter() {
+    const q = normalize(search.value);
+    let visible = 0;
+    sections.forEach((el, i) => {
+      const matches = !q || indexed[i].includes(q);
+      el.hidden = !matches;
+      links[i].hidden = !matches;
+      if (matches) visible++;
+    });
+    document.getElementById('noResults').hidden = visible !== 0;
+    document.querySelector('.intro').hidden = !!q;
+    status.textContent = q ? 'Разделов найдено: ' + visible + ' из 16' : '16 разделов · поиск по тексту и коду';
+  }
+  search.addEventListener('input', filter);
+  document.addEventListener('keydown', event => {
+    const editing = ['INPUT','TEXTAREA','SELECT'].includes(document.activeElement.tagName);
+    if (event.key === '/' && !editing) { event.preventDefault(); search.focus(); }
+    if (event.key === 'Escape' && document.activeElement === search) { search.value = ''; filter(); search.blur(); }
+  });
+  document.addEventListener('click', async event => {
+    const anchor = event.target.closest('a[href^="#"]');
+    if (anchor) {
+      const id = anchor.getAttribute('href').slice(1);
+      const target = document.getElementById(id);
+      if (target && target.closest('[hidden]')) { search.value = ''; filter(); }
+    }
+    const button = event.target.closest('button[data-code]');
+    if (!button) return;
+    const text = document.getElementById(button.dataset.code).textContent;
+    let ok = false;
+    try {
+      if (navigator.clipboard && window.isSecureContext) {
+        await navigator.clipboard.writeText(text); ok = true;
+      }
+    } catch (_) {}
+    if (!ok) {
+      const input = document.createElement('textarea');
+      input.value = text;
+      input.style.position = 'fixed'; input.style.left = '-10000px';
+      document.body.append(input); input.select();
+      try { ok = document.execCommand('copy'); } catch (_) {}
+      input.remove(); button.focus();
+    }
+    button.textContent = ok ? 'Скопировано' : 'Выделите код';
+    document.getElementById('copyStatus').textContent = ok ? 'Пример скопирован' : 'Копирование недоступно. Выделите код вручную.';
+    setTimeout(() => { button.textContent = 'Копировать'; }, 1800);
+  });
+  document.getElementById('printGuide').addEventListener('click', () => window.print());
+  if ('IntersectionObserver' in window) {
+    const observer = new IntersectionObserver(entries => {
+      entries.forEach(entry => {
+        if (!entry.isIntersecting) return;
+        links.forEach(link => link.classList.toggle('active', link.dataset.section === entry.target.id));
+      });
+    }, {rootMargin: '-5% 0px -75% 0px'});
+    sections.forEach(el => observer.observe(el));
+  }
+  const updateProgress = () => {
+    const available = document.documentElement.scrollHeight - window.innerHeight;
+    document.getElementById('progress').style.width = (available > 0 ? window.scrollY / available * 100 : 0) + '%';
+  };
+  window.addEventListener('scroll', updateProgress, {passive:true});
+  filter();
+})();
+</script></body></html>
