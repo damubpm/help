@@ -1,0 +1,514 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>DamuBPM File API — загрузка и скачивание файлов</title>
+  <link rel="stylesheet" href="css/new_design_damubpm.css">
+  <style>
+    :root {
+      --doc-bg: #f5f7fb;
+      --doc-card: #ffffff;
+      --doc-text: #1d2530;
+      --doc-muted: #667085;
+      --doc-border: #e3e8ef;
+      --doc-primary: #176b87;
+      --doc-primary-soft: #e9f7fb;
+      --doc-accent: #f0b429;
+      --doc-danger: #b42318;
+      --doc-danger-soft: #fff1f0;
+      --doc-success: #087443;
+      --doc-code: #17212b;
+      --doc-code-text: #e6edf3;
+      --doc-shadow: 0 12px 32px rgba(21, 35, 48, .08);
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      background: var(--doc-bg);
+      color: var(--doc-text);
+      font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      line-height: 1.6;
+    }
+    a { color: var(--doc-primary); }
+    .doc-shell { display: grid; grid-template-columns: 280px minmax(0, 1fr); min-height: 100vh; }
+    .doc-sidebar {
+      position: sticky; top: 0; height: 100vh; overflow: auto;
+      padding: 24px 18px; background: #102631; color: #fff;
+      border-right: 1px solid rgba(255,255,255,.08);
+    }
+    .doc-brand { display: flex; gap: 12px; align-items: center; margin-bottom: 20px; }
+    .doc-logo {
+      width: 42px; height: 42px; border-radius: 12px; display: grid; place-items: center;
+      background: linear-gradient(135deg, #1d9fd0, #ffce00); color: #102631; font-weight: 900;
+    }
+    .doc-brand strong { display: block; font-size: 15px; }
+    .doc-brand span { display: block; color: rgba(255,255,255,.65); font-size: 12px; }
+    .doc-home {
+      display: block; padding: 10px 12px; margin-bottom: 18px; border-radius: 9px;
+      color: #fff; background: rgba(255,255,255,.08); text-decoration: none;
+    }
+    .doc-home:hover { background: rgba(255,255,255,.14); }
+    .doc-toc-title { font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: rgba(255,255,255,.48); margin: 18px 10px 8px; }
+    .doc-toc a {
+      display: block; padding: 7px 10px; color: rgba(255,255,255,.78); text-decoration: none;
+      border-radius: 7px; font-size: 13px;
+    }
+    .doc-toc a:hover { color: #fff; background: rgba(255,255,255,.08); }
+    .doc-main { min-width: 0; }
+    .doc-hero {
+      padding: 50px clamp(24px, 5vw, 72px) 36px;
+      background: radial-gradient(circle at 80% 10%, rgba(29,159,208,.22), transparent 34%),
+                  linear-gradient(135deg, #ffffff 0%, #f5fbfd 100%);
+      border-bottom: 1px solid var(--doc-border);
+    }
+    .doc-kicker { color: var(--doc-primary); font-weight: 800; text-transform: uppercase; letter-spacing: .08em; font-size: 12px; }
+    h1 { margin: 8px 0 12px; font-size: clamp(32px, 5vw, 54px); line-height: 1.05; letter-spacing: -.035em; }
+    .doc-subtitle { max-width: 860px; margin: 0; color: var(--doc-muted); font-size: 18px; }
+    .doc-endpoints { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 24px; }
+    .doc-pill {
+      display: inline-flex; align-items: center; gap: 8px; padding: 8px 11px;
+      border: 1px solid var(--doc-border); background: #fff; border-radius: 999px;
+      font: 600 12px ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    }
+    .doc-method { color: var(--doc-success); font-weight: 900; }
+    .doc-method.post { color: #7a5af8; }
+    .doc-content { max-width: 1180px; margin: 0 auto; padding: 34px clamp(20px, 4vw, 58px) 80px; }
+    section { scroll-margin-top: 20px; margin-bottom: 38px; }
+    h2 { margin: 0 0 16px; font-size: 28px; line-height: 1.2; }
+    h3 { margin: 26px 0 10px; font-size: 19px; }
+    p { margin: 10px 0; }
+    .doc-card {
+      background: var(--doc-card); border: 1px solid var(--doc-border); border-radius: 15px;
+      box-shadow: var(--doc-shadow); padding: 22px; margin: 16px 0;
+    }
+    .doc-grid { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 14px; }
+    .doc-quick { border-left: 4px solid var(--doc-primary); }
+    .doc-note { padding: 14px 16px; border-radius: 10px; background: var(--doc-primary-soft); border: 1px solid #cbeaf4; }
+    .doc-warning { padding: 14px 16px; border-radius: 10px; background: #fff8e6; border: 1px solid #f7d98a; }
+    .doc-danger { padding: 14px 16px; border-radius: 10px; background: var(--doc-danger-soft); border: 1px solid #f7c4c0; color: #7a271a; }
+    code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+    pre {
+      position: relative; overflow: auto; padding: 18px 18px 16px; border-radius: 12px;
+      background: var(--doc-code); color: var(--doc-code-text); border: 1px solid #293745;
+      font-size: 13px; line-height: 1.55;
+    }
+    .copy-btn {
+      position: absolute; top: 8px; right: 8px; border: 1px solid rgba(255,255,255,.18);
+      background: rgba(255,255,255,.08); color: #fff; border-radius: 7px; padding: 5px 8px;
+      cursor: pointer; font-size: 11px;
+    }
+    .copy-btn:hover { background: rgba(255,255,255,.15); }
+    .doc-table-wrap { overflow-x: auto; border: 1px solid var(--doc-border); border-radius: 12px; background: #fff; }
+    table { width: 100%; border-collapse: collapse; min-width: 680px; }
+    th, td { padding: 12px 14px; border-bottom: 1px solid var(--doc-border); text-align: left; vertical-align: top; }
+    th { background: #f8fafc; font-size: 12px; color: #475467; text-transform: uppercase; letter-spacing: .035em; }
+    tr:last-child td { border-bottom: 0; }
+    .flow { display: grid; gap: 8px; margin: 14px 0; }
+    .flow-step { display: flex; gap: 12px; align-items: center; padding: 11px 13px; background: #fff; border: 1px solid var(--doc-border); border-radius: 10px; }
+    .flow-num { width: 28px; height: 28px; border-radius: 50%; background: var(--doc-primary-soft); color: var(--doc-primary); display: grid; place-items: center; font-weight: 800; flex: 0 0 auto; }
+    .issue { display: grid; grid-template-columns: 34px 1fr; gap: 12px; padding: 16px 0; border-bottom: 1px solid var(--doc-border); }
+    .issue:last-child { border-bottom: 0; }
+    .issue-n { width: 30px; height: 30px; border-radius: 8px; display: grid; place-items: center; background: var(--doc-danger-soft); color: var(--doc-danger); font-weight: 900; }
+    .checklist { padding-left: 22px; }
+    .checklist li { margin: 7px 0; }
+    .doc-footer { color: var(--doc-muted); font-size: 13px; padding-top: 24px; border-top: 1px solid var(--doc-border); }
+    @media (max-width: 900px) {
+      .doc-shell { display: block; }
+      .doc-sidebar { position: relative; height: auto; }
+      .doc-toc { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); }
+      .doc-grid { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 560px) {
+      .doc-toc { grid-template-columns: 1fr; }
+      .doc-hero { padding-top: 30px; }
+      .doc-content { padding-left: 14px; padding-right: 14px; }
+      .doc-card { padding: 16px; border-radius: 12px; }
+    }
+  </style>
+</head>
+<body>
+<div class="doc-shell">
+  <aside class="doc-sidebar">
+    <div class="doc-brand">
+      <div class="doc-logo">DB</div>
+      <div><strong>DamuBPM Developer Guide</strong><span>File API reference</span></div>
+    </div>
+    <a class="doc-home" href="index.html">← Вернуться на Главную</a>
+    <div class="doc-toc-title">Содержание</div>
+    <nav class="doc-toc">
+      <a href="#quick">Быстрый старт</a>
+      <a href="#upload">POST /restapi/upload</a>
+      <a href="#download">GET /restapi/getfile</a>
+      <a href="#getfile2">getfile2/:filename</a>
+      <a href="#frontend">DamuBPM Frontend</a>
+      <a href="#storage">Local / S3</a>
+      <a href="#hooks">Hooks</a>
+      <a href="#access">Права доступа</a>
+      <a href="#thumbs">Миниатюры</a>
+      <a href="#errors">Ошибки</a>
+      <a href="#issues">Нюансы реализации</a>
+      <a href="#checklist">Чек-лист</a>
+      <a href="#index-link">Ссылка из index.html</a>
+    </nav>
+  </aside>
+
+  <main class="doc-main">
+    <header class="doc-hero">
+      <div class="doc-kicker">DamuBPM • REST File API</div>
+      <h1>Загрузка и скачивание файлов</h1>
+      <p class="doc-subtitle">Практический контракт для multipart upload, выдачи по GUID, local/S3, Base64, thumbnails, access control и hooks. Основано на предоставленных реализациях <code>Upload</code> и <code>GetFile</code>.</p>
+      <div class="doc-endpoints">
+        <span class="doc-pill"><span class="doc-method post">POST</span> /restapi/upload</span>
+        <span class="doc-pill"><span class="doc-method">GET</span> /restapi/getfile</span>
+        <span class="doc-pill"><span class="doc-method">GET</span> /restapi/getfile2/:filename</span>
+      </div>
+    </header>
+
+    <div class="doc-content">
+      <section id="quick">
+        <h2>Быстрый старт</h2>
+        <div class="doc-grid">
+          <div class="doc-card doc-quick">
+            <h3>1. Upload</h3>
+            <pre><code>curl -X POST \
+  "https://example.kz/restapi/upload" \
+  -F "dir=documents" \
+  -F "file=@./contract.pdf"</code></pre>
+            <p>После успеха сохраните <code>response.guid</code>.</p>
+          </div>
+          <div class="doc-card doc-quick">
+            <h3>2. Download</h3>
+            <pre><code>/restapi/getfile?code=&lt;guid&gt;&amp;attachment=true</code></pre>
+            <p>Для просмотра вместо скачивания используйте <code>inline=true</code>.</p>
+          </div>
+        </div>
+        <div class="doc-note"><strong>Главная идея:</strong> клиент загружает <code>dir + file</code>, получает <code>guid</code>, а затем передаёт этот GUID в <code>GetFile</code> как <code>code</code>.</div>
+      </section>
+
+      <section id="upload">
+        <h2>POST /restapi/upload</h2>
+        <p>Endpoint принимает <code>multipart/form-data</code>, валидирует каталог и тип файла, выбирает локальное или S3-хранилище, сохраняет файл, регистрирует его в таблице <code>files</code> и возвращает GUID.</p>
+        <h3>Поля запроса</h3>
+        <div class="doc-table-wrap"><table>
+          <thead><tr><th>Поле</th><th>Обяз.</th><th>Назначение</th></tr></thead>
+          <tbody>
+            <tr><td><code>file</code></td><td>Да</td><td>Multipart-файл, читается через <code>FormFile("file")</code>.</td></tr>
+            <tr><td><code>dir</code></td><td>Да</td><td>Код <code>dirs.code</code>. Определяет путь, типы, размер и storage.</td></tr>
+            <tr><td><code>idref</code></td><td>Нет</td><td>Ссылка на внешний объект; сохраняется при включённом <code>FeatureFilesIdRef</code>.</td></tr>
+            <tr><td><code>id</code></td><td>Нет</td><td>Передаётся в <code>on_upload_script</code>.</td></tr>
+          </tbody>
+        </table></div>
+        <div class="doc-warning"><strong>Важно:</strong> в браузере не выставляйте заголовок <code>Content-Type: multipart/form-data</code> вручную. При использовании <code>FormData</code> browser сам добавит правильный boundary.</div>
+
+        <h3>Поток обработки</h3>
+        <div class="flow">
+          <div class="flow-step"><span class="flow-num">1</span><span>Проверка состояния сервера и глобального размера запроса.</span></div>
+          <div class="flow-step"><span class="flow-num">2</span><span>Чтение <code>file</code> и обязательного <code>dir</code>.</span></div>
+          <div class="flow-step"><span class="flow-num">3</span><span>Проверка имени и разрешённой группы расширений каталога.</span></div>
+          <div class="flow-step"><span class="flow-num">4</span><span>Чтение <code>dirs</code> и <code>s3bucket</code>; формирование GUID и filepath.</span></div>
+          <div class="flow-step"><span class="flow-num">5</span><span>Запись на локальный диск или <code>PutObject</code> в S3.</span></div>
+          <div class="flow-step"><span class="flow-num">6</span><span>Локально: генерация thumbnails для JPG/JPEG/JFIF/PNG.</span></div>
+          <div class="flow-step"><span class="flow-num">7</span><span>Проверка <code>max_size_byte</code> и INSERT в <code>files</code>.</span></div>
+          <div class="flow-step"><span class="flow-num">8</span><span>Запуск <code>on_upload_script</code> и JSON response.</span></div>
+        </div>
+
+        <h3>Пример с idref</h3>
+        <pre><code>curl -X POST \
+  "https://example.kz/restapi/upload" \
+  -F "dir=contract_files" \
+  -F "idref=98765" \
+  -F "id=98765" \
+  -F "file=@./contract_signed.pdf"</code></pre>
+
+        <h3>GUID и физический путь</h3>
+        <p>GUID формируется по схеме <code>&lt;dir&gt;-&lt;uuid&gt;</code>. По умолчанию path segment — дата <code>YYYY/MM/DD/</code>, но при заполненном <code>path_expr</code> он вычисляется SQL-выражением каталога.</p>
+        <div class="doc-grid">
+          <div class="doc-card"><strong>filename_as_uuid = 0</strong><pre><code>&lt;pathExprValue&gt;/&lt;guid&gt;</code></pre></div>
+          <div class="doc-card"><strong>filename_as_uuid = 1</strong><pre><code>&lt;pathExprValue&gt;/&lt;guid&gt;/&lt;original_filename&gt;</code></pre></div>
+        </div>
+
+        <h3>Ограничения</h3>
+        <div class="doc-table-wrap"><table>
+          <thead><tr><th>Проверка</th><th>Поведение</th></tr></thead>
+          <tbody>
+            <tr><td>Content-Length &gt; 2 000 000 000</td><td><code>406</code>, <code>TOO LARGE FILE</code></td></tr>
+            <tr><td>Пустой <code>dir</code></td><td><code>406</code>, <code>dir is required field</code></td></tr>
+            <tr><td>Символы <code>\ / : * ? " &lt; &gt; |</code></td><td><code>406</code>, <code>INCORRECT FILENAME</code></td></tr>
+            <tr><td>Расширение не входит в allowed_ftg_id</td><td><code>406</code>, запрещённый тип файла</td></tr>
+            <tr><td>filesize &gt; dirs.max_size_byte</td><td><code>406</code>, <code>File max size exceeded</code></td></tr>
+          </tbody>
+        </table></div>
+
+        <h3>Успешный JSON</h3>
+        <pre><code>{
+  "guid": "documents-550e8400-e29b-41d4-a716-446655440000",
+  "url": "/restapi/getfile?code=documents-550e8400-e29b-41d4-a716-446655440000",
+  "id": "12345",
+  "result": "ok",
+  "filename": "contract.pdf",
+  "restServiceOutput": null
+}</code></pre>
+      </section>
+
+      <section id="download">
+        <h2>GET /restapi/getfile</h2>
+        <p><code>GetFile</code> находит запись по <code>files.code</code>, подготавливает заголовки, проверяет grant при включённом access control и отдаёт байты из локального диска либо S3.</p>
+        <div class="doc-table-wrap"><table>
+          <thead><tr><th>Параметр</th><th>Значение</th><th>Назначение</th></tr></thead>
+          <tbody>
+            <tr><td><code>code</code></td><td>GUID</td><td><strong>Обязательный.</strong> Код, полученный после upload.</td></tr>
+            <tr><td><code>attachment</code></td><td><code>true</code></td><td>Принудительное скачивание через Content-Disposition.</td></tr>
+            <tr><td><code>inline</code></td><td><code>true</code></td><td>Просмотр в браузере, если формат поддерживается.</td></tr>
+            <tr><td><code>base64</code></td><td><code>true</code></td><td>Возвращает Base64-текст вместо бинарного body.</td></tr>
+            <tr><td><code>thumb</code></td><td>размер</td><td>Переключает локальный путь на thumbnail.</td></tr>
+            <tr><td><code>id</code></td><td>любое</td><td>Передаётся в <code>on_read_script</code>.</td></tr>
+          </tbody>
+        </table></div>
+        <pre><code># Скачать
+curl -L \
+  "https://example.kz/restapi/getfile?code=&lt;guid&gt;&amp;attachment=true" \
+  -o contract.pdf
+
+# Inline
+/restapi/getfile?code=&lt;guid&gt;&amp;inline=true
+
+# Base64
+/restapi/getfile?code=&lt;guid&gt;&amp;base64=true
+
+# Thumbnail
+/restapi/getfile?code=&lt;guid&gt;&amp;thumb=120-0</code></pre>
+        <p>Если одновременно указаны <code>attachment=true</code> и <code>inline=true</code>, код сначала проверяет attachment, поэтому он имеет приоритет.</p>
+        <h3>HTTP headers</h3>
+        <pre><code>Content-Type: &lt;mime из file_types&gt;
+Etag: "&lt;md5 от file_id&gt;"
+Last-Modified: &lt;created_at&gt;
+Content-Disposition: attachment|inline; filename="..."</code></pre>
+        <div class="doc-note"><code>Content-Length</code> в предоставленном <code>GetFile</code> закомментирован и не выставляется.</div>
+      </section>
+
+      <section id="getfile2">
+        <h2>GET /restapi/getfile2/:filename</h2>
+        <p>Маршрут вызывает тот же <code>GetFile</code>. В предоставленном обработчике параметр <code>:filename</code> из <code>httprouter.Params</code> не читается — выбор файла всё равно выполняется по <code>?code=...</code>.</p>
+        <pre><code>/restapi/getfile2/contract.pdf?code=&lt;guid&gt;&amp;inline=true</code></pre>
+        <div class="doc-note">Path filename можно использовать как человекочитаемую часть URL, но по показанному коду это не идентификатор файла.</div>
+      </section>
+
+      <section id="frontend">
+        <h2>DamuBPM Frontend</h2>
+        <p>Для upload нужен настоящий multipart. Надёжный вариант в JIT frontend — стандартный <code>FormData + fetch</code>; это не JSON Lua REST-service.</p>
+        <h3>HTML</h3>
+        <pre><code>&lt;input
+    #fileInput
+    type="file"
+    (change)="onFileSelected($event)"&gt;
+
+&lt;button
+    type="button"
+    (click)="uploadSelected()"
+    [disabled]="!selectedFile || uploading"&gt;
+    Загрузить
+&lt;/button&gt;</code></pre>
+        <h3>JIT logic</h3>
+        <pre><code>selectedFile = null;
+uploading = false;
+uploadedFile = null;
+
+onFileSelected(event) {
+    const files = event.target.files;
+    this.selectedFile = files &amp;&amp; files.length ? files[0] : null;
+}
+
+async uploadSelected() {
+    if (!this.selectedFile || this.uploading) {
+        return;
+    }
+
+    this.uploading = true;
+
+    try {
+        const form = new FormData();
+        form.append('dir', 'contract_files');
+        form.append('file', this.selectedFile, this.selectedFile.name);
+
+        const response = await fetch('/restapi/upload', {
+            method: 'POST',
+            body: form,
+            credentials: 'same-origin'
+        });
+
+        const text = await response.text();
+
+        if (!response.ok) {
+            throw new Error(text || ('HTTP ' + response.status));
+        }
+
+        this.uploadedFile = JSON.parse(text);
+    } finally {
+        this.uploading = false;
+    }
+}</code></pre>
+        <h3>URL helpers</h3>
+        <pre><code>fileUrl(guid) {
+    return '/restapi/getfile?code=' + encodeURIComponent(guid);
+}
+
+downloadUrl(guid) {
+    return this.fileUrl(guid) + '&amp;attachment=true';
+}
+
+inlineUrl(guid) {
+    return this.fileUrl(guid) + '&amp;inline=true';
+}
+
+thumbUrl(guid, size) {
+    return this.fileUrl(guid) + '&amp;thumb=' + encodeURIComponent(size);
+}</code></pre>
+      </section>
+
+      <section id="storage">
+        <h2>Local / S3 storage</h2>
+        <div class="doc-grid">
+          <div class="doc-card">
+            <h3>Локальный диск</h3>
+            <p>Путь собирается из <code>dirs.unix_path</code>/<code>win_path</code>, date/path_expr и сформированного filepath. Файл создаётся с mode <code>0600</code>.</p>
+          </div>
+          <div class="doc-card">
+            <h3>S3-compatible</h3>
+            <p>Используются <code>endpoint</code>, <code>bucket</code>, <code>access_key_id</code>, <code>secret_access_key</code>, <code>usessl</code>. Ключи с префиксом <code>DAMU_S3</code> читаются из environment.</p>
+          </div>
+        </div>
+        <p>Обычная S3-загрузка выполняется через <code>PutObject</code>; скачивание — через <code>GetObject</code> и копирование в HTTP response.</p>
+      </section>
+
+      <section id="hooks">
+        <h2>Hooks каталогов</h2>
+        <div class="doc-grid">
+          <div class="doc-card">
+            <h3>on_upload_script</h3>
+            <p>После сохранения и INSERT получает:</p>
+            <pre><code>id
+idref
+fileName
+uuid
+origFileName
+fileURL</code></pre>
+            <p>Результат возвращается клиенту в <code>restServiceOutput</code>.</p>
+          </div>
+          <div class="doc-card">
+            <h3>on_read_script</h3>
+            <p>После выдачи содержимого получает:</p>
+            <pre><code>id
+fileName</code></pre>
+            <p>Подходит для аудита чтения. Не стоит использовать для изменения уже начатого HTTP response.</p>
+          </div>
+        </div>
+      </section>
+
+      <section id="access">
+        <h2>Права доступа</h2>
+        <p>Если <code>dirs.access_control != 0</code>, <code>GetFile</code> выполняет grant check для entity <code>files</code> и текущего пользователя. При отсутствии права выдача прекращается с <code>Access Denied To File</code>.</p>
+        <div class="doc-warning">Внутри предоставленного <code>Upload</code> отдельного вызова <code>DetailEntityGrantCheck</code> нет. Доступ к upload endpoint должен обеспечиваться общим auth/middleware и правилами приложения.</div>
+      </section>
+
+      <section id="thumbs">
+        <h2>Миниатюры изображений</h2>
+        <p>Для локально сохранённых <code>JPG/JPEG/JFIF/PNG</code> upload генерирует JPEG-preview:</p>
+        <pre><code>120
+240
+320
+480
+1024</code></pre>
+        <p>Формат имени: <code>&lt;physical_file&gt;-thumb-&lt;width&gt;-0.jpg</code>.</p>
+        <div class="doc-warning"><strong>S3:</strong> в показанном коде <code>thumbImageAll</code> вызывается только для локальной ветки.</div>
+      </section>
+
+      <section id="errors">
+        <h2>Ошибки и диагностика</h2>
+        <div class="doc-table-wrap"><table>
+          <thead><tr><th>Ситуация</th><th>Ответ</th></tr></thead>
+          <tbody>
+            <tr><td>dir отсутствует</td><td><code>406</code> — <code>dir is required field</code></td></tr>
+            <tr><td>Request &gt; 2 GB</td><td><code>406</code> — <code>TOO LARGE FILE</code></td></tr>
+            <tr><td>Недопустимое имя</td><td><code>406</code> — <code>INCORRECT FILENAME</code></td></tr>
+            <tr><td>Тип запрещён</td><td><code>406</code> — <code>It is forbidden to upload a file with this type</code></td></tr>
+            <tr><td>max_size_byte превышен</td><td><code>406</code> — <code>File max size exceeded</code></td></tr>
+            <tr><td>S3 create/upload error</td><td><code>500</code> с текстом ошибки</td></tr>
+            <tr><td>Нет grant на файл</td><td><code>Access Denied To File</code> через общий error handler</td></tr>
+          </tbody>
+        </table></div>
+        <div class="doc-note">Клиенту лучше проверять <code>response.ok</code>, HTTP status и поле <code>result</code>, а не только факт получения JSON.</div>
+      </section>
+
+      <section id="issues">
+        <h2>Нюансы текущей реализации</h2>
+        <div class="doc-card">
+          <div class="issue"><div class="issue-n">1</div><div><strong>Thumbnail 320 / 360.</strong><br>Upload создаёт <code>320-0</code>, а предоставленный GetFile распознаёт <code>360-0</code>. Эти значения нужно синхронизировать.</div></div>
+          <div class="issue"><div class="issue-n">2</div><div><strong>SQL typo при FeatureFilesIdRef + FeatureFileSize.</strong><br>В INSERT присутствует <code>created_by.filesize</code>; по смыслу должно быть <code>created_by,filesize</code>.</div></div>
+          <div class="issue"><div class="issue-n">3</div><div><strong>max_size_byte проверяется после записи.</strong><br>При отказе возможен физический orphan-файл без записи в <code>files</code>.</div></div>
+          <div class="issue"><div class="issue-n">4</div><div><strong>Base64 + S3 stream.</strong><br>В предоставленной ветке raw stream сначала вычитывается в buffer, после чего decoder читает тот же stream. До исправления используйте обычный binary multipart для S3.</div></div>
+          <div class="issue"><div class="issue-n">5</div><div><strong>S3 TLS.</strong><br>Transport создаётся с <code>InsecureSkipVerify: true</code>. Для production лучше включить валидацию сертификата.</div></div>
+          <div class="issue"><div class="issue-n">6</div><div><strong>Local download загружает весь файл в RAM.</strong><br><code>ioutil.ReadFile</code> удобен, но для крупных файлов лучше потоковая отдача и при необходимости Range support.</div></div>
+          <div class="issue"><div class="issue-n">7</div><div><strong>on_read_script запускается после body.</strong><br>Используйте его как audit hook, а не как способ управлять выдаваемым response.</div></div>
+          <div class="issue"><div class="issue-n">8</div><div><strong>Нет явного error response при отсутствии multipart file.</strong><br>Ошибка <code>FormFile("file")</code> только печатается. Полезно возвращать единый <code>400</code> JSON.</div></div>
+        </div>
+      </section>
+
+      <section id="checklist">
+        <h2>Чек-лист интеграции</h2>
+        <ol class="checklist">
+          <li>Проверить каталог <code>dirs</code> и его storage settings.</li>
+          <li>Проверить allowed file types и <code>max_size_byte</code>.</li>
+          <li>Отправлять upload как multipart <code>dir + file</code>.</li>
+          <li>Сохранять <code>response.guid</code> как идентификатор файла.</li>
+          <li>При необходимости передавать <code>idref</code>.</li>
+          <li>Скачивать через <code>?code=&lt;guid&gt;</code>.</li>
+          <li>Использовать <code>attachment=true</code> или <code>inline=true</code> по сценарию.</li>
+          <li>Для audit включать hooks каталога.</li>
+          <li>Проверить thumbnail mismatch до использования 320/360.</li>
+          <li>Для S3 до исправления не использовать base64 transfer encoding.</li>
+        </ol>
+      </section>
+
+      <section id="index-link">
+        <h2>Добавление ссылки в index.html</h2>
+        <p>На главной странице справочника добавьте ссылку:</p>
+        <pre><code>&lt;a href="damubpm_file_api_guide.html"&gt;
+    Файлы: загрузка и скачивание
+&lt;/a&gt;</code></pre>
+        <p>Либо карточку:</p>
+        <pre><code>&lt;a class="guide-card" href="damubpm_file_api_guide.html"&gt;
+    &lt;strong&gt;File API&lt;/strong&gt;
+    &lt;span&gt;Загрузка, скачивание, S3, Base64, thumbnails и hooks&lt;/span&gt;
+&lt;/a&gt;</code></pre>
+        <div class="doc-note">Эта страница уже содержит переход <a href="index.html">← Вернуться на Главную</a>.</div>
+      </section>
+
+      <footer class="doc-footer">
+        DamuBPM Developer Guide • File API • Документация составлена по предоставленным исходникам Upload/GetFile.
+      </footer>
+    </div>
+  </main>
+</div>
+<script>
+  document.querySelectorAll('pre').forEach(function(pre) {
+    var button = document.createElement('button');
+    button.className = 'copy-btn';
+    button.type = 'button';
+    button.textContent = 'Copy';
+    button.addEventListener('click', async function() {
+      var code = pre.querySelector('code');
+      try {
+        await navigator.clipboard.writeText(code ? code.innerText : pre.innerText);
+        button.textContent = 'Copied';
+        setTimeout(function(){ button.textContent = 'Copy'; }, 1200);
+      } catch (e) {
+        button.textContent = 'Select';
+      }
+    });
+    pre.appendChild(button);
+  });
+</script>
+</body>
+</html>
