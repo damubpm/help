@@ -23,9 +23,9 @@ details{border-top:1px solid var(--line);padding-top:9px;margin-top:11px}summary
 </style>
 </head>
 <body>
-<header class="topbar"><div class="topbar-inner"><a class="home" href="index.html">← Главная</a><div class="search"><input autocomplete="off" id="search" placeholder="Поиск по функции, описанию, параметрам или примеру…" type="search"/></div><div class="count"><span id="visibleCount">210</span> / 210</div></div></header>
+<header class="topbar"><div class="topbar-inner"><a class="home" href="index.html">← Главная</a><div class="search"><input autocomplete="off" id="search" placeholder="Поиск по функции, описанию, параметрам или примеру…" type="search"/></div><div class="count"><span id="visibleCount">211</span> / 211</div></div></header>
 <main class="wrap">
-<section class="hero"><div class="hero-box"><h1>DamuBPM Lua API</h1><p class="lead">Практический справочник Lua-вызовов функций, зарегистрированных Go-окружением. Для каждой функции отдельно указаны входящие параметры и все возвращаемые переменные в фактическом порядке. В каждом примере после вызова явно выводятся значения всех результирующих переменных через <code>print(...)</code>. В SQL-функциях значения после SQL соответствуют <code>?</code> по порядку.</p></div><div class="hero-box stats"><div class="stat"><b>210</b><span>Lua-функций</span></div><div class="stat"><b>2–3</b><span>примера на функцию</span></div></div></section>
+<section class="hero"><div class="hero-box"><h1>DamuBPM Lua API</h1><p class="lead">Практический справочник Lua-вызовов функций, зарегистрированных Go-окружением. Для каждой функции отдельно указаны входящие параметры и все возвращаемые переменные в фактическом порядке. В каждом примере после вызова явно выводятся значения всех результирующих переменных через <code>print(...)</code>. В SQL-функциях значения после SQL соответствуют <code>?</code> по порядку.</p></div><div class="hero-box stats"><div class="stat"><b>211</b><span>Lua-функций</span></div><div class="stat"><b>2–3</b><span>примера на функцию</span></div></div></section>
 <div class="chips"><button class="chip active" data-cat="">Все</button><button class="chip" data-cat="Прочее">Прочее</button><button class="chip" data-cat="DamuBPM API">DamuBPM API</button><button class="chip" data-cat="Файлы и S3">Файлы и S3</button><button class="chip" data-cat="Форматы и кодирование">Форматы и кодирование</button><button class="chip" data-cat="SQL и данные">SQL и данные</button><button class="chip" data-cat="Безопасность и LDAP">Безопасность и LDAP</button><button class="chip" data-cat="Система и выполнение">Система и выполнение</button><button class="chip" data-cat="Строки и утилиты">Строки и утилиты</button><button class="chip" data-cat="HTTP / WebSocket">HTTP / WebSocket</button><button class="chip" data-cat="Почта и сообщения">Почта и сообщения</button><button class="chip" data-cat="Очереди и Kafka">Очереди и Kafka</button></div>
 <section class="grid" id="grid"><article class="fn-card" data-category="Прочее" data-search='прочее прочее encodeqrcode # создаёт png qr-кода и загружает его в файловое хранилище, возвращая идентификатор загруженного файла. lua result, err, code = encodeqrcode(str, level, size, dir, userid) входящие параметры # параметр тип описание 1 str string строковое значение. 2 level integer уровень коррекции qr: 0 low, 1 medium, 2 high, 3 highest 3 size integer размер qr png в пикселях 4 dir string каталог файлового хранилища 5 userid integer идентификатор пользователя 3 возвращаемых знач. result err code результирующие параметры (возвращаемые переменные) # параметр тип описание 1 result string uuid/идентификатор загруженного qr-файла. 2 err string пустая строка при успехе; текст ошибки при неуспехе. 3 code integer 0 при успехе; ненулевое значение — код ошибки/состояния. примеры пример 1 копировать local result, err, code = encodeqrcode("demo", 1, 256, "documents/qr", 101)
 if code ~= 0 then
@@ -5145,6 +5145,42 @@ else
 end
 
 -- Значения всех результирующих переменных
+print("err:", err)
+print("code:", code)
+-- /Значения всех результирующих переменных</code></pre></div></section>
+</article><article class="fn-card" data-category="Форматы и кодирование" data-search='форматы и кодирование форматы и кодирование markdowntohtml # преобразует markdown-текст в html. lua result, err, code = markdowntohtml(param1) входящие параметры # параметр тип описание 1 param1 string markdown-текст для преобразования. 3 возвращаемых знач. result err code результирующие параметры (возвращаемые переменные) # параметр тип описание 1 result string html, полученный из markdown. 2 err string пустая строка при успехе; текст ошибки при неуспехе. 3 code integer 0 при успехе; 1 при ошибке преобразования. примеры пример 1 копировать local result, err, code = markdowntohtml("# Заголовок\n\nОбычный **жирный** текст.") if code == 0 then print(result) else print(err) end пример 2 копировать local markdown = [[## Список\n\n- Первый пункт\n- Второй пункт]] local result, err, code = markdowntohtml(markdown) print("result:", result) print("err:", err) print("code:", code)' id="MarkdownToHTML">
+<div class="fn-top"><div><div class="eyebrow">Форматы и кодирование</div><h2><a href="#MarkdownToHTML">MarkdownToHTML</a></h2></div><a class="anchor" href="#MarkdownToHTML" title="Ссылка на функцию">#</a></div>
+<p class="desc">Преобразует Markdown-текст в HTML.</p>
+<div class="signature"><span>Lua</span><code>result, err, code = MarkdownToHTML(param1)</code></div>
+<details open=""><summary>Входящие параметры</summary><div class="table-wrap"><table><thead><tr><th>#</th><th>Параметр</th><th>Тип</th><th>Описание</th></tr></thead><tbody><tr><td><code>1</code></td><td><code>param1</code></td><td><code>string</code></td><td>Markdown-текст для преобразования.</td></tr></tbody></table></div></details>
+<div class="result-meta"><span class="result-pill"><b>3</b> возвращаемых знач.</span><span class="result-pill">result</span><span class="result-pill">err</span><span class="result-pill">code</span></div><details open=""><summary>Результирующие параметры (возвращаемые переменные)</summary><div class="table-wrap"><table><thead><tr><th>#</th><th>Параметр</th><th>Тип</th><th>Описание</th></tr></thead><tbody><tr><td><code>1</code></td><td><code>result</code></td><td><code>string</code></td><td>HTML, полученный из Markdown.</td></tr><tr><td><code>2</code></td><td><code>err</code></td><td><code>string</code></td><td>Пустая строка при успехе; текст ошибки при неуспехе.</td></tr><tr><td><code>3</code></td><td><code>code</code></td><td><code>integer</code></td><td><code>0</code> при успехе; <code>1</code> при ошибке преобразования.</td></tr></tbody></table></div></details>
+<section class="examples"><h3>Примеры</h3><div class="example"><div class="example-head"><span>Пример 1</span><button class="copy" data-copy="code-MarkdownToHTML-1">Копировать</button></div><pre><code id="code-MarkdownToHTML-1">local result, err, code = MarkdownToHTML("# Заголовок\n\nОбычный **жирный** текст.")
+if code ~= 0 then
+  print("error:", err, "code:", code)
+else
+  print(result)
+end
+
+-- Значения всех результирующих переменных
+print("result:", result)
+print("err:", err)
+print("code:", code)
+-- /Значения всех результирующих переменных</code></pre></div><div class="example"><div class="example-head"><span>Пример 2</span><button class="copy" data-copy="code-MarkdownToHTML-2">Копировать</button></div><pre><code id="code-MarkdownToHTML-2">local markdown = [[
+## Список
+
+- Первый пункт
+- Второй пункт
+]]
+
+local result, err, code = MarkdownToHTML(markdown)
+if code == 0 then
+  print(result)
+else
+  print("error:", err)
+end
+
+-- Значения всех результирующих переменных
+print("result:", result)
 print("err:", err)
 print("code:", code)
 -- /Значения всех результирующих переменных</code></pre></div></section>
