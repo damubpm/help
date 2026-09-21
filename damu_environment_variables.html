@@ -75,12 +75,12 @@ pre code { background:transparent; color:inherit; padding:0; }
 <section class="hero">
 <h1>Переменные окружения <code>DAMU*</code> и <code>OPENSHIFT_*</code></h1>
 <p>Подробный справочник по переменным окружения <code>DAMU*</code>, <code>DAMUCRM*</code> и <code>OPENSHIFT_*</code>, которые используются в предоставленных исходниках Go. Описание основано на фактических обращениях <code>os.Getenv()</code> и окружающей логике кода.</p>
-<div class="badges"><span class="badge">36 переменных</span><span class="badge">DAMU / DAMUCRM</span><span class="badge">OPENSHIFT</span><span class="badge">Go</span><span class="badge">Sessions</span><span class="badge">Redis</span><span class="badge">Database</span><span class="badge">Internet access</span></div>
+<div class="badges"><span class="badge">37 переменных</span><span class="badge">DAMU / DAMUCRM</span><span class="badge">OPENSHIFT</span><span class="badge">Go</span><span class="badge">Sessions</span><span class="badge">Redis</span><span class="badge">Database</span><span class="badge">Internet access</span></div>
 </section>
 <div class="notice"><strong>Важно.</strong> Справочник описывает поведение предоставленных исходников и дополнительного фрагмента инициализации приложения. Переменные с префиксом <code>OPENSHIFT_</code> здесь рассматриваются как обычные переменные окружения: код не проверяет, запущено ли приложение фактически в OpenShift. Если та же переменная используется в других частях проекта, ее итоговое влияние может быть шире.</div>
 <section>
 <h2>Быстрый список</h2>
-<div class="tools"><input autocomplete="off" class="search" id="envSearch" placeholder="Поиск: redis, cron, sql, OPENSHIFT, host, port, DAMU_DEFAULT_LANG…" type="search"></div>
+<div class="tools"><input autocomplete="off" class="search" id="envSearch" placeholder="Поиск: redis, cron, sql, internet, deny, OPENSHIFT, host, port, DAMU_DEFAULT_LANG…" type="search"></div>
 <div class="table-wrap">
 <table id="envTable">
 <thead><tr><th>Переменная</th><th>Группа</th><th>По умолчанию</th><th>Назначение</th></tr></thead>
@@ -135,14 +135,20 @@ pre code { background:transparent; color:inherit; padding:0; }
 <tr data-category="аутентификация / сетевой доступ" data-name="damu_allow_internet_auth">
 <td><a href="#DAMU_ALLOW_INTERNET_AUTH"><code>DAMU_ALLOW_INTERNET_AUTH</code></a></td>
 <td>Аутентификация / сетевой доступ</td>
-<td>Ограничение внешнего доступа активно</td>
-<td>При точном значении <code>1</code> немедленно разрешает прохождение проверки <code>CheckLoginByIp()</code> без проверки IP и ролей.</td>
+<td>Глобальное разрешение внешнего входа выключено</td>
+<td>Для внешнего IP разрешает вход при значении <code>1</code>, но только после проверки запрещающих ролей. <code>DAMU_DENY_INTERNET_AUTH_ROLES</code> имеет приоритет.</td>
 </tr>
 <tr data-category="аутентификация / сетевой доступ" data-name="damu_allow_internet_auth_roles">
 <td><a href="#DAMU_ALLOW_INTERNET_AUTH_ROLES"><code>DAMU_ALLOW_INTERNET_AUTH_ROLES</code></a></td>
 <td>Аутентификация / сетевой доступ</td>
 <td>Пустая строка</td>
-<td>Список кодов ролей через запятую, которым разрешено пройти проверку с внешнего IP, если глобальное разрешение не включено.</td>
+<td>CSV-список ролей, которым разрешён вход с внешнего IP, если глобальное разрешение выключено и пользователь не попал в deny-list.</td>
+</tr>
+<tr data-category="аутентификация / сетевой доступ" data-name="damu_deny_internet_auth_roles">
+<td><a href="#DAMU_DENY_INTERNET_AUTH_ROLES"><code>DAMU_DENY_INTERNET_AUTH_ROLES</code></a></td>
+<td>Аутентификация / сетевой доступ</td>
+<td>Пустая строка</td>
+<td>CSV-список ролей, которым запрещён вход с внешнего IP. Проверяется раньше глобального разрешения и allow-list.</td>
 </tr>
 <tr data-category="серверные пользовательские сессии" data-name="damucrm_multiple_sessions">
 <td><a href="https://damubpm.github.io/help/damu_environment_variables.html#DAMUCRM_MULTIPLE_SESSIONS"><code>DAMUCRM_MULTIPLE_SESSIONS</code></a></td>
@@ -213,9 +219,11 @@ pre code { background:transparent; color:inherit; padding:0; }
 <div class="scenario"><h3>Обычные DB-сессии</h3><p><code>DAMU_REDIS_SESSION</code> не равен <code>1</code>, <code>DAMU_DISABLE_DB_USER_SESSION</code> не равен <code>1</code>. Сессии записываются и проверяются через таблицу <code>user_session</code>.</p></div>
 <div class="scenario"><h3>Redis-сессии</h3><p><code>DAMU_REDIS_SESSION=1</code> и, по текущей реализации, <code>DAMU_DISABLE_DB_USER_SESSION</code> должен оставаться не равным <code>1</code>, иначе <code>UserId()</code> вернет пользователя до <code>RedisCheckUserSession()</code>.</p></div>
 <div class="scenario"><h3>Только cookie без server-side check</h3><p>При <code>DAMU_DISABLE_DB_USER_SESSION=1</code> функция <code>UserId()</code> после чтения <code>user_id</code> из cookie сразу возвращает его. Это обходит и DB-проверку, и Redis-проверку в данном коде.</p></div>
-<div class="scenario"><h3>Внутренний IP</h3><p>Если <code>DAMU_ALLOW_INTERNET_AUTH</code> не равен <code>1</code>, но <code>IsIntranetIP(x_real_ip)</code> возвращает true, <code>CheckLoginByIp()</code> разрешает проверку без обращения к списку ролей.</p></div>
-<div class="scenario"><h3>Разрешить внешние IP без ролевого фильтра</h3><p><code>DAMU_ALLOW_INTERNET_AUTH=1</code> вызывает немедленный успешный возврат из <code>CheckLoginByIp()</code>. В этой функции IP и <code>DAMU_ALLOW_INTERNET_AUTH_ROLES</code> после этого не проверяются.</p></div>
-<div class="scenario"><h3>Внешний доступ только по ролям</h3><p>Оставьте <code>DAMU_ALLOW_INTERNET_AUTH</code> отличным от <code>1</code> и задайте, например, <code>DAMU_ALLOW_INTERNET_AUTH_ROLES=admin,manager</code>. Для внешнего IP функция разрешит доступ, если у пользователя найдется хотя бы одна из перечисленных ролей.</p></div>
+<div class="scenario"><h3>Внутренний IP</h3><p>Если <code>IsIntranetIP(x_real_ip)</code> возвращает true, функция сразу возвращает успех. Ни <code>DAMU_DENY_INTERNET_AUTH_ROLES</code>, ни глобальный флаг, ни allow-list для такого запроса не проверяются.</p></div>
+<div class="scenario"><h3>Deny имеет приоритет</h3><p>Для внешнего IP сначала проверяется <code>DAMU_DENY_INTERNET_AUTH_ROLES</code>. Если найдена хотя бы одна запрещающая роль, вход отклоняется даже при <code>DAMU_ALLOW_INTERNET_AUTH=1</code> и даже если та же или другая роль присутствует в allow-list.</p></div>
+<div class="scenario"><h3>Глобально разрешить внешний вход</h3><p>После успешного прохождения deny-проверки значение <code>DAMU_ALLOW_INTERNET_AUTH=1</code> разрешает внешний вход без проверки <code>DAMU_ALLOW_INTERNET_AUTH_ROLES</code>.</p></div>
+<div class="scenario"><h3>Внешний доступ по allow-ролям</h3><p>Если глобальное разрешение выключено, функция проверяет <code>DAMU_ALLOW_INTERNET_AUTH_ROLES</code>. Достаточно одной совпавшей роли. Пробелы вокруг кодов ролей удаляются через <code>strings.TrimSpace()</code>.</p></div>
+<div class="scenario"><h3>Нет разрешающей роли</h3><p>Если внешний пользователь не попал в deny-list, глобальное разрешение выключено и ни одна allow-роль не найдена, функция возвращает <code>Access Denied. Cause: Role</code>.</p></div>
 </div>
 </section>
 <section class="category-section"><h2>Сессии и cookie</h2>
@@ -383,42 +391,65 @@ pre code { background:transparent; color:inherit; padding:0; }
 <div class="env-head">
 <div>
 <h3><code>DAMU_ALLOW_INTERNET_AUTH</code></h3>
-<p class="lead">Управляет тем, должна ли <code>CheckLoginByIp()</code> применять ограничение по внешнему IP и ролям.</p>
+<p class="lead">Глобально разрешает вход с внешнего IP после обязательной проверки запрещающих ролей.</p>
 </div>
-<a class="line-ref" href="#source">grantutils.go: строки 14–24</a>
+<a class="line-ref" href="#source">актуальная CheckLoginByIp(): после denyRoles</a>
 </div>
 <div class="meta-grid">
 <div><span>Тип</span><strong>Флаг</strong></div>
-<div><span>По умолчанию</span><strong>Ограничение активно: любое значение, кроме <code>1</code></strong></div>
-<div class="wide"><span>Распознаваемые значения</span><strong><code>1</code> — немедленно разрешить прохождение этой проверки; остальные значения — проверить IP и при необходимости роли</strong></div>
+<div><span>По умолчанию</span><strong>Глобальное разрешение выключено</strong></div>
+<div class="wide"><span>Распознаваемые значения</span><strong><code>1</code> — разрешить внешний вход после deny-проверки; любое другое значение — перейти к allow-list ролей</strong></div>
 </div>
-<h4>Как используется</h4>
-<p>В начале <code>CheckLoginByIp()</code> выполняется точное сравнение <code>os.Getenv("DAMU_ALLOW_INTERNET_AUTH") == "1"</code>. При совпадении функция сразу возвращает <code>nil</code>. Проверка <code>IsIntranetIP(x_real_ip)</code> и дальнейший ролевой фильтр в этом случае вообще не выполняются.</p>
+<h4>Порядок проверки</h4>
+<p>Для внутреннего IP функция возвращает успех ещё до чтения этой переменной. Для внешнего IP сначала полностью обрабатывается <code>DAMU_DENY_INTERNET_AUTH_ROLES</code>. Только если пользователь не имеет запрещающей роли, выполняется проверка <code>os.Getenv("DAMU_ALLOW_INTERNET_AUTH") == "1"</code>.</p>
 <h4>Фактическое поведение</h4>
-<p>Если значение не равно <code>1</code>, внутренний IP разрешается через <code>IsIntranetIP()</code>. Для внешнего IP функция переходит к проверке ролей из <code>DAMU_ALLOW_INTERNET_AUTH_ROLES</code>. Поэтому значение <code>1</code> означает не «разрешить только некоторым внешним пользователям», а полностью обойти сетевое/ролевое ограничение именно в <code>CheckLoginByIp()</code>.</p>
-<div class="notice"><strong>Граница вывода.</strong> По этому файлу нельзя утверждать, что <code>DAMU_ALLOW_INTERNET_AUTH=1</code> отключает остальные механизмы аутентификации или авторизации DamuBPM. Он снимает только проверку, реализованную функцией <code>CheckLoginByIp()</code>.</div>
-<div class="recommendation"><strong>Рекомендация:</strong> В production задавать <code>1</code> только если ограничение по intranet/external IP действительно не требуется. Для ролевого допуска внешних пользователей оставить значение отличным от <code>1</code> и использовать <code>DAMU_ALLOW_INTERNET_AUTH_ROLES</code>.</div>
+<p>При значении <code>1</code> внешний пользователь допускается без проверки <code>DAMU_ALLOW_INTERNET_AUTH_ROLES</code>, но deny-list уже был проверен. Поэтому новая реализация больше не трактует этот флаг как безусловный bypass: запрещающие роли имеют приоритет.</p>
+<div class="notice"><strong>Важно:</strong> <code>DAMU_ALLOW_INTERNET_AUTH=1</code> не отменяет <code>DAMU_DENY_INTERNET_AUTH_ROLES</code> для внешнего IP. При этом для intranet IP функция завершится раньше и deny-list не применяется.</div>
+<div class="recommendation"><strong>Рекомендация:</strong> Использовать <code>1</code>, когда внешний вход в целом разрешён, но отдельные роли должны быть принудительно ограничены через <code>DAMU_DENY_INTERNET_AUTH_ROLES</code>.</div>
 <div class="back-top"><a href="#top">↑ К началу</a></div>
 </article>
 <article class="env-card" id="DAMU_ALLOW_INTERNET_AUTH_ROLES">
 <div class="env-head">
 <div>
 <h3><code>DAMU_ALLOW_INTERNET_AUTH_ROLES</code></h3>
-<p class="lead">Список ролей, которым разрешено пройти <code>CheckLoginByIp()</code> при обращении с внешнего IP.</p>
+<p class="lead">Allow-list ролей для входа с внешнего IP, когда глобальное разрешение выключено.</p>
 </div>
-<a class="line-ref" href="#source">grantutils.go: строки 27–56</a>
+<a class="line-ref" href="#source">актуальная CheckLoginByIp(): блок allowRoles</a>
 </div>
 <div class="meta-grid">
 <div><span>Тип</span><strong>CSV-список кодов ролей</strong></div>
 <div><span>По умолчанию</span><strong>Пустая строка</strong></div>
-<div class="wide"><span>Формат</span><strong>Точные коды ролей через запятую, например <code>admin,manager</code></strong></div>
+<div class="wide"><span>Формат</span><strong>Коды ролей через запятую, например <code>admin, manager</code>; пробелы по краям удаляются</strong></div>
 </div>
 <h4>Как используется</h4>
-<p>Значение разбивается через <code>strings.Split(..., ",")</code>. Для каждого элемента выполняется SQL-проверка наличия роли у пользователя через <code>user_roles</code> и <code>roles</code>. Для PostgreSQL/обычной ветки используется <code>limit 1</code>, для Oracle — <code>rownum=1</code>. Если хотя бы один запрос вернул строку, <code>roleFound</code> становится true и после завершения цикла функция возвращает успех.</p>
+<p>После deny-проверки и только когда <code>DAMU_ALLOW_INTERNET_AUTH</code> не равен <code>1</code>, значение разбивается через <code>strings.Split(..., ",")</code>. Каждый элемент обрабатывается через <code>strings.TrimSpace()</code>; пустые элементы пропускаются. Для каждой роли вызывается общий helper <code>hasRole()</code>, который проверяет <code>user_roles</code> и <code>roles</code>. Для обычной ветки используется <code>limit 1</code>, для Oracle — <code>rownum=1</code>.</p>
 <h4>Фактическое поведение</h4>
-<p>Код не выполняет <code>TrimSpace()</code>. Поэтому значения должны совпадать с <code>roles.code</code> буквально: <code>admin,manager</code> и <code>admin, manager</code> ведут себя по-разному — во втором случае проверяется роль с кодом, начинающимся с пробела. При пустой переменной <code>strings.Split("", ",")</code> формирует один пустой элемент, и выполняется проверка роли с пустым кодом; при обычных данных это означает, что внешнему пользователю исключение по роли не предоставляется.</p>
-<p>Если пользователь не имеет ни одной разрешенной роли, возвращается ошибка <code>Access Denied. Cause: Role</code>. Ошибки SQL, отличные от «строка не найдена», пишутся как critical log. При <code>DAMUCRM_DEBUG_SQL=1</code> отсутствие совпадения дополнительно логируется с SQL, ошибкой и проверяемым кодом роли.</p>
-<div class="recommendation"><strong>Рекомендация:</strong> Указывать только существующие коды ролей, без пробелов вокруг запятых, например <code>admin,helpdesk_external</code>. Список держать минимальным, поскольку он фактически является allow-list для прохождения этой сетевой проверки с внешнего IP.</div>
+<p>Достаточно наличия хотя бы одной разрешённой роли: после первого совпадения цикл прерывается. Запись <code>admin, manager</code> теперь корректна, потому что пробел перед <code>manager</code> удаляется.</p>
+<p>Если <code>hasRole()</code> получает SQL-ошибку, отличную от «строка не найдена», helper пишет critical log и возвращает ошибку. В allow-loop такая ошибка не прерывает всю проверку: код делает <code>continue</code> и пробует следующую роль. Если в итоге совпадений нет, доступ отклоняется с <code>Access Denied. Cause: Role</code>.</p>
+<div class="notice"><strong>Приоритет:</strong> Эта переменная не может переопределить <code>DAMU_DENY_INTERNET_AUTH_ROLES</code>. Если у внешнего пользователя найдена запрещающая роль, выполнение до allow-list уже не дойдёт.</div>
+<div class="recommendation"><strong>Рекомендация:</strong> Использовать как минимальный allow-list для внешних пользователей при <code>DAMU_ALLOW_INTERNET_AUTH!=1</code>. Пробелы вокруг значений теперь допустимы, но лучше сохранять единый формат конфигурации.</div>
+<div class="back-top"><a href="#top">↑ К началу</a></div>
+</article>
+<article class="env-card" id="DAMU_DENY_INTERNET_AUTH_ROLES">
+<div class="env-head">
+<div>
+<h3><code>DAMU_DENY_INTERNET_AUTH_ROLES</code></h3>
+<p class="lead">Deny-list ролей, которым запрещён вход с внешнего IP независимо от глобального allow-флага и allow-list.</p>
+</div>
+<a class="line-ref" href="#source">актуальная CheckLoginByIp(): блок denyRoles</a>
+</div>
+<div class="meta-grid">
+<div><span>Тип</span><strong>CSV-список кодов ролей</strong></div>
+<div><span>По умолчанию</span><strong>Пустая строка — явных запрещающих ролей нет</strong></div>
+<div class="wide"><span>Формат</span><strong>Коды ролей через запятую, например <code>intranet_only,blocked</code>; пробелы по краям удаляются</strong></div>
+</div>
+<h4>Как используется</h4>
+<p>Переменная проверяется только для внешнего IP. Значение разбивается через <code>strings.Split(..., ",")</code>, затем каждый код очищается через <code>strings.TrimSpace()</code>; пустые элементы пропускаются. Для каждой непустой роли вызывается <code>hasRole()</code>.</p>
+<h4>Фактическое поведение</h4>
+<p>Если у пользователя найдена хотя бы одна запрещающая роль, функция немедленно возвращает <code>Access Denied. Cause: Internet denied for role</code>. Эта проверка выполняется до <code>DAMU_ALLOW_INTERNET_AUTH</code> и до <code>DAMU_ALLOW_INTERNET_AUTH_ROLES</code>, поэтому deny имеет абсолютный приоритет в ветке внешнего IP.</p>
+<p>Если при проверке deny-роли возникает SQL-ошибка, отличная от «строка не найдена», функция действует fail-closed: возвращает <code>Access Denied. Cause: Role check error</code>. При <code>DAMUCRM_DEBUG_SQL=1</code> найденная запрещающая роль дополнительно записывается в debug-log вместе с <code>userId</code> и кодом роли.</p>
+<div class="notice"><strong>Исключение:</strong> intranet-запросы возвращают успех в самом начале <code>CheckLoginByIp()</code>, поэтому <code>DAMU_DENY_INTERNET_AUTH_ROLES</code> на них не действует.</div>
+<div class="recommendation"><strong>Рекомендация:</strong> Использовать для ролей, которым внешняя авторизация запрещена при любых остальных настройках, например <code>intranet_only,blocked</code>. Если запрет должен действовать и внутри intranet, это уже требует отдельной логики вне текущей функции.</div>
 <div class="back-top"><a href="#top">↑ К началу</a></div>
 </article>
 </section><section class="category-section"><h2>Серверные пользовательские сессии</h2>
@@ -568,7 +599,7 @@ pre code { background:transparent; color:inherit; padding:0; }
 <div class="meta-grid"><div><span>Тип</span><strong>Флаг</strong></div><div><span>По умолчанию</span><strong>Дополнительный SQL debug выключен</strong></div><div class="wide"><span>Распознаваемые значения</span><strong><code>1</code> — включить дополнительный диагностический вывод; остальные значения — выключено</strong></div></div>
 <h4>Как используется</h4>
 <p>Проверка <code>os.Getenv("DAMUCRM_DEBUG_SQL") == "1"</code> встречается в нескольких функциях Lua API. В <code>LuaDetail()</code>, <code>LuaQuery()</code>, <code>LuaQueryCount()</code> и <code>LuaQueryWithCount()</code> в лог выводится полученный массив <code>arr</code>. В функциях чтения одной строки из SQL/кэша/Redis дополнительный лог появляется при ситуации <code>No data found</code>. В <code>LuaSqlInsert()</code> при ошибке дополнительно выводятся текст ошибки и SQL-строка.</p>
-<div class="notice"><strong>Дополнение из grantutils.go.</strong> Переменная также используется в <code>CheckLoginByIp()</code>: если проверка очередной роли из <code>DAMU_ALLOW_INTERNET_AUTH_ROLES</code> не находит строку, при <code>DAMUCRM_DEBUG_SQL=1</code> в лог выводятся SQL-запрос, ошибка и код проверяемой роли.</div>
+<div class="notice"><strong>Дополнение из актуальной CheckLoginByIp().</strong> Переменная участвует в диагностике сетевого ролевого доступа. При найденной роли из <code>DAMU_DENY_INTERNET_AUTH_ROLES</code> выводится debug-запись о запрете с <code>userId</code> и кодом роли. В allow-loop при отсутствии конкретной роли выводится <code>allow role not found</code> с <code>userId</code> и кодом роли. SQL-ошибки helper <code>hasRole()</code> пишет как critical независимо от этого debug-флага.</div>
 <h4>Фактическое поведение</h4>
 <p>Это не глобальный переключатель всего SQL-логирования: он влияет только на явно обернутые этой проверкой места. Часть SQL-ошибок и предупреждений в коде логируется независимо от значения переменной.</p>
 <div class="recommendation"><strong>Рекомендация:</strong> Включать временно при диагностике. В production учитывать, что лог может содержать SQL-тексты и данные выборок, поэтому постоянное включение способно увеличить объем логов и раскрывать чувствительные данные в системе логирования.</div>
@@ -637,12 +668,14 @@ pre code { background:transparent; color:inherit; padding:0; }
 </section><section class="category-section" id="examples">
 <h2>Примеры конфигурации</h2>
 <p>Это примеры оформления переменных; фактические значения нужно подобрать под конкретный deployment.</p>
+<div class="notice"><strong>Приоритет сетевых правил:</strong> для внешнего IP порядок такой: <code>DAMU_DENY_INTERNET_AUTH_ROLES</code> → <code>DAMU_ALLOW_INTERNET_AUTH</code> → <code>DAMU_ALLOW_INTERNET_AUTH_ROLES</code>. Для intranet IP функция возвращает успех до этих проверок.</div>
 <h3>systemd</h3>
 <pre><code>Environment="DAMUCRM_SALT=change-me-to-a-secret"
 Environment="DAMU_SESSION_MAXAGE_DAYS=30"
 Environment="DAMU_SESSION_SAMESITE=LaxMode"
 Environment="DAMU_ALLOW_INTERNET_AUTH=0"
 Environment="DAMU_ALLOW_INTERNET_AUTH_ROLES=admin,manager"
+Environment="DAMU_DENY_INTERNET_AUTH_ROLES=intranet_only,blocked"
 Environment="DAMU_REDIS_SESSION=1"
 Environment="DAMU_LOGIN_LOG_OUTPUT=1"
 Environment="DAMU_DEFAULT_LANG=ru"
@@ -669,6 +702,7 @@ Environment="OPENSHIFT_GO_PORT=8080"</code></pre>
   DAMU_SESSION_SAMESITE: "LaxMode"
   DAMU_ALLOW_INTERNET_AUTH: "0"
   DAMU_ALLOW_INTERNET_AUTH_ROLES: "admin,manager"
+  DAMU_DENY_INTERNET_AUTH_ROLES: "intranet_only,blocked"
   DAMU_REDIS_SESSION: "1"
   DAMU_LOGIN_LOG_OUTPUT: "1"
   DAMU_DEFAULT_LANG: "ru"
@@ -691,7 +725,7 @@ Environment="OPENSHIFT_GO_PORT=8080"</code></pre>
 <div class="notice"><strong>Режим микросервиса.</strong> Если задать <code>DAMU_MICROSERVICE_LUA_FILE</code>, показанный init() делает ранний <code>return</code> после <code>restapi.HandleMicroService()</code>. Поэтому эту переменную не следует бездумно добавлять в общий шаблон production-конфигурации.</div></section>
 <section class="category-section" id="source">
 <h2>Источник</h2>
-<p>Документ обновлен по исходникам <code>Вставленный код(2).go</code>, <code>Вставленный текст(20260904-104638).txt</code>, <code>Вставленный код(3).go</code>, дополнительному фрагменту <code>main/init()</code> и файлу <code>grantutils.go</code>. Анализировались обращения к <code>os.Getenv()</code> для префиксов <code>DAMU*</code>, <code>DAMUCRM*</code> и <code>OPENSHIFT_*</code>. <code>grantutils.go</code> добавил две новые уникальные переменные — <code>DAMU_ALLOW_INTERNET_AUTH</code> и <code>DAMU_ALLOW_INTERNET_AUTH_ROLES</code> — и подтвердил дополнительное использование <code>DAMUCRM_DEBUG_SQL</code>. После удаления дублей справочник содержит 36 уникальных переменных: 29 DAMU/DAMUCRM и 7 OPENSHIFT.</p>
+<p>Документ обновлен по исходникам <code>Вставленный код(2).go</code>, <code>Вставленный текст(20260904-104638).txt</code>, <code>Вставленный код(3).go</code>, дополнительному фрагменту <code>main/init()</code>, файлу <code>grantutils.go</code> и актуальной версии функции <code>CheckLoginByIp()</code>, переданной дополнительно. Анализировались обращения к <code>os.Getenv()</code> для префиксов <code>DAMU*</code>, <code>DAMUCRM*</code> и <code>OPENSHIFT_*</code>. Новая версия <code>CheckLoginByIp()</code> добавляет <code>DAMU_DENY_INTERNET_AUTH_ROLES</code>, переносит глобальное разрешение после deny-проверки, применяет <code>strings.TrimSpace()</code> к ролям и меняет диагностическое поведение <code>DAMUCRM_DEBUG_SQL</code>. После удаления дублей справочник содержит 37 уникальных переменных: 30 DAMU/DAMUCRM и 7 OPENSHIFT.</p>
 </section>
 </main>
 <footer class="footer">
