@@ -1,9 +1,8 @@
 <!DOCTYPE html>
+<!-- saved from url=(0062)https://damubpm.github.io/help/damu_environment_variables.html -->
+<html lang="ru"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 
-<html lang="ru">
-<head>
-<meta charset="utf-8"/>
-<meta content="width=device-width, initial-scale=1" name="viewport"/>
+<meta content="width=device-width, initial-scale=1" name="viewport">
 <title>Переменные окружения DAMU и OPENSHIFT — справочник</title>
 <style>
 :root {
@@ -68,7 +67,7 @@ pre code { background:transparent; color:inherit; padding:0; }
 <body id="top">
 <header class="topbar">
 <div class="inner">
-<a class="home-link" href="index.html">← На главную</a>
+<a class="home-link" href="https://damubpm.github.io/help/index.html">← На главную</a>
 <div class="top-title">DamuBPM · Переменные окружения DAMU / OPENSHIFT</div>
 </div>
 </header>
@@ -76,123 +75,135 @@ pre code { background:transparent; color:inherit; padding:0; }
 <section class="hero">
 <h1>Переменные окружения <code>DAMU*</code> и <code>OPENSHIFT_*</code></h1>
 <p>Подробный справочник по переменным окружения <code>DAMU*</code>, <code>DAMUCRM*</code> и <code>OPENSHIFT_*</code>, которые используются в предоставленных исходниках Go. Описание основано на фактических обращениях <code>os.Getenv()</code> и окружающей логике кода.</p>
-<div class="badges"><span class="badge">34 переменные</span><span class="badge">DAMU / DAMUCRM</span><span class="badge">OPENSHIFT</span><span class="badge">Go</span><span class="badge">Sessions</span><span class="badge">Redis</span><span class="badge">Database</span></div>
+<div class="badges"><span class="badge">36 переменных</span><span class="badge">DAMU / DAMUCRM</span><span class="badge">OPENSHIFT</span><span class="badge">Go</span><span class="badge">Sessions</span><span class="badge">Redis</span><span class="badge">Database</span><span class="badge">Internet access</span></div>
 </section>
 <div class="notice"><strong>Важно.</strong> Справочник описывает поведение предоставленных исходников и дополнительного фрагмента инициализации приложения. Переменные с префиксом <code>OPENSHIFT_</code> здесь рассматриваются как обычные переменные окружения: код не проверяет, запущено ли приложение фактически в OpenShift. Если та же переменная используется в других частях проекта, ее итоговое влияние может быть шире.</div>
 <section>
 <h2>Быстрый список</h2>
-<div class="tools"><input autocomplete="off" class="search" id="envSearch" placeholder="Поиск: redis, cron, sql, OPENSHIFT, host, port, DAMU_DEFAULT_LANG…" type="search"/></div>
+<div class="tools"><input autocomplete="off" class="search" id="envSearch" placeholder="Поиск: redis, cron, sql, OPENSHIFT, host, port, DAMU_DEFAULT_LANG…" type="search"></div>
 <div class="table-wrap">
 <table id="envTable">
 <thead><tr><th>Переменная</th><th>Группа</th><th>По умолчанию</th><th>Назначение</th></tr></thead>
 <tbody><tr data-category="сессии и cookie" data-name="damucrm_salt">
-<td><a href="#DAMUCRM_SALT"><code>DAMUCRM_SALT</code></a></td>
+<td><a href="https://damubpm.github.io/help/damu_environment_variables.html#DAMUCRM_SALT"><code>DAMUCRM_SALT</code></a></td>
 <td>Сессии и cookie</td>
 <td>Пустая строка</td>
 <td>Дополнительная соль для ключа CookieStore.</td>
 </tr>
 <tr data-category="сессии и cookie" data-name="damu_session_httponly_false">
-<td><a href="#DAMU_SESSION_HTTPONLY_FALSE"><code>DAMU_SESSION_HTTPONLY_FALSE</code></a></td>
+<td><a href="https://damubpm.github.io/help/damu_environment_variables.html#DAMU_SESSION_HTTPONLY_FALSE"><code>DAMU_SESSION_HTTPONLY_FALSE</code></a></td>
 <td>Сессии и cookie</td>
 <td>HttpOnly = true</td>
 <td>Разрешает JavaScript доступ к cookie сессии.</td>
 </tr>
 <tr data-category="сессии и cookie" data-name="damu_session_secure_false">
-<td><a href="#DAMU_SESSION_SECURE_FALSE"><code>DAMU_SESSION_SECURE_FALSE</code></a></td>
+<td><a href="https://damubpm.github.io/help/damu_environment_variables.html#DAMU_SESSION_SECURE_FALSE"><code>DAMU_SESSION_SECURE_FALSE</code></a></td>
 <td>Сессии и cookie</td>
 <td>Secure = true</td>
 <td>Разрешает отправку cookie без требования HTTPS.</td>
 </tr>
 <tr data-category="сессии и cookie" data-name="damu_session_maxage_days">
-<td><a href="#DAMU_SESSION_MAXAGE_DAYS"><code>DAMU_SESSION_MAXAGE_DAYS</code></a></td>
+<td><a href="https://damubpm.github.io/help/damu_environment_variables.html#DAMU_SESSION_MAXAGE_DAYS"><code>DAMU_SESSION_MAXAGE_DAYS</code></a></td>
 <td>Сессии и cookie</td>
 <td>30 дней</td>
 <td>Срок жизни cookie-сессии в днях.</td>
 </tr>
 <tr data-category="сессии и cookie" data-name="damu_session_samesite">
-<td><a href="#DAMU_SESSION_SAMESITE"><code>DAMU_SESSION_SAMESITE</code></a></td>
+<td><a href="https://damubpm.github.io/help/damu_environment_variables.html#DAMU_SESSION_SAMESITE"><code>DAMU_SESSION_SAMESITE</code></a></td>
 <td>Сессии и cookie</td>
 <td>LaxMode</td>
 <td>Настраивает SameSite для cookie-сессии.</td>
 </tr>
 <tr data-category="аутентификация и защита входа" data-name="damucrm_disable_login_ratelimit">
-<td><a href="#DAMUCRM_DISABLE_LOGIN_RATELIMIT"><code>DAMUCRM_DISABLE_LOGIN_RATELIMIT</code></a></td>
+<td><a href="https://damubpm.github.io/help/damu_environment_variables.html#DAMUCRM_DISABLE_LOGIN_RATELIMIT"><code>DAMUCRM_DISABLE_LOGIN_RATELIMIT</code></a></td>
 <td>Аутентификация и защита входа</td>
 <td>Не отключен</td>
 <td>По названию — отключение rate limit входа, но в данном файле фактический эффект уже.</td>
 </tr>
 <tr data-category="аутентификация и защита входа" data-name="damucrm_disable_password_login">
-<td><a href="#DAMUCRM_DISABLE_PASSWORD_LOGIN"><code>DAMUCRM_DISABLE_PASSWORD_LOGIN</code></a></td>
+<td><a href="https://damubpm.github.io/help/damu_environment_variables.html#DAMUCRM_DISABLE_PASSWORD_LOGIN"><code>DAMUCRM_DISABLE_PASSWORD_LOGIN</code></a></td>
 <td>Аутентификация и защита входа</td>
 <td>Basic password login разрешен</td>
 <td>Отключает вход по логину/паролю через HTTP Basic в функции UserId().</td>
 </tr>
 <tr data-category="аутентификация и защита входа" data-name="damucrm_disable_token_login">
-<td><a href="#DAMUCRM_DISABLE_TOKEN_LOGIN"><code>DAMUCRM_DISABLE_TOKEN_LOGIN</code></a></td>
+<td><a href="https://damubpm.github.io/help/damu_environment_variables.html#DAMUCRM_DISABLE_TOKEN_LOGIN"><code>DAMUCRM_DISABLE_TOKEN_LOGIN</code></a></td>
 <td>Аутентификация и защита входа</td>
 <td>Token login разрешен</td>
 <td>Отключает две ветки входа по auth token.</td>
 </tr>
+<tr data-category="аутентификация / сетевой доступ" data-name="damu_allow_internet_auth">
+<td><a href="#DAMU_ALLOW_INTERNET_AUTH"><code>DAMU_ALLOW_INTERNET_AUTH</code></a></td>
+<td>Аутентификация / сетевой доступ</td>
+<td>Ограничение внешнего доступа активно</td>
+<td>При точном значении <code>1</code> немедленно разрешает прохождение проверки <code>CheckLoginByIp()</code> без проверки IP и ролей.</td>
+</tr>
+<tr data-category="аутентификация / сетевой доступ" data-name="damu_allow_internet_auth_roles">
+<td><a href="#DAMU_ALLOW_INTERNET_AUTH_ROLES"><code>DAMU_ALLOW_INTERNET_AUTH_ROLES</code></a></td>
+<td>Аутентификация / сетевой доступ</td>
+<td>Пустая строка</td>
+<td>Список кодов ролей через запятую, которым разрешено пройти проверку с внешнего IP, если глобальное разрешение не включено.</td>
+</tr>
 <tr data-category="серверные пользовательские сессии" data-name="damucrm_multiple_sessions">
-<td><a href="#DAMUCRM_MULTIPLE_SESSIONS"><code>DAMUCRM_MULTIPLE_SESSIONS</code></a></td>
+<td><a href="https://damubpm.github.io/help/damu_environment_variables.html#DAMUCRM_MULTIPLE_SESSIONS"><code>DAMUCRM_MULTIPLE_SESSIONS</code></a></td>
 <td>Серверные пользовательские сессии</td>
 <td>Несколько DB-сессий запрещены</td>
 <td>Разрешает несколько записей пользовательских сессий в таблице user_session.</td>
 </tr>
 <tr data-category="серверные пользовательские сессии" data-name="damu_disable_db_user_session">
-<td><a href="#DAMU_DISABLE_DB_USER_SESSION"><code>DAMU_DISABLE_DB_USER_SESSION</code></a></td>
+<td><a href="https://damubpm.github.io/help/damu_environment_variables.html#DAMU_DISABLE_DB_USER_SESSION"><code>DAMU_DISABLE_DB_USER_SESSION</code></a></td>
 <td>Серверные пользовательские сессии</td>
 <td>DB user_session используется</td>
 <td>Отключает запись/проверку серверной пользовательской сессии через таблицу user_session.</td>
 </tr>
 <tr data-category="серверные пользовательские сессии" data-name="damu_redis_session">
-<td><a href="#DAMU_REDIS_SESSION"><code>DAMU_REDIS_SESSION</code></a></td>
+<td><a href="https://damubpm.github.io/help/damu_environment_variables.html#DAMU_REDIS_SESSION"><code>DAMU_REDIS_SESSION</code></a></td>
 <td>Серверные пользовательские сессии</td>
 <td>Redis-сессии выключены</td>
 <td>Переключает хранение/проверку пользовательских сессий с DB-ветки на Redis-ветку.</td>
 </tr>
 <tr data-category="логирование входов" data-name="damu_disable_db_login_log">
-<td><a href="#DAMU_DISABLE_DB_LOGIN_LOG"><code>DAMU_DISABLE_DB_LOGIN_LOG</code></a></td>
+<td><a href="https://damubpm.github.io/help/damu_environment_variables.html#DAMU_DISABLE_DB_LOGIN_LOG"><code>DAMU_DISABLE_DB_LOGIN_LOG</code></a></td>
 <td>Логирование входов</td>
 <td>Запись login_logs включена</td>
 <td>Отключает запись событий входа/выхода в таблицу login_logs.</td>
 </tr>
 <tr data-category="логирование входов" data-name="damu_login_log_output">
-<td><a href="#DAMU_LOGIN_LOG_OUTPUT"><code>DAMU_LOGIN_LOG_OUTPUT</code></a></td>
+<td><a href="https://damubpm.github.io/help/damu_environment_variables.html#DAMU_LOGIN_LOG_OUTPUT"><code>DAMU_LOGIN_LOG_OUTPUT</code></a></td>
 <td>Логирование входов</td>
 <td>Дополнительный вывод выключен</td>
 <td>Включает текстовый вывод login/logout и некоторых ошибок сессии через log.Println().</td>
 </tr>
 <tr data-category="интерфейс и маршрутизация" data-name="damu_static_redirect_url">
-<td><a href="#DAMU_STATIC_REDIRECT_URL"><code>DAMU_STATIC_REDIRECT_URL</code></a></td>
+<td><a href="https://damubpm.github.io/help/damu_environment_variables.html#DAMU_STATIC_REDIRECT_URL"><code>DAMU_STATIC_REDIRECT_URL</code></a></td>
 <td>Интерфейс и маршрутизация</td>
 <td>Не задан</td>
 <td>Жестко переопределяет домашнюю страницу пользователя.</td>
 </tr>
 <tr data-category="интерфейс и локализация" data-name="damu_default_lang">
-<td><a href="#DAMU_DEFAULT_LANG"><code>DAMU_DEFAULT_LANG</code></a></td>
+<td><a href="https://damubpm.github.io/help/damu_environment_variables.html#DAMU_DEFAULT_LANG"><code>DAMU_DEFAULT_LANG</code></a></td>
 <td>Интерфейс и локализация</td>
 <td>ru</td>
 <td>Язык по умолчанию, если язык не удалось получить из сессии.</td>
 </tr><tr data-category="sql и диагностика" data-name="damucrm_debug_sql">
-<td><a href="#DAMUCRM_DEBUG_SQL"><code>DAMUCRM_DEBUG_SQL</code></a></td>
+<td><a href="https://damubpm.github.io/help/damu_environment_variables.html#DAMUCRM_DEBUG_SQL"><code>DAMUCRM_DEBUG_SQL</code></a></td>
 <td>SQL и диагностика</td><td>Выключено</td><td>Включает дополнительный диагностический вывод результатов и SQL-ошибок в Lua API.</td></tr><tr data-category="http-клиент lua" data-name="damucrm_http_timeout_ms">
-<td><a href="#DAMUCRM_HTTP_TIMEOUT_MS"><code>DAMUCRM_HTTP_TIMEOUT_MS</code></a></td>
+<td><a href="https://damubpm.github.io/help/damu_environment_variables.html#DAMUCRM_HTTP_TIMEOUT_MS"><code>DAMUCRM_HTTP_TIMEOUT_MS</code></a></td>
 <td>HTTP-клиент Lua</td><td>30000 мс</td><td>Задает тайм-аут HTTP POST-запросов LuaHttpPost2 и LuaHttpPost2WithProxy.</td></tr><tr data-category="cron" data-name="damu_cron_debug_log">
-<td><a href="#DAMU_CRON_DEBUG_LOG"><code>DAMU_CRON_DEBUG_LOG</code></a></td>
+<td><a href="https://damubpm.github.io/help/damu_environment_variables.html#DAMU_CRON_DEBUG_LOG"><code>DAMU_CRON_DEBUG_LOG</code></a></td>
 <td>Cron</td><td>Выключено</td><td>Включает дополнительный debug-лог при пропуске занятого параллельного Cron-потока.</td></tr><tr data-category="cron / postgresql" data-name="damu_cron_pg_try_advisory_lock">
-<td><a href="#DAMU_CRON_PG_TRY_ADVISORY_LOCK"><code>DAMU_CRON_PG_TRY_ADVISORY_LOCK</code></a></td>
+<td><a href="https://damubpm.github.io/help/damu_environment_variables.html#DAMU_CRON_PG_TRY_ADVISORY_LOCK"><code>DAMU_CRON_PG_TRY_ADVISORY_LOCK</code></a></td>
 <td>Cron / PostgreSQL</td><td>Выключено</td><td>Включает PostgreSQL advisory lock для защиты Cron-задачи от параллельного запуска.</td></tr><tr data-category="cron / транзакции" data-name="damu_cron_transaction">
-<td><a href="#DAMU_CRON_TRANSACTION"><code>DAMU_CRON_TRANSACTION</code></a></td>
+<td><a href="https://damubpm.github.io/help/damu_environment_variables.html#DAMU_CRON_TRANSACTION"><code>DAMU_CRON_TRANSACTION</code></a></td>
 <td>Cron / транзакции</td><td>Выключено</td><td>Запускает выполнение Cron Lua-скрипта внутри DB-транзакции.</td></tr><tr data-category="postgresql / наблюдаемость" data-name="damu_set_application_name">
-<td><a href="#DAMU_SET_APPLICATION_NAME"><code>DAMU_SET_APPLICATION_NAME</code></a></td>
-<td>PostgreSQL / наблюдаемость</td><td>Выключено</td><td>Устанавливает application_name вида cron/<id> для PostgreSQL-соединения Cron-задачи.</id></td></tr><tr data-category="режим запуска" data-name="damu_microservice_lua_file"><td><a href="#DAMU_MICROSERVICE_LUA_FILE"><code>DAMU_MICROSERVICE_LUA_FILE</code></a></td><td>Режим запуска</td><td>Не задан</td><td>При непустом значении переключает init() на ветку HandleMicroService() и прекращает обычную инициализацию БД в показанном коде.</td></tr><tr data-category="пул соединений бд" data-name="damu_max_idle_conns"><td><a href="#DAMU_MAX_IDLE_CONNS"><code>DAMU_MAX_IDLE_CONNS</code></a></td><td>Пул соединений БД</td><td>100</td><td>Задает maxIdleConns при регистрации основной БД.</td></tr><tr data-category="пул соединений бд" data-name="damu_max_open_conns"><td><a href="#DAMU_MAX_OPEN_CONNS"><code>DAMU_MAX_OPEN_CONNS</code></a></td><td>Пул соединений БД</td><td>1000</td><td>Задает maxOpenConns при регистрации основной БД.</td></tr><tr data-category="redis lua api" data-name="damu_redis_addr"><td><a href="#DAMU_REDIS_ADDR"><code>DAMU_REDIS_ADDR</code></a></td><td>Redis Lua API</td><td>Не задан</td><td>Адрес Redis; если пуст, Redis Lua API не инициализируется.</td></tr><tr data-category="redis lua api" data-name="damu_redis_password"><td><a href="#DAMU_REDIS_PASSWORD"><code>DAMU_REDIS_PASSWORD</code></a></td><td>Redis Lua API</td><td>Пустая строка</td><td>Пароль Redis. Пустое значение допускается, но выводится предупреждение.</td></tr><tr data-category="redis lua api" data-name="damu_redis_prefix"><td><a href="#DAMU_REDIS_PREFIX"><code>DAMU_REDIS_PREFIX</code></a></td><td>Redis Lua API</td><td>Не задан</td><td>Префикс пространства ключей Redis; обязателен для большинства Lua Redis-команд и не может быть равен "_".</td></tr><tr data-category="openshift / mysql" data-name="openshift_mysql_db_username"><td><a href="#OPENSHIFT_MYSQL_DB_USERNAME"><code>OPENSHIFT_MYSQL_DB_USERNAME</code></a></td><td>OpenShift / MySQL</td><td>Пустая строка</td><td>Имя пользователя MySQL в автоматически собираемой строке подключения.</td></tr>
-<tr data-category="openshift / mysql" data-name="openshift_mysql_db_password"><td><a href="#OPENSHIFT_MYSQL_DB_PASSWORD"><code>OPENSHIFT_MYSQL_DB_PASSWORD</code></a></td><td>OpenShift / MySQL</td><td>Пустая строка</td><td>Пароль MySQL в автоматически собираемой строке подключения.</td></tr>
-<tr data-category="openshift / mysql" data-name="openshift_mysql_db_host"><td><a href="#OPENSHIFT_MYSQL_DB_HOST"><code>OPENSHIFT_MYSQL_DB_HOST</code></a></td><td>OpenShift / MySQL</td><td>Пустая строка</td><td>Хост MySQL в строке <code>tcp(host:port)</code>.</td></tr>
-<tr data-category="openshift / mysql" data-name="openshift_mysql_db_port"><td><a href="#OPENSHIFT_MYSQL_DB_PORT"><code>OPENSHIFT_MYSQL_DB_PORT</code></a></td><td>OpenShift / MySQL</td><td>Пустая строка</td><td>TCP-порт MySQL в автоматически собираемой строке подключения.</td></tr>
-<tr data-category="openshift / mysql" data-name="openshift_app_name"><td><a href="#OPENSHIFT_APP_NAME"><code>OPENSHIFT_APP_NAME</code></a></td><td>OpenShift / MySQL</td><td>Пустая строка</td><td>Используется как имя базы данных MySQL после символа <code>/</code>.</td></tr>
-<tr data-category="openshift / http" data-name="openshift_go_ip"><td><a href="#OPENSHIFT_GO_IP"><code>OPENSHIFT_GO_IP</code></a></td><td>OpenShift / HTTP</td><td>Пустая строка</td><td>IP/host части адреса, возвращаемого Lua-функцией <code>GetHTTPListenHostPort()</code>.</td></tr>
-<tr data-category="openshift / http" data-name="openshift_go_port"><td><a href="#OPENSHIFT_GO_PORT"><code>OPENSHIFT_GO_PORT</code></a></td><td>OpenShift / HTTP</td><td>Пустая строка</td><td>Порт HTTP-адреса для Lua API; также выводится в стартовом логе.</td></tr></tbody>
+<td><a href="https://damubpm.github.io/help/damu_environment_variables.html#DAMU_SET_APPLICATION_NAME"><code>DAMU_SET_APPLICATION_NAME</code></a></td>
+<td>PostgreSQL / наблюдаемость</td><td>Выключено</td><td>Устанавливает application_name вида cron/<id> для PostgreSQL-соединения Cron-задачи.</id></td></tr><tr data-category="режим запуска" data-name="damu_microservice_lua_file"><td><a href="https://damubpm.github.io/help/damu_environment_variables.html#DAMU_MICROSERVICE_LUA_FILE"><code>DAMU_MICROSERVICE_LUA_FILE</code></a></td><td>Режим запуска</td><td>Не задан</td><td>При непустом значении переключает init() на ветку HandleMicroService() и прекращает обычную инициализацию БД в показанном коде.</td></tr><tr data-category="пул соединений бд" data-name="damu_max_idle_conns"><td><a href="https://damubpm.github.io/help/damu_environment_variables.html#DAMU_MAX_IDLE_CONNS"><code>DAMU_MAX_IDLE_CONNS</code></a></td><td>Пул соединений БД</td><td>100</td><td>Задает maxIdleConns при регистрации основной БД.</td></tr><tr data-category="пул соединений бд" data-name="damu_max_open_conns"><td><a href="https://damubpm.github.io/help/damu_environment_variables.html#DAMU_MAX_OPEN_CONNS"><code>DAMU_MAX_OPEN_CONNS</code></a></td><td>Пул соединений БД</td><td>1000</td><td>Задает maxOpenConns при регистрации основной БД.</td></tr><tr data-category="redis lua api" data-name="damu_redis_addr"><td><a href="https://damubpm.github.io/help/damu_environment_variables.html#DAMU_REDIS_ADDR"><code>DAMU_REDIS_ADDR</code></a></td><td>Redis Lua API</td><td>Не задан</td><td>Адрес Redis; если пуст, Redis Lua API не инициализируется.</td></tr><tr data-category="redis lua api" data-name="damu_redis_password"><td><a href="https://damubpm.github.io/help/damu_environment_variables.html#DAMU_REDIS_PASSWORD"><code>DAMU_REDIS_PASSWORD</code></a></td><td>Redis Lua API</td><td>Пустая строка</td><td>Пароль Redis. Пустое значение допускается, но выводится предупреждение.</td></tr><tr data-category="redis lua api" data-name="damu_redis_prefix"><td><a href="https://damubpm.github.io/help/damu_environment_variables.html#DAMU_REDIS_PREFIX"><code>DAMU_REDIS_PREFIX</code></a></td><td>Redis Lua API</td><td>Не задан</td><td>Префикс пространства ключей Redis; обязателен для большинства Lua Redis-команд и не может быть равен "_".</td></tr><tr data-category="openshift / mysql" data-name="openshift_mysql_db_username"><td><a href="https://damubpm.github.io/help/damu_environment_variables.html#OPENSHIFT_MYSQL_DB_USERNAME"><code>OPENSHIFT_MYSQL_DB_USERNAME</code></a></td><td>OpenShift / MySQL</td><td>Пустая строка</td><td>Имя пользователя MySQL в автоматически собираемой строке подключения.</td></tr>
+<tr data-category="openshift / mysql" data-name="openshift_mysql_db_password"><td><a href="https://damubpm.github.io/help/damu_environment_variables.html#OPENSHIFT_MYSQL_DB_PASSWORD"><code>OPENSHIFT_MYSQL_DB_PASSWORD</code></a></td><td>OpenShift / MySQL</td><td>Пустая строка</td><td>Пароль MySQL в автоматически собираемой строке подключения.</td></tr>
+<tr data-category="openshift / mysql" data-name="openshift_mysql_db_host"><td><a href="https://damubpm.github.io/help/damu_environment_variables.html#OPENSHIFT_MYSQL_DB_HOST"><code>OPENSHIFT_MYSQL_DB_HOST</code></a></td><td>OpenShift / MySQL</td><td>Пустая строка</td><td>Хост MySQL в строке <code>tcp(host:port)</code>.</td></tr>
+<tr data-category="openshift / mysql" data-name="openshift_mysql_db_port"><td><a href="https://damubpm.github.io/help/damu_environment_variables.html#OPENSHIFT_MYSQL_DB_PORT"><code>OPENSHIFT_MYSQL_DB_PORT</code></a></td><td>OpenShift / MySQL</td><td>Пустая строка</td><td>TCP-порт MySQL в автоматически собираемой строке подключения.</td></tr>
+<tr data-category="openshift / mysql" data-name="openshift_app_name"><td><a href="https://damubpm.github.io/help/damu_environment_variables.html#OPENSHIFT_APP_NAME"><code>OPENSHIFT_APP_NAME</code></a></td><td>OpenShift / MySQL</td><td>Пустая строка</td><td>Используется как имя базы данных MySQL после символа <code>/</code>.</td></tr>
+<tr data-category="openshift / http" data-name="openshift_go_ip"><td><a href="https://damubpm.github.io/help/damu_environment_variables.html#OPENSHIFT_GO_IP"><code>OPENSHIFT_GO_IP</code></a></td><td>OpenShift / HTTP</td><td>Пустая строка</td><td>IP/host части адреса, возвращаемого Lua-функцией <code>GetHTTPListenHostPort()</code>.</td></tr>
+<tr data-category="openshift / http" data-name="openshift_go_port"><td><a href="https://damubpm.github.io/help/damu_environment_variables.html#OPENSHIFT_GO_PORT"><code>OPENSHIFT_GO_PORT</code></a></td><td>OpenShift / HTTP</td><td>Пустая строка</td><td>Порт HTTP-адреса для Lua API; также выводится в стартовом логе.</td></tr></tbody>
 </table>
 </div>
 </section>
@@ -202,6 +213,9 @@ pre code { background:transparent; color:inherit; padding:0; }
 <div class="scenario"><h3>Обычные DB-сессии</h3><p><code>DAMU_REDIS_SESSION</code> не равен <code>1</code>, <code>DAMU_DISABLE_DB_USER_SESSION</code> не равен <code>1</code>. Сессии записываются и проверяются через таблицу <code>user_session</code>.</p></div>
 <div class="scenario"><h3>Redis-сессии</h3><p><code>DAMU_REDIS_SESSION=1</code> и, по текущей реализации, <code>DAMU_DISABLE_DB_USER_SESSION</code> должен оставаться не равным <code>1</code>, иначе <code>UserId()</code> вернет пользователя до <code>RedisCheckUserSession()</code>.</p></div>
 <div class="scenario"><h3>Только cookie без server-side check</h3><p>При <code>DAMU_DISABLE_DB_USER_SESSION=1</code> функция <code>UserId()</code> после чтения <code>user_id</code> из cookie сразу возвращает его. Это обходит и DB-проверку, и Redis-проверку в данном коде.</p></div>
+<div class="scenario"><h3>Внутренний IP</h3><p>Если <code>DAMU_ALLOW_INTERNET_AUTH</code> не равен <code>1</code>, но <code>IsIntranetIP(x_real_ip)</code> возвращает true, <code>CheckLoginByIp()</code> разрешает проверку без обращения к списку ролей.</p></div>
+<div class="scenario"><h3>Разрешить внешние IP без ролевого фильтра</h3><p><code>DAMU_ALLOW_INTERNET_AUTH=1</code> вызывает немедленный успешный возврат из <code>CheckLoginByIp()</code>. В этой функции IP и <code>DAMU_ALLOW_INTERNET_AUTH_ROLES</code> после этого не проверяются.</p></div>
+<div class="scenario"><h3>Внешний доступ только по ролям</h3><p>Оставьте <code>DAMU_ALLOW_INTERNET_AUTH</code> отличным от <code>1</code> и задайте, например, <code>DAMU_ALLOW_INTERNET_AUTH_ROLES=admin,manager</code>. Для внешнего IP функция разрешит доступ, если у пользователя найдется хотя бы одна из перечисленных ролей.</p></div>
 </div>
 </section>
 <section class="category-section"><h2>Сессии и cookie</h2>
@@ -211,7 +225,7 @@ pre code { background:transparent; color:inherit; padding:0; }
 <h3><code>DAMUCRM_SALT</code></h3>
 <p class="lead">Секретная соль для CookieStore; в новом фрагменте инициализации является обязательной переменной запуска.</p>
 </div>
-<a class="line-ref" href="#source">Go #1: 40 · новый main: обязательная проверка при init()</a>
+<a class="line-ref" href="https://damubpm.github.io/help/damu_environment_variables.html#source">Go #1: 40 · новый main: обязательная проверка при init()</a>
 </div>
 <div class="meta-grid">
 <div><span>Тип</span><strong>Строка / секрет</strong></div>
@@ -223,7 +237,7 @@ pre code { background:transparent; color:inherit; padding:0; }
 <h4>Фактическое поведение</h4>
 <p>В исходнике CookieStore значение добавляется к <code>SessionKey()</code>. В новом фрагменте запуска дополнительно выполняется проверка: если <code>DAMUCRM_SALT</code> пуст, вызывается <code>panic(errors.New("DAMUCRM_SALT not defined"))</code>. То есть для этой сборки переменная фактически обязательна. Изменение соли на работающей системе также меняет ключ CookieStore и инвалидирует ранее выпущенные cookie.</p>
 <div class="recommendation"><strong>Рекомендация:</strong> В production задавать стабильное непредсказуемое секретное значение и хранить его как secret. Не менять без необходимости, если не требуется принудительная инвалидизация существующих cookie.</div>
-<div class="back-top"><a href="#top">↑ К началу</a></div>
+<div class="back-top"><a href="https://damubpm.github.io/help/damu_environment_variables.html#top">↑ К началу</a></div>
 </article>
 <article class="env-card" id="DAMU_SESSION_HTTPONLY_FALSE">
 <div class="env-head">
@@ -231,7 +245,7 @@ pre code { background:transparent; color:inherit; padding:0; }
 <h3><code>DAMU_SESSION_HTTPONLY_FALSE</code></h3>
 <p class="lead">Разрешает JavaScript доступ к cookie сессии.</p>
 </div>
-<a class="line-ref" href="#source">Go: строки 53-55</a>
+<a class="line-ref" href="https://damubpm.github.io/help/damu_environment_variables.html#source">Go: строки 53-55</a>
 </div>
 <div class="meta-grid">
 <div><span>Тип</span><strong>Флаг</strong></div>
@@ -243,7 +257,7 @@ pre code { background:transparent; color:inherit; padding:0; }
 <h4>Фактическое поведение</h4>
 <p>При <code>1</code> браузерная cookie перестает быть HttpOnly и становится доступной клиентскому JavaScript. Это ослабляет защиту cookie при XSS.</p>
 <div class="recommendation"><strong>Рекомендация:</strong> В production переменную обычно не задавать. Значение <code>1</code> использовать только если есть конкретная совместимостная причина и риск осознан.</div>
-<div class="back-top"><a href="#top">↑ К началу</a></div>
+<div class="back-top"><a href="https://damubpm.github.io/help/damu_environment_variables.html#top">↑ К началу</a></div>
 </article>
 <article class="env-card" id="DAMU_SESSION_SECURE_FALSE">
 <div class="env-head">
@@ -251,7 +265,7 @@ pre code { background:transparent; color:inherit; padding:0; }
 <h3><code>DAMU_SESSION_SECURE_FALSE</code></h3>
 <p class="lead">Разрешает отправку cookie без требования HTTPS.</p>
 </div>
-<a class="line-ref" href="#source">Go: строки 56-58</a>
+<a class="line-ref" href="https://damubpm.github.io/help/damu_environment_variables.html#source">Go: строки 56-58</a>
 </div>
 <div class="meta-grid">
 <div><span>Тип</span><strong>Флаг</strong></div>
@@ -263,7 +277,7 @@ pre code { background:transparent; color:inherit; padding:0; }
 <h4>Фактическое поведение</h4>
 <p>При <code>Secure=false</code> браузер может отправлять cookie по обычному HTTP, если остальные условия позволяют это.</p>
 <div class="recommendation"><strong>Рекомендация:</strong> Для production с HTTPS переменную не задавать. Значение <code>1</code> допустимо в локальной/тестовой среде, где приложение открывается по HTTP.</div>
-<div class="back-top"><a href="#top">↑ К началу</a></div>
+<div class="back-top"><a href="https://damubpm.github.io/help/damu_environment_variables.html#top">↑ К началу</a></div>
 </article>
 <article class="env-card" id="DAMU_SESSION_MAXAGE_DAYS">
 <div class="env-head">
@@ -271,7 +285,7 @@ pre code { background:transparent; color:inherit; padding:0; }
 <h3><code>DAMU_SESSION_MAXAGE_DAYS</code></h3>
 <p class="lead">Срок жизни cookie-сессии в днях.</p>
 </div>
-<a class="line-ref" href="#source">Go: строки 59-63, 81</a>
+<a class="line-ref" href="https://damubpm.github.io/help/damu_environment_variables.html#source">Go: строки 59-63, 81</a>
 </div>
 <div class="meta-grid">
 <div><span>Тип</span><strong>Целое число</strong></div>
@@ -283,7 +297,7 @@ pre code { background:transparent; color:inherit; padding:0; }
 <h4>Фактическое поведение</h4>
 <p>Если переменная пустая или содержит нечисловое значение, остается значение по умолчанию — 30 дней. В этом фрагменте нет проверки минимального/максимального диапазона и нет запрета отрицательных значений.</p>
 <div class="recommendation"><strong>Рекомендация:</strong> Использовать положительное целое число, например <code>1</code>, <code>7</code>, <code>30</code>. Перед установкой очень больших или отрицательных значений учитывать семантику <code>sessions.Options.MaxAge</code>.</div>
-<div class="back-top"><a href="#top">↑ К началу</a></div>
+<div class="back-top"><a href="https://damubpm.github.io/help/damu_environment_variables.html#top">↑ К началу</a></div>
 </article>
 <article class="env-card" id="DAMU_SESSION_SAMESITE">
 <div class="env-head">
@@ -291,7 +305,7 @@ pre code { background:transparent; color:inherit; padding:0; }
 <h3><code>DAMU_SESSION_SAMESITE</code></h3>
 <p class="lead">Настраивает SameSite для cookie-сессии.</p>
 </div>
-<a class="line-ref" href="#source">Go: строки 66-75</a>
+<a class="line-ref" href="https://damubpm.github.io/help/damu_environment_variables.html#source">Go: строки 66-75</a>
 </div>
 <div class="meta-grid">
 <div><span>Тип</span><strong>Перечисление</strong></div>
@@ -303,7 +317,7 @@ pre code { background:transparent; color:inherit; padding:0; }
 <h4>Фактическое поведение</h4>
 <p>Пустое, неизвестное или написанное с другим регистром значение не вызывает ошибку: остается <code>LaxMode</code>.</p>
 <div class="recommendation"><strong>Рекомендация:</strong> Обычно использовать <code>LaxMode</code>. <code>StrictMode</code> подходит для более жесткой изоляции, а <code>NoneMode</code> нужен для некоторых cross-site сценариев и обычно должен использоваться вместе с Secure-cookie.</div>
-<div class="back-top"><a href="#top">↑ К началу</a></div>
+<div class="back-top"><a href="https://damubpm.github.io/help/damu_environment_variables.html#top">↑ К началу</a></div>
 </article></section><section class="category-section"><h2>Аутентификация и защита входа</h2>
 <article class="env-card" id="DAMUCRM_DISABLE_LOGIN_RATELIMIT">
 <div class="env-head">
@@ -311,7 +325,7 @@ pre code { background:transparent; color:inherit; padding:0; }
 <h3><code>DAMUCRM_DISABLE_LOGIN_RATELIMIT</code></h3>
 <p class="lead">По названию — отключение rate limit входа, но в данном файле фактический эффект уже.</p>
 </div>
-<a class="line-ref" href="#source">Go: строки 156-163</a>
+<a class="line-ref" href="https://damubpm.github.io/help/damu_environment_variables.html#source">Go: строки 156-163</a>
 </div>
 <div class="meta-grid">
 <div><span>Тип</span><strong>Флаг</strong></div>
@@ -323,7 +337,7 @@ pre code { background:transparent; color:inherit; padding:0; }
 <h4>Фактическое поведение</h4>
 <p>Важно: в представленном файле эта переменная НЕ отключает создание limiter в <code>RateLimiter()</code> и сама по себе не отключает проверку ограничения запросов. Она лишь запрещает очистку limiter через <code>CleanRateLimit()</code>. Возможно, полное отключение реализовано в другом файле, но по данному исходнику это не подтверждается.</p>
 <div class="recommendation"><strong>Рекомендация:</strong> Перед использованием как «полное отключение rate limit» проверить остальные места проекта. Название переменной и фактическое поведение данного файла могут вводить в заблуждение.</div>
-<div class="back-top"><a href="#top">↑ К началу</a></div>
+<div class="back-top"><a href="https://damubpm.github.io/help/damu_environment_variables.html#top">↑ К началу</a></div>
 </article>
 <article class="env-card" id="DAMUCRM_DISABLE_PASSWORD_LOGIN">
 <div class="env-head">
@@ -331,7 +345,7 @@ pre code { background:transparent; color:inherit; padding:0; }
 <h3><code>DAMUCRM_DISABLE_PASSWORD_LOGIN</code></h3>
 <p class="lead">Отключает вход по логину/паролю через HTTP Basic в функции UserId().</p>
 </div>
-<a class="line-ref" href="#source">Go: строки 396-446</a>
+<a class="line-ref" href="https://damubpm.github.io/help/damu_environment_variables.html#source">Go: строки 396-446</a>
 </div>
 <div class="meta-grid">
 <div><span>Тип</span><strong>Флаг</strong></div>
@@ -343,7 +357,7 @@ pre code { background:transparent; color:inherit; padding:0; }
 <h4>Фактическое поведение</h4>
 <p>При <code>1</code> эта ветка аутентификации полностью пропускается. По данному файлу нельзя утверждать, что переменная отключает абсолютно все формы парольной авторизации во всем проекте — она точно отключает именно этот Basic-сценарий.</p>
 <div class="recommendation"><strong>Рекомендация:</strong> Устанавливать <code>1</code>, если HTTP Basic не должен использоваться и доступ разрешен только через другие механизмы аутентификации.</div>
-<div class="back-top"><a href="#top">↑ К началу</a></div>
+<div class="back-top"><a href="https://damubpm.github.io/help/damu_environment_variables.html#top">↑ К началу</a></div>
 </article>
 <article class="env-card" id="DAMUCRM_DISABLE_TOKEN_LOGIN">
 <div class="env-head">
@@ -351,7 +365,7 @@ pre code { background:transparent; color:inherit; padding:0; }
 <h3><code>DAMUCRM_DISABLE_TOKEN_LOGIN</code></h3>
 <p class="lead">Отключает две ветки входа по auth token.</p>
 </div>
-<a class="line-ref" href="#source">Go: строки 374-390, 459-471</a>
+<a class="line-ref" href="https://damubpm.github.io/help/damu_environment_variables.html#source">Go: строки 374-390, 459-471</a>
 </div>
 <div class="meta-grid">
 <div><span>Тип</span><strong>Флаг</strong></div>
@@ -363,15 +377,58 @@ pre code { background:transparent; color:inherit; padding:0; }
 <h4>Фактическое поведение</h4>
 <p>При <code>1</code> вход по указанным token-механизмам в <code>UserId()</code> не выполняется.</p>
 <div class="recommendation"><strong>Рекомендация:</strong> Использовать для жесткого отключения legacy/token-входа в этом участке кода, например при переходе на другой механизм авторизации.</div>
+<div class="back-top"><a href="https://damubpm.github.io/help/damu_environment_variables.html#top">↑ К началу</a></div>
+</article>
+<article class="env-card" id="DAMU_ALLOW_INTERNET_AUTH">
+<div class="env-head">
+<div>
+<h3><code>DAMU_ALLOW_INTERNET_AUTH</code></h3>
+<p class="lead">Управляет тем, должна ли <code>CheckLoginByIp()</code> применять ограничение по внешнему IP и ролям.</p>
+</div>
+<a class="line-ref" href="#source">grantutils.go: строки 14–24</a>
+</div>
+<div class="meta-grid">
+<div><span>Тип</span><strong>Флаг</strong></div>
+<div><span>По умолчанию</span><strong>Ограничение активно: любое значение, кроме <code>1</code></strong></div>
+<div class="wide"><span>Распознаваемые значения</span><strong><code>1</code> — немедленно разрешить прохождение этой проверки; остальные значения — проверить IP и при необходимости роли</strong></div>
+</div>
+<h4>Как используется</h4>
+<p>В начале <code>CheckLoginByIp()</code> выполняется точное сравнение <code>os.Getenv("DAMU_ALLOW_INTERNET_AUTH") == "1"</code>. При совпадении функция сразу возвращает <code>nil</code>. Проверка <code>IsIntranetIP(x_real_ip)</code> и дальнейший ролевой фильтр в этом случае вообще не выполняются.</p>
+<h4>Фактическое поведение</h4>
+<p>Если значение не равно <code>1</code>, внутренний IP разрешается через <code>IsIntranetIP()</code>. Для внешнего IP функция переходит к проверке ролей из <code>DAMU_ALLOW_INTERNET_AUTH_ROLES</code>. Поэтому значение <code>1</code> означает не «разрешить только некоторым внешним пользователям», а полностью обойти сетевое/ролевое ограничение именно в <code>CheckLoginByIp()</code>.</p>
+<div class="notice"><strong>Граница вывода.</strong> По этому файлу нельзя утверждать, что <code>DAMU_ALLOW_INTERNET_AUTH=1</code> отключает остальные механизмы аутентификации или авторизации DamuBPM. Он снимает только проверку, реализованную функцией <code>CheckLoginByIp()</code>.</div>
+<div class="recommendation"><strong>Рекомендация:</strong> В production задавать <code>1</code> только если ограничение по intranet/external IP действительно не требуется. Для ролевого допуска внешних пользователей оставить значение отличным от <code>1</code> и использовать <code>DAMU_ALLOW_INTERNET_AUTH_ROLES</code>.</div>
 <div class="back-top"><a href="#top">↑ К началу</a></div>
-</article></section><section class="category-section"><h2>Серверные пользовательские сессии</h2>
+</article>
+<article class="env-card" id="DAMU_ALLOW_INTERNET_AUTH_ROLES">
+<div class="env-head">
+<div>
+<h3><code>DAMU_ALLOW_INTERNET_AUTH_ROLES</code></h3>
+<p class="lead">Список ролей, которым разрешено пройти <code>CheckLoginByIp()</code> при обращении с внешнего IP.</p>
+</div>
+<a class="line-ref" href="#source">grantutils.go: строки 27–56</a>
+</div>
+<div class="meta-grid">
+<div><span>Тип</span><strong>CSV-список кодов ролей</strong></div>
+<div><span>По умолчанию</span><strong>Пустая строка</strong></div>
+<div class="wide"><span>Формат</span><strong>Точные коды ролей через запятую, например <code>admin,manager</code></strong></div>
+</div>
+<h4>Как используется</h4>
+<p>Значение разбивается через <code>strings.Split(..., ",")</code>. Для каждого элемента выполняется SQL-проверка наличия роли у пользователя через <code>user_roles</code> и <code>roles</code>. Для PostgreSQL/обычной ветки используется <code>limit 1</code>, для Oracle — <code>rownum=1</code>. Если хотя бы один запрос вернул строку, <code>roleFound</code> становится true и после завершения цикла функция возвращает успех.</p>
+<h4>Фактическое поведение</h4>
+<p>Код не выполняет <code>TrimSpace()</code>. Поэтому значения должны совпадать с <code>roles.code</code> буквально: <code>admin,manager</code> и <code>admin, manager</code> ведут себя по-разному — во втором случае проверяется роль с кодом, начинающимся с пробела. При пустой переменной <code>strings.Split("", ",")</code> формирует один пустой элемент, и выполняется проверка роли с пустым кодом; при обычных данных это означает, что внешнему пользователю исключение по роли не предоставляется.</p>
+<p>Если пользователь не имеет ни одной разрешенной роли, возвращается ошибка <code>Access Denied. Cause: Role</code>. Ошибки SQL, отличные от «строка не найдена», пишутся как critical log. При <code>DAMUCRM_DEBUG_SQL=1</code> отсутствие совпадения дополнительно логируется с SQL, ошибкой и проверяемым кодом роли.</p>
+<div class="recommendation"><strong>Рекомендация:</strong> Указывать только существующие коды ролей, без пробелов вокруг запятых, например <code>admin,helpdesk_external</code>. Список держать минимальным, поскольку он фактически является allow-list для прохождения этой сетевой проверки с внешнего IP.</div>
+<div class="back-top"><a href="#top">↑ К началу</a></div>
+</article>
+</section><section class="category-section"><h2>Серверные пользовательские сессии</h2>
 <article class="env-card" id="DAMUCRM_MULTIPLE_SESSIONS">
 <div class="env-head">
 <div>
 <h3><code>DAMUCRM_MULTIPLE_SESSIONS</code></h3>
 <p class="lead">Разрешает несколько записей пользовательских сессий в таблице user_session.</p>
 </div>
-<a class="line-ref" href="#source">Go: строки 233-250</a>
+<a class="line-ref" href="https://damubpm.github.io/help/damu_environment_variables.html#source">Go: строки 233-250</a>
 </div>
 <div class="meta-grid">
 <div><span>Тип</span><strong>Флаг</strong></div>
@@ -383,7 +440,7 @@ pre code { background:transparent; color:inherit; padding:0; }
 <h4>Фактическое поведение</h4>
 <p>Флаг относится к логике таблицы <code>user_session</code>. В показанном коде нет аналогичного удаления старых Redis-сессий, поэтому при <code>DAMU_REDIS_SESSION=1</code> этот флаг не выглядит как полноценный механизм «одна Redis-сессия на пользователя».</p>
 <div class="recommendation"><strong>Рекомендация:</strong> Для классического режима DB-сессий: <code>1</code> — разрешить параллельные входы с нескольких устройств/браузеров; не задавать — держать одну активную DB-сессию на пользователя.</div>
-<div class="back-top"><a href="#top">↑ К началу</a></div>
+<div class="back-top"><a href="https://damubpm.github.io/help/damu_environment_variables.html#top">↑ К началу</a></div>
 </article>
 <article class="env-card" id="DAMU_DISABLE_DB_USER_SESSION">
 <div class="env-head">
@@ -391,7 +448,7 @@ pre code { background:transparent; color:inherit; padding:0; }
 <h3><code>DAMU_DISABLE_DB_USER_SESSION</code></h3>
 <p class="lead">Отключает запись/проверку серверной пользовательской сессии через таблицу user_session.</p>
 </div>
-<a class="line-ref" href="#source">Go #1: 233-250, 308-336, 482-504 · Go #2: 2701-2739</a>
+<a class="line-ref" href="https://damubpm.github.io/help/damu_environment_variables.html#source">Go #1: 233-250, 308-336, 482-504 · Go #2: 2701-2739</a>
 </div>
 <div class="meta-grid">
 <div><span>Тип</span><strong>Флаг</strong></div>
@@ -403,7 +460,7 @@ pre code { background:transparent; color:inherit; padding:0; }
 <h4>Фактическое поведение</h4>
 <p>Критически важно: в <code>UserId()</code> проверка этого флага стоит ДО ветки <code>DAMU_REDIS_SESSION</code>. Поэтому комбинация <code>DAMU_DISABLE_DB_USER_SESSION=1</code> + <code>DAMU_REDIS_SESSION=1</code> приводит к раннему <code>return res</code> и <code>RedisCheckUserSession()</code> не вызывается. При этом <code>LoginEvent()</code> все равно может записать сессию в Redis. Это асимметричное поведение текущего кода.</p>
 <div class="notice"><strong>Дополнение из Lua API.</strong> В <code>LuaExtendSession()</code>, если Redis не включен и <code>DAMU_DISABLE_DB_USER_SESSION=1</code>, проверка срока действия и UPDATE поля <code>last_active_at</code> в таблице <code>user_session</code> полностью пропускаются. Функция возвращает успешный результат без обращения к DB-сессии.</div><div class="recommendation"><strong>Рекомендация:</strong> Если Redis должен использоваться именно для серверной валидации сессии, по текущей реализации НЕ устанавливать <code>DAMU_DISABLE_DB_USER_SESSION=1</code>, иначе проверка Redis в <code>UserId()</code> будет обойдена. Этот участок стоит отдельно пересмотреть при рефакторинге.</div>
-<div class="back-top"><a href="#top">↑ К началу</a></div>
+<div class="back-top"><a href="https://damubpm.github.io/help/damu_environment_variables.html#top">↑ К началу</a></div>
 </article>
 <article class="env-card" id="DAMU_REDIS_SESSION">
 <div class="env-head">
@@ -411,7 +468,7 @@ pre code { background:transparent; color:inherit; padding:0; }
 <h3><code>DAMU_REDIS_SESSION</code></h3>
 <p class="lead">Переключает хранение/проверку пользовательских сессий с DB-ветки на Redis-ветку.</p>
 </div>
-<a class="line-ref" href="#source">Go #1: 306-336, 490-503, 655-668 · Go #2: 2663-2701</a>
+<a class="line-ref" href="https://damubpm.github.io/help/damu_environment_variables.html#source">Go #1: 306-336, 490-503, 655-668 · Go #2: 2663-2701</a>
 </div>
 <div class="meta-grid">
 <div><span>Тип</span><strong>Флаг</strong></div>
@@ -423,7 +480,7 @@ pre code { background:transparent; color:inherit; padding:0; }
 <h4>Фактическое поведение</h4>
 <p>В DB-режиме код считает время от <code>last_active_at</code> и отклоняет сессию, если прошло более 600 секунд. В Redis-режиме детали TTL/продления не видны в этом файле и зависят от реализации функций <code>Redis*UserSession</code>. Также см. важное взаимодействие с <code>DAMU_DISABLE_DB_USER_SESSION</code>.</p>
 <div class="notice"><strong>Дополнение из Lua API.</strong> Флаг также управляет обслуживанием сессий из Lua: <code>LuaDeleteExpiredSessions()</code> при значении <code>1</code> вызывает <code>RedisDeleteExpiredSessions()</code> вместо DELETE из таблицы <code>user_session</code>; <code>LuaExtendSession()</code> проверяет сессию через <code>RedisCheckUserSession()</code> и затем заново вызывает <code>RedisSetUserSession()</code>, фактически обновляя Redis-сессию.</div><div class="recommendation"><strong>Рекомендация:</strong> Для Redis-режима установить <code>DAMU_REDIS_SESSION=1</code>, но по текущему коду оставить <code>DAMU_DISABLE_DB_USER_SESSION</code> отличным от <code>1</code>, чтобы <code>UserId()</code> действительно дошел до проверки Redis.</div>
-<div class="back-top"><a href="#top">↑ К началу</a></div>
+<div class="back-top"><a href="https://damubpm.github.io/help/damu_environment_variables.html#top">↑ К началу</a></div>
 </article></section><section class="category-section"><h2>Логирование входов</h2>
 <article class="env-card" id="DAMU_DISABLE_DB_LOGIN_LOG">
 <div class="env-head">
@@ -431,7 +488,7 @@ pre code { background:transparent; color:inherit; padding:0; }
 <h3><code>DAMU_DISABLE_DB_LOGIN_LOG</code></h3>
 <p class="lead">Отключает запись событий входа/выхода в таблицу login_logs.</p>
 </div>
-<a class="line-ref" href="#source">Go: строки 254-285, 697-714</a>
+<a class="line-ref" href="https://damubpm.github.io/help/damu_environment_variables.html#source">Go: строки 254-285, 697-714</a>
 </div>
 <div class="meta-grid">
 <div><span>Тип</span><strong>Флаг</strong></div>
@@ -443,7 +500,7 @@ pre code { background:transparent; color:inherit; padding:0; }
 <h4>Фактическое поведение</h4>
 <p>Для login-событий консольный вывод через <code>DAMU_LOGIN_LOG_OUTPUT</code> находится вне DB-блока и может работать даже при отключенной DB-записи. Для logout-событий <code>DoLoginLog()</code> делает ранний return, поэтому при <code>DAMU_DISABLE_DB_LOGIN_LOG=1</code> не выполняется и последующий консольный вывод logout из этой функции.</p>
 <div class="recommendation"><strong>Рекомендация:</strong> Устанавливать <code>1</code>, если таблица аудита не должна заполняться. Если нужен только отказ от DB-записи, но требуется logout-лог в stdout, текущая структура <code>DoLoginLog()</code> потребует изменения кода.</div>
-<div class="back-top"><a href="#top">↑ К началу</a></div>
+<div class="back-top"><a href="https://damubpm.github.io/help/damu_environment_variables.html#top">↑ К началу</a></div>
 </article>
 <article class="env-card" id="DAMU_LOGIN_LOG_OUTPUT">
 <div class="env-head">
@@ -451,7 +508,7 @@ pre code { background:transparent; color:inherit; padding:0; }
 <h3><code>DAMU_LOGIN_LOG_OUTPUT</code></h3>
 <p class="lead">Включает текстовый вывод login/logout и некоторых ошибок сессии через log.Println().</p>
 </div>
-<a class="line-ref" href="#source">Go: строки 287-303, 529-531, 716-734</a>
+<a class="line-ref" href="https://damubpm.github.io/help/damu_environment_variables.html#source">Go: строки 287-303, 529-531, 716-734</a>
 </div>
 <div class="meta-grid">
 <div><span>Тип</span><strong>Флаг</strong></div>
@@ -463,7 +520,7 @@ pre code { background:transparent; color:inherit; padding:0; }
 <h4>Фактическое поведение</h4>
 <p>Это не заменяет таблицу <code>login_logs</code>: это отдельный поток логирования. Исключение — logout через <code>DoLoginLog()</code>: если <code>DAMU_DISABLE_DB_LOGIN_LOG=1</code>, функция завершится до блока <code>DAMU_LOGIN_LOG_OUTPUT</code>.</p>
 <div class="recommendation"><strong>Рекомендация:</strong> Удобно включать для диагностики и централизованного сбора stdout/journald. Учитывать, что в логах могут появляться username и IP-адреса.</div>
-<div class="back-top"><a href="#top">↑ К началу</a></div>
+<div class="back-top"><a href="https://damubpm.github.io/help/damu_environment_variables.html#top">↑ К началу</a></div>
 </article></section><section class="category-section"><h2>Интерфейс и маршрутизация</h2>
 <article class="env-card" id="DAMU_STATIC_REDIRECT_URL">
 <div class="env-head">
@@ -471,7 +528,7 @@ pre code { background:transparent; color:inherit; padding:0; }
 <h3><code>DAMU_STATIC_REDIRECT_URL</code></h3>
 <p class="lead">Жестко переопределяет домашнюю страницу пользователя.</p>
 </div>
-<a class="line-ref" href="#source">Go: строки 566-581</a>
+<a class="line-ref" href="https://damubpm.github.io/help/damu_environment_variables.html#source">Go: строки 566-581</a>
 </div>
 <div class="meta-grid">
 <div><span>Тип</span><strong>URL / строка</strong></div>
@@ -483,7 +540,7 @@ pre code { background:transparent; color:inherit; padding:0; }
 <h4>Фактическое поведение</h4>
 <p>При пустом значении система пытается получить <code>p.url</code> через роли пользователя; если запрос неуспешен, используется доменный параметр <code>homepage</code>. В этом фрагменте нет валидации формата URL из переменной.</p>
 <div class="recommendation"><strong>Рекомендация:</strong> Использовать, когда всем пользователям конкретного инстанса нужно принудительно назначить одну стартовую страницу. Проверять корректность пути/URL на уровне конфигурации deployment.</div>
-<div class="back-top"><a href="#top">↑ К началу</a></div>
+<div class="back-top"><a href="https://damubpm.github.io/help/damu_environment_variables.html#top">↑ К началу</a></div>
 </article></section><section class="category-section"><h2>Интерфейс и локализация</h2>
 <article class="env-card" id="DAMU_DEFAULT_LANG">
 <div class="env-head">
@@ -491,7 +548,7 @@ pre code { background:transparent; color:inherit; padding:0; }
 <h3><code>DAMU_DEFAULT_LANG</code></h3>
 <p class="lead">Язык по умолчанию, если язык не удалось получить из сессии.</p>
 </div>
-<a class="line-ref" href="#source">Go: строки 586-604</a>
+<a class="line-ref" href="https://damubpm.github.io/help/damu_environment_variables.html#source">Go: строки 586-604</a>
 </div>
 <div class="meta-grid">
 <div><span>Тип</span><strong>Код языка / строка</strong></div>
@@ -503,79 +560,80 @@ pre code { background:transparent; color:inherit; padding:0; }
 <h4>Фактическое поведение</h4>
 <p>Уже установленное непустое значение <code>session.Values["lang"]</code> имеет приоритет над переменной окружения.</p>
 <div class="recommendation"><strong>Рекомендация:</strong> Для русскоязычного инстанса переменную можно не задавать. Для другого языка задать соответствующий код, который понимает остальная часть приложения.</div>
-<div class="back-top"><a href="#top">↑ К началу</a></div>
+<div class="back-top"><a href="https://damubpm.github.io/help/damu_environment_variables.html#top">↑ К началу</a></div>
 </article></section>
 <section class="category-section"><h2>SQL, HTTP и диагностика</h2>
 <article class="env-card" id="DAMUCRM_DEBUG_SQL">
-<div class="env-head"><div><h3><code>DAMUCRM_DEBUG_SQL</code></h3><p class="lead">Включает дополнительный диагностический вывод для ряда Lua-функций, связанных с запросами и SQL.</p></div><a class="line-ref" href="#source">Go #2: 1896, 1968, 2231, 2267, 4007, 5032, 5641, 5743, 5940, 6059</a></div>
+<div class="env-head"><div><h3><code>DAMUCRM_DEBUG_SQL</code></h3><p class="lead">Включает дополнительный диагностический вывод для ряда Lua-функций, связанных с запросами и SQL.</p></div><a class="line-ref" href="https://damubpm.github.io/help/damu_environment_variables.html#source">Go #2: 1896, 1968, 2231, 2267, 4007, 5032, 5641, 5743, 5940, 6059</a></div>
 <div class="meta-grid"><div><span>Тип</span><strong>Флаг</strong></div><div><span>По умолчанию</span><strong>Дополнительный SQL debug выключен</strong></div><div class="wide"><span>Распознаваемые значения</span><strong><code>1</code> — включить дополнительный диагностический вывод; остальные значения — выключено</strong></div></div>
 <h4>Как используется</h4>
 <p>Проверка <code>os.Getenv("DAMUCRM_DEBUG_SQL") == "1"</code> встречается в нескольких функциях Lua API. В <code>LuaDetail()</code>, <code>LuaQuery()</code>, <code>LuaQueryCount()</code> и <code>LuaQueryWithCount()</code> в лог выводится полученный массив <code>arr</code>. В функциях чтения одной строки из SQL/кэша/Redis дополнительный лог появляется при ситуации <code>No data found</code>. В <code>LuaSqlInsert()</code> при ошибке дополнительно выводятся текст ошибки и SQL-строка.</p>
+<div class="notice"><strong>Дополнение из grantutils.go.</strong> Переменная также используется в <code>CheckLoginByIp()</code>: если проверка очередной роли из <code>DAMU_ALLOW_INTERNET_AUTH_ROLES</code> не находит строку, при <code>DAMUCRM_DEBUG_SQL=1</code> в лог выводятся SQL-запрос, ошибка и код проверяемой роли.</div>
 <h4>Фактическое поведение</h4>
 <p>Это не глобальный переключатель всего SQL-логирования: он влияет только на явно обернутые этой проверкой места. Часть SQL-ошибок и предупреждений в коде логируется независимо от значения переменной.</p>
 <div class="recommendation"><strong>Рекомендация:</strong> Включать временно при диагностике. В production учитывать, что лог может содержать SQL-тексты и данные выборок, поэтому постоянное включение способно увеличить объем логов и раскрывать чувствительные данные в системе логирования.</div>
-<div class="back-top"><a href="#top">↑ К началу</a></div>
+<div class="back-top"><a href="https://damubpm.github.io/help/damu_environment_variables.html#top">↑ К началу</a></div>
 </article>
 <article class="env-card" id="DAMUCRM_HTTP_TIMEOUT_MS">
-<div class="env-head"><div><h3><code>DAMUCRM_HTTP_TIMEOUT_MS</code></h3><p class="lead">Задает общий тайм-аут HTTP POST-запроса для LuaHttpPost2 и LuaHttpPost2WithProxy.</p></div><a class="line-ref" href="#source">Go #2: 6103-6110, 6158-6165</a></div>
+<div class="env-head"><div><h3><code>DAMUCRM_HTTP_TIMEOUT_MS</code></h3><p class="lead">Задает общий тайм-аут HTTP POST-запроса для LuaHttpPost2 и LuaHttpPost2WithProxy.</p></div><a class="line-ref" href="https://damubpm.github.io/help/damu_environment_variables.html#source">Go #2: 6103-6110, 6158-6165</a></div>
 <div class="meta-grid"><div><span>Тип</span><strong>Целое число, миллисекунды</strong></div><div><span>По умолчанию</span><strong>30000 мс (30 секунд)</strong></div><div class="wide"><span>Распознаваемые значения</span><strong>Строка, преобразуемая через <code>strconv.Atoi()</code>; при ошибке используется <code>30000</code></strong></div></div>
 <h4>Как используется</h4>
 <p>Значение читается перед созданием <code>http.Client</code>. После преобразования в integer оно умножается на <code>time.Millisecond</code> и устанавливается в поле <code>http.Client.Timeout</code>. Одинаковая логика используется в прямом POST-запросе и в варианте с proxy.</p>
 <h4>Фактическое поведение</h4>
 <p>Если переменная отсутствует, пуста или содержит нечисловое значение, <code>Atoi()</code> возвращает ошибку и код использует 30 секунд. Положительное число задает максимальную длительность запроса в миллисекундах. В данном фрагменте нет отдельной проверки разумного диапазона.</p>
 <div class="recommendation"><strong>Рекомендация:</strong> Обычно оставлять 30000 или задавать значение исходя из SLA внешних сервисов. Не ставить чрезмерно большой тайм-аут для часто вызываемых интеграций, чтобы зависшие внешние запросы не удерживали ресурсы приложения слишком долго.</div>
-<div class="back-top"><a href="#top">↑ К началу</a></div>
+<div class="back-top"><a href="https://damubpm.github.io/help/damu_environment_variables.html#top">↑ К началу</a></div>
 </article>
 </section><section class="category-section"><h2>Cron, транзакции и PostgreSQL</h2>
 <article class="env-card" id="DAMU_CRON_PG_TRY_ADVISORY_LOCK">
-<div class="env-head"><div><h3><code>DAMU_CRON_PG_TRY_ADVISORY_LOCK</code></h3><p class="lead">Добавляет PostgreSQL advisory lock для защиты Cron-задания от одновременного выполнения.</p></div><a class="line-ref" href="#source">Go #2: 3006-3014, 3039-3043</a></div>
+<div class="env-head"><div><h3><code>DAMU_CRON_PG_TRY_ADVISORY_LOCK</code></h3><p class="lead">Добавляет PostgreSQL advisory lock для защиты Cron-задания от одновременного выполнения.</p></div><a class="line-ref" href="https://damubpm.github.io/help/damu_environment_variables.html#source">Go #2: 3006-3014, 3039-3043</a></div>
 <div class="meta-grid"><div><span>Тип</span><strong>Флаг</strong></div><div><span>По умолчанию</span><strong>PostgreSQL advisory lock выключен</strong></div><div class="wide"><span>Распознаваемые значения</span><strong><code>1</code> — включить механизм <code>pg_try_advisory_lock()</code></strong></div></div>
 <h4>Как используется</h4>
 <p>Перед запуском Cron-кода выполняется <code>pg_try_advisory_lock(CronTabId)</code>. Если SQL-запрос успешно выполнен, но lock получить не удалось, задача пропускается с предупреждением <code>already running</code>. Это дополняет локальный процессный lock <code>lock.Global().Acquire()</code> и может защищать от параллельного запуска между разными процессами приложения, работающими с одной PostgreSQL.</p>
 <h4>Освобождение lock</h4>
 <p>В <code>defer</code> вызов <code>pg_advisory_unlock()</code> выполняется только когда одновременно <code>DAMU_CRON_PG_TRY_ADVISORY_LOCK=1</code> и <code>DAMU_CRON_TRANSACTION=1</code>. Это важная особенность текущей реализации.</p>
 <div class="recommendation"><strong>Рекомендация:</strong> Особенно полезно в кластере с несколькими экземплярами DamuBPM. Обратить внимание на условие освобождения lock: при включенном advisory lock и выключенной <code>DAMU_CRON_TRANSACTION</code> код не вызывает явный <code>pg_advisory_unlock()</code> в показанном участке.</div>
-<div class="back-top"><a href="#top">↑ К началу</a></div>
+<div class="back-top"><a href="https://damubpm.github.io/help/damu_environment_variables.html#top">↑ К началу</a></div>
 </article>
 <article class="env-card" id="DAMU_CRON_TRANSACTION">
-<div class="env-head"><div><h3><code>DAMU_CRON_TRANSACTION</code></h3><p class="lead">Определяет, выполняется ли Cron Lua-скрипт в транзакционном режиме ORM.</p></div><a class="line-ref" href="#source">Go #2: 3032-3034, 3039, 3051-3052</a></div>
+<div class="env-head"><div><h3><code>DAMU_CRON_TRANSACTION</code></h3><p class="lead">Определяет, выполняется ли Cron Lua-скрипт в транзакционном режиме ORM.</p></div><a class="line-ref" href="https://damubpm.github.io/help/damu_environment_variables.html#source">Go #2: 3032-3034, 3039, 3051-3052</a></div>
 <div class="meta-grid"><div><span>Тип</span><strong>Флаг</strong></div><div><span>По умолчанию</span><strong>Транзакционный режим Cron выключен</strong></div><div class="wide"><span>Распознаваемые значения</span><strong><code>1</code> — вызвать <code>o.Begin()</code> и передать Lua API признак транзакционного режима</strong></div></div>
 <h4>Как используется</h4>
 <p>При <code>1</code> перед выполнением скрипта вызывается <code>o.Begin()</code>, а через <code>defer</code> регистрируется <code>o.Rollback()</code>. Тот же флаг передается в <code>RegisterAPI()</code> и <code>RegisterBPMLUaAPI()</code>, чтобы Lua API знало, что работает внутри транзакции. После успешного выполнения скрипта вызывается <code>o.Commit()</code>.</p>
 <h4>Фактическое поведение</h4>
 <p><code>o.Commit()</code> находится после успешного <code>lua.DoString()</code>. Если выполнение Lua завершается ошибкой и функция делает <code>return</code>, отложенный <code>Rollback()</code> должен откатить незавершенную транзакцию. Флаг также участвует в условии явного освобождения PostgreSQL advisory lock.</p>
 <div class="recommendation"><strong>Рекомендация:</strong> Включать для Cron-сценариев, где набор DB-операций должен быть атомарным. Для долгих задач учитывать, что длительная транзакция может удерживать locks и старые версии строк в PostgreSQL.</div>
-<div class="back-top"><a href="#top">↑ К началу</a></div>
+<div class="back-top"><a href="https://damubpm.github.io/help/damu_environment_variables.html#top">↑ К началу</a></div>
 </article>
 <article class="env-card" id="DAMU_SET_APPLICATION_NAME">
-<div class="env-head"><div><h3><code>DAMU_SET_APPLICATION_NAME</code></h3><p class="lead">Помечает PostgreSQL-соединение Cron-задачи через application_name.</p></div><a class="line-ref" href="#source">Go #2: 3016-3029</a></div>
+<div class="env-head"><div><h3><code>DAMU_SET_APPLICATION_NAME</code></h3><p class="lead">Помечает PostgreSQL-соединение Cron-задачи через application_name.</p></div><a class="line-ref" href="https://damubpm.github.io/help/damu_environment_variables.html#source">Go #2: 3016-3029</a></div>
 <div class="meta-grid"><div><span>Тип</span><strong>Флаг</strong></div><div><span>По умолчанию</span><strong>application_name кодом Cron не устанавливается</strong></div><div class="wide"><span>Распознаваемые значения</span><strong><code>1</code> — для PostgreSQL выполнить <code>set application_name='cron/&lt;id&gt;'</code></strong></div></div>
 <h4>Как используется</h4>
 <p>Переменная действует только при драйвере PostgreSQL. Перед выполнением Cron-скрипта код формирует значение <code>cron/</code> + идентификатор задания и выполняет команду <code>SET application_name</code>.</p>
 <h4>Зачем это нужно</h4>
 <p>После установки имени соединение проще идентифицировать в <code>pg_stat_activity</code>, логах PostgreSQL и инструментах мониторинга. Можно видеть, какой именно Cron создал активный SQL-запрос или удерживает транзакцию.</p>
 <div class="recommendation"><strong>Рекомендация:</strong> Для PostgreSQL production-инсталляций обычно полезно включить: это почти не влияет на производительность, но заметно упрощает диагностику активных соединений и долгих запросов.</div>
-<div class="back-top"><a href="#top">↑ К началу</a></div>
+<div class="back-top"><a href="https://damubpm.github.io/help/damu_environment_variables.html#top">↑ К началу</a></div>
 </article>
 <article class="env-card" id="DAMU_CRON_DEBUG_LOG">
-<div class="env-head"><div><h3><code>DAMU_CRON_DEBUG_LOG</code></h3><p class="lead">Включает дополнительный debug-лог для пропущенных параллельных запусков RunScript.</p></div><a class="line-ref" href="#source">Go #2: 8061-8068</a></div>
+<div class="env-head"><div><h3><code>DAMU_CRON_DEBUG_LOG</code></h3><p class="lead">Включает дополнительный debug-лог для пропущенных параллельных запусков RunScript.</p></div><a class="line-ref" href="https://damubpm.github.io/help/damu_environment_variables.html#source">Go #2: 8061-8068</a></div>
 <div class="meta-grid"><div><span>Тип</span><strong>Флаг</strong></div><div><span>По умолчанию</span><strong>Дополнительный Cron debug выключен</strong></div><div class="wide"><span>Распознаваемые значения</span><strong><code>1</code> — логировать событие <code>RunScript BUSY</code></strong></div></div>
 <h4>Как используется</h4>
 <p>В <code>RunScript()</code> формируется ключ из <code>threadPrefix</code>, <code>totalCount</code> и <code>currentThread</code>, после чего выполняется <code>lock.Global().Acquire()</code>. Если lock получить не удалось, функция пропускает запуск. При <code>DAMU_CRON_DEBUG_LOG=1</code> этот случай дополнительно записывается в лог как <code>RunScript BUSY</code> с параметрами потока.</p>
 <h4>Фактическое поведение</h4>
 <p>В предоставленном файле переменная используется только в этой точке. Она не включает общий verbose-режим всего Cron и не меняет логику блокировки — только добавляет запись в лог при конфликте.</p>
 <div class="recommendation"><strong>Рекомендация:</strong> Включать при поиске причин, почему параллельные Cron/RunScript-задачи иногда не запускаются. После диагностики можно выключить, если такие сообщения создают лишний шум.</div>
-<div class="back-top"><a href="#top">↑ К началу</a></div>
+<div class="back-top"><a href="https://damubpm.github.io/help/damu_environment_variables.html#top">↑ К началу</a></div>
 </article>
-</section><section class="category-section"><h2>Режим запуска и пул соединений БД</h2><article class="env-card" id="DAMU_MICROSERVICE_LUA_FILE"><div class="env-head"><div><h3><code>DAMU_MICROSERVICE_LUA_FILE</code></h3><p class="lead">Переключает запуск на специальную ветку микросервиса.</p></div><a class="line-ref" href="#source">Новый main: init(), ветка HandleMicroService()</a></div><div class="meta-grid"><div><span>Тип</span><strong>Строка</strong></div><div><span>По умолчанию</span><strong>Пусто — обычная инициализация продолжается</strong></div><div class="wide"><span>Распознаваемые значения</span><strong>Любая непустая строка активирует ветку; содержимое значения в показанном фрагменте не анализируется</strong></div></div><h4>Как используется</h4><p>В самом начале init(), сразу после обязательной проверки DAMUCRM_SALT, код проверяет эту переменную. При непустом значении вызывается restapi.HandleMicroService(), после чего выполняется return.</p><h4>Фактическое поведение</h4><p>В показанном init() ранний return происходит до выбора драйвера БД, RegisterDriver(), чтения настроек пула и RegisterDataBase(). Поэтому эта переменная меняет сам сценарий старта приложения. Название предполагает Lua-файл, но конкретное использование значения находится внутри HandleMicroService() и в предоставленном фрагменте не показано.</p><div class="recommendation"><strong>Рекомендация:</strong> Использовать только для deployment, где действительно требуется микросервисный режим. Не считать значение просто флагом конфигурации БД: оно прерывает обычную инициализацию этой функции.</div><div class="back-top"><a href="#top">↑ К началу</a></div></article><article class="env-card" id="DAMU_MAX_IDLE_CONNS"><div class="env-head"><div><h3><code>DAMU_MAX_IDLE_CONNS</code></h3><p class="lead">Задает максимальное количество простаивающих соединений основного пула БД.</p></div><a class="line-ref" href="#source">Новый main: настройка maxIdleConns перед RegisterDataBase()</a></div><div class="meta-grid"><div><span>Тип</span><strong>Целое число</strong></div><div><span>По умолчанию</span><strong>100</strong></div><div class="wide"><span>Распознаваемые значения</span><strong>Строка, корректно преобразуемая strconv.Atoi()</strong></div></div><h4>Как используется</h4><p>Если переменная задана, значение преобразуется через strconv.Atoi() и записывается в maxIdleConns. Затем maxIdleConns передается четвертым аргументом в orm.RegisterDataBase("default", dname, connStr, maxIdleConns, maxOpenConns).</p><h4>Фактическое поведение</h4><p>Если переменная отсутствует, используется 100. Если задано нецелое значение, приложение выполняет panic с ошибкой "Error: invalid env value DAMU_MAX_IDLE_CONNS". Проверки диапазона в показанном коде нет.</p><div class="recommendation"><strong>Рекомендация:</strong> Подбирать вместе с DAMU_MAX_OPEN_CONNS и лимитами самой СУБД. В конфигурации всегда задавать число без единиц измерения и посторонних символов.</div><div class="back-top"><a href="#top">↑ К началу</a></div></article><article class="env-card" id="DAMU_MAX_OPEN_CONNS"><div class="env-head"><div><h3><code>DAMU_MAX_OPEN_CONNS</code></h3><p class="lead">Задает максимальное количество открытых соединений основного пула БД.</p></div><a class="line-ref" href="#source">Новый main: настройка maxOpenConns перед RegisterDataBase()</a></div><div class="meta-grid"><div><span>Тип</span><strong>Целое число</strong></div><div><span>По умолчанию</span><strong>1000</strong></div><div class="wide"><span>Распознаваемые значения</span><strong>Строка, корректно преобразуемая strconv.Atoi()</strong></div></div><h4>Как используется</h4><p>Если переменная задана, значение преобразуется через strconv.Atoi() и записывается в maxOpenConns. Затем оно передается пятым аргументом в orm.RegisterDataBase().</p><h4>Фактическое поведение</h4><p>Если переменная отсутствует, используется 1000. Если значение нельзя преобразовать в целое число, выполняется panic с ошибкой "Error: invalid env value DAMU_MAX_OPEN_CONNS". Отдельной проверки минимального/максимального диапазона в этом фрагменте нет.</p><div class="recommendation"><strong>Рекомендация:</strong> Не выставлять значение только исходя из числа goroutine: учитывать max_connections СУБД, число экземпляров приложения и запас для административных/фоновых подключений.</div><div class="back-top"><a href="#top">↑ К началу</a></div></article></section><section class="category-section"><h2>Redis Lua API</h2><article class="env-card" id="DAMU_REDIS_ADDR"><div class="env-head"><div><h3><code>DAMU_REDIS_ADDR</code></h3><p class="lead">Адрес Redis для Lua-библиотеки pkg/redis.</p></div><a class="line-ref" href="#source">Go #3 Redis: 21-37</a></div><div class="meta-grid"><div><span>Тип</span><strong>Строка адреса Redis</strong></div><div><span>По умолчанию</span><strong>Не задан</strong></div><div class="wide"><span>Распознаваемые значения</span><strong>Обычно host:port; код передает строку напрямую в redis.Options.Addr</strong></div></div><h4>Как используется</h4><p>В init() сначала проверяется DAMU_REDIS_ADDR. Если строка пустая, функция init() сразу возвращается и глобальный клиент rdb не создается. Если адрес задан, он передается в redis.NewClient().</p><h4>Фактическое поведение</h4><p>При пустом значении большинство Lua Redis-команд через checkReady() вернут ошибку "Redis not initialized". База данных Redis в этом модуле жестко установлена в DB: 0.</p><div class="recommendation"><strong>Рекомендация:</strong> Для экземпляров, где используется pkg/redis, задавать явный адрес Redis. Если Redis-функциональность не нужна, переменную можно оставить пустой — модуль останется неинициализированным.</div><div class="back-top"><a href="#top">↑ К началу</a></div></article><article class="env-card" id="DAMU_REDIS_PASSWORD"><div class="env-head"><div><h3><code>DAMU_REDIS_PASSWORD</code></h3><p class="lead">Пароль для подключения Lua Redis-клиента.</p></div><a class="line-ref" href="#source">Go #3 Redis: 24-34</a></div><div class="meta-grid"><div><span>Тип</span><strong>Строка / секрет</strong></div><div><span>По умолчанию</span><strong>Пустая строка</strong></div><div class="wide"><span>Распознаваемые значения</span><strong>Произвольная строка; пустое значение допускается кодом</strong></div></div><h4>Как используется</h4><p>Значение передается напрямую в redis.Options.Password при создании клиента. До создания клиента код проверяет пустую строку только для диагностического сообщения.</p><h4>Фактическое поведение</h4><p>Если переменная пустая, выводится log.Println("DAMU_REDIS_PASSWORD is not defined"), но init() не прерывается и клиент создается с пустым паролем. Это позволяет работать с Redis без пароля, если сервер так настроен.</p><div class="recommendation"><strong>Рекомендация:</strong> В production хранить пароль как secret и не выводить его в конфигурационных дампах. Пустое значение использовать только если Redis действительно не требует аутентификации.</div><div class="back-top"><a href="#top">↑ К началу</a></div></article><article class="env-card" id="DAMU_REDIS_PREFIX"><div class="env-head"><div><h3><code>DAMU_REDIS_PREFIX</code></h3><p class="lead">Обязательный namespace-префикс для ключей Lua Redis API.</p></div><a class="line-ref" href="#source">Go #3 Redis: 28-37, 47-55</a></div><div class="meta-grid"><div><span>Тип</span><strong>Строка</strong></div><div><span>По умолчанию</span><strong>Пусто — checkReady() блокирует большинство команд</strong></div><div class="wide"><span>Распознаваемые значения</span><strong>Непустая строка, кроме одиночного "_"</strong></div></div><h4>Как используется</h4><p>После создания клиента значение сохраняется в глобальной redisPrefix. Большинство операций добавляет этот префикс перед пользовательским ключом; Keys() также добавляет его к шаблону и удаляет из возвращаемых имен. Publish() использует префикс и для каналов.</p><h4>Фактическое поведение</h4><p>Пустой префикс приводит к ошибке "DAMU_REDIS_PREFIX not set". Значение "_" отдельно запрещено и приводит к "DAMU_REDIS_PREFIX cannot use _ prefix". При этом команда FlushDB() очищает всю Redis DB 0 и не ограничивается префиксом.</p><div class="recommendation"><strong>Рекомендация:</strong> Назначать уникальный стабильный префикс на приложение/контур, например "damu_prod:". Не использовать FlushDB() как способ очистки только своего namespace: в этом модуле он очищает всю выбранную Redis DB.</div><div class="back-top"><a href="#top">↑ К началу</a></div></article></section><section class="category-section"><h2>OpenShift и параметры окружения платформы</h2>
+</section><section class="category-section"><h2>Режим запуска и пул соединений БД</h2><article class="env-card" id="DAMU_MICROSERVICE_LUA_FILE"><div class="env-head"><div><h3><code>DAMU_MICROSERVICE_LUA_FILE</code></h3><p class="lead">Переключает запуск на специальную ветку микросервиса.</p></div><a class="line-ref" href="https://damubpm.github.io/help/damu_environment_variables.html#source">Новый main: init(), ветка HandleMicroService()</a></div><div class="meta-grid"><div><span>Тип</span><strong>Строка</strong></div><div><span>По умолчанию</span><strong>Пусто — обычная инициализация продолжается</strong></div><div class="wide"><span>Распознаваемые значения</span><strong>Любая непустая строка активирует ветку; содержимое значения в показанном фрагменте не анализируется</strong></div></div><h4>Как используется</h4><p>В самом начале init(), сразу после обязательной проверки DAMUCRM_SALT, код проверяет эту переменную. При непустом значении вызывается restapi.HandleMicroService(), после чего выполняется return.</p><h4>Фактическое поведение</h4><p>В показанном init() ранний return происходит до выбора драйвера БД, RegisterDriver(), чтения настроек пула и RegisterDataBase(). Поэтому эта переменная меняет сам сценарий старта приложения. Название предполагает Lua-файл, но конкретное использование значения находится внутри HandleMicroService() и в предоставленном фрагменте не показано.</p><div class="recommendation"><strong>Рекомендация:</strong> Использовать только для deployment, где действительно требуется микросервисный режим. Не считать значение просто флагом конфигурации БД: оно прерывает обычную инициализацию этой функции.</div><div class="back-top"><a href="https://damubpm.github.io/help/damu_environment_variables.html#top">↑ К началу</a></div></article><article class="env-card" id="DAMU_MAX_IDLE_CONNS"><div class="env-head"><div><h3><code>DAMU_MAX_IDLE_CONNS</code></h3><p class="lead">Задает максимальное количество простаивающих соединений основного пула БД.</p></div><a class="line-ref" href="https://damubpm.github.io/help/damu_environment_variables.html#source">Новый main: настройка maxIdleConns перед RegisterDataBase()</a></div><div class="meta-grid"><div><span>Тип</span><strong>Целое число</strong></div><div><span>По умолчанию</span><strong>100</strong></div><div class="wide"><span>Распознаваемые значения</span><strong>Строка, корректно преобразуемая strconv.Atoi()</strong></div></div><h4>Как используется</h4><p>Если переменная задана, значение преобразуется через strconv.Atoi() и записывается в maxIdleConns. Затем maxIdleConns передается четвертым аргументом в orm.RegisterDataBase("default", dname, connStr, maxIdleConns, maxOpenConns).</p><h4>Фактическое поведение</h4><p>Если переменная отсутствует, используется 100. Если задано нецелое значение, приложение выполняет panic с ошибкой "Error: invalid env value DAMU_MAX_IDLE_CONNS". Проверки диапазона в показанном коде нет.</p><div class="recommendation"><strong>Рекомендация:</strong> Подбирать вместе с DAMU_MAX_OPEN_CONNS и лимитами самой СУБД. В конфигурации всегда задавать число без единиц измерения и посторонних символов.</div><div class="back-top"><a href="https://damubpm.github.io/help/damu_environment_variables.html#top">↑ К началу</a></div></article><article class="env-card" id="DAMU_MAX_OPEN_CONNS"><div class="env-head"><div><h3><code>DAMU_MAX_OPEN_CONNS</code></h3><p class="lead">Задает максимальное количество открытых соединений основного пула БД.</p></div><a class="line-ref" href="https://damubpm.github.io/help/damu_environment_variables.html#source">Новый main: настройка maxOpenConns перед RegisterDataBase()</a></div><div class="meta-grid"><div><span>Тип</span><strong>Целое число</strong></div><div><span>По умолчанию</span><strong>1000</strong></div><div class="wide"><span>Распознаваемые значения</span><strong>Строка, корректно преобразуемая strconv.Atoi()</strong></div></div><h4>Как используется</h4><p>Если переменная задана, значение преобразуется через strconv.Atoi() и записывается в maxOpenConns. Затем оно передается пятым аргументом в orm.RegisterDataBase().</p><h4>Фактическое поведение</h4><p>Если переменная отсутствует, используется 1000. Если значение нельзя преобразовать в целое число, выполняется panic с ошибкой "Error: invalid env value DAMU_MAX_OPEN_CONNS". Отдельной проверки минимального/максимального диапазона в этом фрагменте нет.</p><div class="recommendation"><strong>Рекомендация:</strong> Не выставлять значение только исходя из числа goroutine: учитывать max_connections СУБД, число экземпляров приложения и запас для административных/фоновых подключений.</div><div class="back-top"><a href="https://damubpm.github.io/help/damu_environment_variables.html#top">↑ К началу</a></div></article></section><section class="category-section"><h2>Redis Lua API</h2><article class="env-card" id="DAMU_REDIS_ADDR"><div class="env-head"><div><h3><code>DAMU_REDIS_ADDR</code></h3><p class="lead">Адрес Redis для Lua-библиотеки pkg/redis.</p></div><a class="line-ref" href="https://damubpm.github.io/help/damu_environment_variables.html#source">Go #3 Redis: 21-37</a></div><div class="meta-grid"><div><span>Тип</span><strong>Строка адреса Redis</strong></div><div><span>По умолчанию</span><strong>Не задан</strong></div><div class="wide"><span>Распознаваемые значения</span><strong>Обычно host:port; код передает строку напрямую в redis.Options.Addr</strong></div></div><h4>Как используется</h4><p>В init() сначала проверяется DAMU_REDIS_ADDR. Если строка пустая, функция init() сразу возвращается и глобальный клиент rdb не создается. Если адрес задан, он передается в redis.NewClient().</p><h4>Фактическое поведение</h4><p>При пустом значении большинство Lua Redis-команд через checkReady() вернут ошибку "Redis not initialized". База данных Redis в этом модуле жестко установлена в DB: 0.</p><div class="recommendation"><strong>Рекомендация:</strong> Для экземпляров, где используется pkg/redis, задавать явный адрес Redis. Если Redis-функциональность не нужна, переменную можно оставить пустой — модуль останется неинициализированным.</div><div class="back-top"><a href="https://damubpm.github.io/help/damu_environment_variables.html#top">↑ К началу</a></div></article><article class="env-card" id="DAMU_REDIS_PASSWORD"><div class="env-head"><div><h3><code>DAMU_REDIS_PASSWORD</code></h3><p class="lead">Пароль для подключения Lua Redis-клиента.</p></div><a class="line-ref" href="https://damubpm.github.io/help/damu_environment_variables.html#source">Go #3 Redis: 24-34</a></div><div class="meta-grid"><div><span>Тип</span><strong>Строка / секрет</strong></div><div><span>По умолчанию</span><strong>Пустая строка</strong></div><div class="wide"><span>Распознаваемые значения</span><strong>Произвольная строка; пустое значение допускается кодом</strong></div></div><h4>Как используется</h4><p>Значение передается напрямую в redis.Options.Password при создании клиента. До создания клиента код проверяет пустую строку только для диагностического сообщения.</p><h4>Фактическое поведение</h4><p>Если переменная пустая, выводится log.Println("DAMU_REDIS_PASSWORD is not defined"), но init() не прерывается и клиент создается с пустым паролем. Это позволяет работать с Redis без пароля, если сервер так настроен.</p><div class="recommendation"><strong>Рекомендация:</strong> В production хранить пароль как secret и не выводить его в конфигурационных дампах. Пустое значение использовать только если Redis действительно не требует аутентификации.</div><div class="back-top"><a href="https://damubpm.github.io/help/damu_environment_variables.html#top">↑ К началу</a></div></article><article class="env-card" id="DAMU_REDIS_PREFIX"><div class="env-head"><div><h3><code>DAMU_REDIS_PREFIX</code></h3><p class="lead">Обязательный namespace-префикс для ключей Lua Redis API.</p></div><a class="line-ref" href="https://damubpm.github.io/help/damu_environment_variables.html#source">Go #3 Redis: 28-37, 47-55</a></div><div class="meta-grid"><div><span>Тип</span><strong>Строка</strong></div><div><span>По умолчанию</span><strong>Пусто — checkReady() блокирует большинство команд</strong></div><div class="wide"><span>Распознаваемые значения</span><strong>Непустая строка, кроме одиночного "_"</strong></div></div><h4>Как используется</h4><p>После создания клиента значение сохраняется в глобальной redisPrefix. Большинство операций добавляет этот префикс перед пользовательским ключом; Keys() также добавляет его к шаблону и удаляет из возвращаемых имен. Publish() использует префикс и для каналов.</p><h4>Фактическое поведение</h4><p>Пустой префикс приводит к ошибке "DAMU_REDIS_PREFIX not set". Значение "_" отдельно запрещено и приводит к "DAMU_REDIS_PREFIX cannot use _ prefix". При этом команда FlushDB() очищает всю Redis DB 0 и не ограничивается префиксом.</p><div class="recommendation"><strong>Рекомендация:</strong> Назначать уникальный стабильный префикс на приложение/контур, например "damu_prod:". Не использовать FlushDB() как способ очистки только своего namespace: в этом модуле он очищает всю выбранную Redis DB.</div><div class="back-top"><a href="https://damubpm.github.io/help/damu_environment_variables.html#top">↑ К началу</a></div></article></section><section class="category-section"><h2>OpenShift и параметры окружения платформы</h2>
 <div class="notice"><strong>Важно о названии.</strong> Несмотря на префикс <code>OPENSHIFT_</code>, в показанном коде это просто переменные окружения. Они могут быть заданы через systemd, Docker Compose, Kubernetes Secret/ConfigMap или любым другим способом. Сам код не проверяет наличие OpenShift.</div>
-<article class="env-card" id="OPENSHIFT_MYSQL_DB_USERNAME"><div class="env-head"><div><h3><code>OPENSHIFT_MYSQL_DB_USERNAME</code></h3><p class="lead">Имя пользователя для MySQL в стандартной ветке подключения.</p></div><a class="line-ref" href="#source">main/init(): сборка MySQL connStr</a></div><div class="meta-grid"><div><span>Тип</span><strong>Строка</strong></div><div><span>По умолчанию</span><strong>Пустая строка</strong></div><div class="wide"><span>Используется когда</span><strong><code>CRM_DB_TYPE</code> не равен <code>pgsql</code> и не равен <code>oracle</code></strong></div></div><h4>Как используется</h4><p>В начале инициализации драйвер по умолчанию установлен в MySQL. Строка подключения собирается как <code>USERNAME:PASSWORD@tcp(HOST:PORT)/APP_NAME?charset=utf8</code>. Эта переменная занимает позицию <code>USERNAME</code>.</p><h4>Фактическое поведение</h4><p>В показанном коде отдельной проверки на пустое значение нет. Если используется MySQL-ветка, пустая строка попадет прямо в DSN.</p><div class="recommendation"><strong>Рекомендация:</strong> Для MySQL-развертывания задавать явно. Для PostgreSQL/Oracle эта конкретная строка подключения заменяется <code>CRM_DB_CONN_STR</code>, поэтому переменная в показанном фрагменте не участвует.</div><div class="back-top"><a href="#top">↑ К началу</a></div></article>
-<article class="env-card" id="OPENSHIFT_MYSQL_DB_PASSWORD"><div class="env-head"><div><h3><code>OPENSHIFT_MYSQL_DB_PASSWORD</code></h3><p class="lead">Пароль пользователя MySQL.</p></div><a class="line-ref" href="#source">main/init(): сборка MySQL connStr</a></div><div class="meta-grid"><div><span>Тип</span><strong>Строка / секрет</strong></div><div><span>По умолчанию</span><strong>Пустая строка</strong></div><div class="wide"><span>Используется когда</span><strong>Активна стандартная MySQL-ветка</strong></div></div><h4>Как используется</h4><p>Подставляется непосредственно после имени пользователя и перед <code>@tcp(...)</code> в MySQL DSN.</p><h4>Фактическое поведение</h4><p>Валидации наличия пароля нет. Код также не выполняет URL-экранирование или дополнительное преобразование значения в этом месте.</p><div class="recommendation"><strong>Рекомендация:</strong> Хранить как secret и не включать в диагностические дампы окружения. При специальных символах учитывать правила DSN используемого MySQL-драйвера.</div><div class="back-top"><a href="#top">↑ К началу</a></div></article>
-<article class="env-card" id="OPENSHIFT_MYSQL_DB_HOST"><div class="env-head"><div><h3><code>OPENSHIFT_MYSQL_DB_HOST</code></h3><p class="lead">Хост MySQL-сервера.</p></div><a class="line-ref" href="#source">main/init(): <code>@tcp(HOST:PORT)</code></a></div><div class="meta-grid"><div><span>Тип</span><strong>Hostname или IP</strong></div><div><span>По умолчанию</span><strong>Пустая строка</strong></div><div class="wide"><span>Формат</span><strong>Передается внутрь <code>tcp(...)</code> без собственной проверки</strong></div></div><h4>Как используется</h4><p>Формирует сетевой адрес MySQL: <code>@tcp(OPENSHIFT_MYSQL_DB_HOST:OPENSHIFT_MYSQL_DB_PORT)</code>.</p><h4>Фактическое поведение</h4><p>Пустое или неверное значение не отлавливается этой функцией отдельно; оно становится частью DSN, передаваемого ORM.</p><div class="recommendation"><strong>Рекомендация:</strong> Указывать DNS-имя сервиса внутри кластера либо доступный IP/hostname для внешнего MySQL.</div><div class="back-top"><a href="#top">↑ К началу</a></div></article>
-<article class="env-card" id="OPENSHIFT_MYSQL_DB_PORT"><div class="env-head"><div><h3><code>OPENSHIFT_MYSQL_DB_PORT</code></h3><p class="lead">TCP-порт MySQL-сервера.</p></div><a class="line-ref" href="#source">main/init(): <code>@tcp(HOST:PORT)</code></a></div><div class="meta-grid"><div><span>Тип</span><strong>Строковое представление порта</strong></div><div><span>По умолчанию</span><strong>Пустая строка</strong></div><div class="wide"><span>Пример</span><strong><code>3306</code></strong></div></div><h4>Как используется</h4><p>Конкатенируется с хостом через двоеточие. В отличие от <code>DAMU_MAX_OPEN_CONNS</code>, здесь <code>strconv.Atoi()</code> не вызывается.</p><h4>Фактическое поведение</h4><p>Любая строка попадет в DSN. Корректность порта фактически проверит нижележащий драйвер/соединение.</p><div class="recommendation"><strong>Рекомендация:</strong> Обычно задавать <code>3306</code>, если MySQL слушает стандартный порт.</div><div class="back-top"><a href="#top">↑ К началу</a></div></article>
-<article class="env-card" id="OPENSHIFT_APP_NAME"><div class="env-head"><div><h3><code>OPENSHIFT_APP_NAME</code></h3><p class="lead">В данном фрагменте используется как имя базы данных MySQL.</p></div><a class="line-ref" href="#source">main/init(): часть <code>/APP_NAME?charset=utf8</code></a></div><div class="meta-grid"><div><span>Тип</span><strong>Строка</strong></div><div><span>По умолчанию</span><strong>Пустая строка</strong></div><div class="wide"><span>Назначение именно здесь</span><strong>Имя базы данных в MySQL DSN</strong></div></div><h4>Как используется</h4><p>Подставляется после <code>tcp(host:port)/</code>. Поэтому фактически код трактует <code>OPENSHIFT_APP_NAME</code> не просто как имя приложения, а как имя MySQL database/schema в DSN.</p><h4>Фактическое поведение</h4><p>При PostgreSQL или Oracle весь собранный MySQL DSN заменяется значением <code>CRM_DB_CONN_STR</code>, и эта переменная в показанной ветке больше не влияет на подключение.</p><div class="recommendation"><strong>Рекомендация:</strong> Если исторически имя OpenShift-приложения и имя БД расходятся, это место кода стоит учитывать при миграциях: переменная здесь имеет именно DB-смысл.</div><div class="back-top"><a href="#top">↑ К началу</a></div></article>
-<article class="env-card" id="OPENSHIFT_GO_IP"><div class="env-head"><div><h3><code>OPENSHIFT_GO_IP</code></h3><p class="lead">IP/host, который Lua API возвращает как адрес HTTP-listener.</p></div><a class="line-ref" href="#source">Go #2: LuaGetHTTPListenHostPort()</a></div><div class="meta-grid"><div><span>Тип</span><strong>Строка</strong></div><div><span>По умолчанию</span><strong>Пустая строка</strong></div><div class="wide"><span>Использование</span><strong><code>OPENSHIFT_GO_IP + ":" + OPENSHIFT_GO_PORT</code></strong></div></div><h4>Как используется</h4><p>Lua-функция <code>GetHTTPListenHostPort()</code> не открывает сокет и не валидирует адрес. Она просто возвращает конкатенацию двух переменных окружения.</p><h4>Фактическое поведение</h4><p>Если IP не задан, но порт задан, результат будет вида <code>:8080</code>. Если не заданы обе переменные, результат будет просто <code>:</code>.</p><div class="recommendation"><strong>Рекомендация:</strong> Задавать адрес, который соответствует реальной модели прослушивания приложения, например <code>0.0.0.0</code> внутри контейнера либо конкретный bind IP, если это требуется архитектурой.</div><div class="back-top"><a href="#top">↑ К началу</a></div></article>
-<article class="env-card" id="OPENSHIFT_GO_PORT"><div class="env-head"><div><h3><code>OPENSHIFT_GO_PORT</code></h3><p class="lead">Порт HTTP-сервиса, доступный Lua API и стартовому диагностическому логу.</p></div><a class="line-ref" href="#source">Go #2: LuaGetHTTPListenHostPort(); main/init(): startup log</a></div><div class="meta-grid"><div><span>Тип</span><strong>Строковое представление порта</strong></div><div><span>По умолчанию</span><strong>Пустая строка</strong></div><div class="wide"><span>Пример</span><strong><code>8080</code></strong></div></div><h4>Как используется</h4><p>Во втором исходнике значение объединяется с <code>OPENSHIFT_GO_IP</code> и возвращается в Lua. В дополнительном <code>main/init()</code> оно также подставляется в стартовое сообщение <code>log.Printf(... port %s)</code>.</p><h4>Фактическое поведение</h4><p>В показанных местах переменная не преобразуется в число и сама по себе не запускает HTTP-listener. Это строковое конфигурационное значение, которое другие части проекта могут использовать дополнительно.</p><div class="recommendation"><strong>Рекомендация:</strong> Держать синхронизированной с реальным портом, который слушает HTTP-сервер и который опубликован Service/Ingress или контейнерной конфигурацией.</div><div class="back-top"><a href="#top">↑ К началу</a></div></article>
+<article class="env-card" id="OPENSHIFT_MYSQL_DB_USERNAME"><div class="env-head"><div><h3><code>OPENSHIFT_MYSQL_DB_USERNAME</code></h3><p class="lead">Имя пользователя для MySQL в стандартной ветке подключения.</p></div><a class="line-ref" href="https://damubpm.github.io/help/damu_environment_variables.html#source">main/init(): сборка MySQL connStr</a></div><div class="meta-grid"><div><span>Тип</span><strong>Строка</strong></div><div><span>По умолчанию</span><strong>Пустая строка</strong></div><div class="wide"><span>Используется когда</span><strong><code>CRM_DB_TYPE</code> не равен <code>pgsql</code> и не равен <code>oracle</code></strong></div></div><h4>Как используется</h4><p>В начале инициализации драйвер по умолчанию установлен в MySQL. Строка подключения собирается как <code>USERNAME:PASSWORD@tcp(HOST:PORT)/APP_NAME?charset=utf8</code>. Эта переменная занимает позицию <code>USERNAME</code>.</p><h4>Фактическое поведение</h4><p>В показанном коде отдельной проверки на пустое значение нет. Если используется MySQL-ветка, пустая строка попадет прямо в DSN.</p><div class="recommendation"><strong>Рекомендация:</strong> Для MySQL-развертывания задавать явно. Для PostgreSQL/Oracle эта конкретная строка подключения заменяется <code>CRM_DB_CONN_STR</code>, поэтому переменная в показанном фрагменте не участвует.</div><div class="back-top"><a href="https://damubpm.github.io/help/damu_environment_variables.html#top">↑ К началу</a></div></article>
+<article class="env-card" id="OPENSHIFT_MYSQL_DB_PASSWORD"><div class="env-head"><div><h3><code>OPENSHIFT_MYSQL_DB_PASSWORD</code></h3><p class="lead">Пароль пользователя MySQL.</p></div><a class="line-ref" href="https://damubpm.github.io/help/damu_environment_variables.html#source">main/init(): сборка MySQL connStr</a></div><div class="meta-grid"><div><span>Тип</span><strong>Строка / секрет</strong></div><div><span>По умолчанию</span><strong>Пустая строка</strong></div><div class="wide"><span>Используется когда</span><strong>Активна стандартная MySQL-ветка</strong></div></div><h4>Как используется</h4><p>Подставляется непосредственно после имени пользователя и перед <code>@tcp(...)</code> в MySQL DSN.</p><h4>Фактическое поведение</h4><p>Валидации наличия пароля нет. Код также не выполняет URL-экранирование или дополнительное преобразование значения в этом месте.</p><div class="recommendation"><strong>Рекомендация:</strong> Хранить как secret и не включать в диагностические дампы окружения. При специальных символах учитывать правила DSN используемого MySQL-драйвера.</div><div class="back-top"><a href="https://damubpm.github.io/help/damu_environment_variables.html#top">↑ К началу</a></div></article>
+<article class="env-card" id="OPENSHIFT_MYSQL_DB_HOST"><div class="env-head"><div><h3><code>OPENSHIFT_MYSQL_DB_HOST</code></h3><p class="lead">Хост MySQL-сервера.</p></div><a class="line-ref" href="https://damubpm.github.io/help/damu_environment_variables.html#source">main/init(): <code>@tcp(HOST:PORT)</code></a></div><div class="meta-grid"><div><span>Тип</span><strong>Hostname или IP</strong></div><div><span>По умолчанию</span><strong>Пустая строка</strong></div><div class="wide"><span>Формат</span><strong>Передается внутрь <code>tcp(...)</code> без собственной проверки</strong></div></div><h4>Как используется</h4><p>Формирует сетевой адрес MySQL: <code>@tcp(OPENSHIFT_MYSQL_DB_HOST:OPENSHIFT_MYSQL_DB_PORT)</code>.</p><h4>Фактическое поведение</h4><p>Пустое или неверное значение не отлавливается этой функцией отдельно; оно становится частью DSN, передаваемого ORM.</p><div class="recommendation"><strong>Рекомендация:</strong> Указывать DNS-имя сервиса внутри кластера либо доступный IP/hostname для внешнего MySQL.</div><div class="back-top"><a href="https://damubpm.github.io/help/damu_environment_variables.html#top">↑ К началу</a></div></article>
+<article class="env-card" id="OPENSHIFT_MYSQL_DB_PORT"><div class="env-head"><div><h3><code>OPENSHIFT_MYSQL_DB_PORT</code></h3><p class="lead">TCP-порт MySQL-сервера.</p></div><a class="line-ref" href="https://damubpm.github.io/help/damu_environment_variables.html#source">main/init(): <code>@tcp(HOST:PORT)</code></a></div><div class="meta-grid"><div><span>Тип</span><strong>Строковое представление порта</strong></div><div><span>По умолчанию</span><strong>Пустая строка</strong></div><div class="wide"><span>Пример</span><strong><code>3306</code></strong></div></div><h4>Как используется</h4><p>Конкатенируется с хостом через двоеточие. В отличие от <code>DAMU_MAX_OPEN_CONNS</code>, здесь <code>strconv.Atoi()</code> не вызывается.</p><h4>Фактическое поведение</h4><p>Любая строка попадет в DSN. Корректность порта фактически проверит нижележащий драйвер/соединение.</p><div class="recommendation"><strong>Рекомендация:</strong> Обычно задавать <code>3306</code>, если MySQL слушает стандартный порт.</div><div class="back-top"><a href="https://damubpm.github.io/help/damu_environment_variables.html#top">↑ К началу</a></div></article>
+<article class="env-card" id="OPENSHIFT_APP_NAME"><div class="env-head"><div><h3><code>OPENSHIFT_APP_NAME</code></h3><p class="lead">В данном фрагменте используется как имя базы данных MySQL.</p></div><a class="line-ref" href="https://damubpm.github.io/help/damu_environment_variables.html#source">main/init(): часть <code>/APP_NAME?charset=utf8</code></a></div><div class="meta-grid"><div><span>Тип</span><strong>Строка</strong></div><div><span>По умолчанию</span><strong>Пустая строка</strong></div><div class="wide"><span>Назначение именно здесь</span><strong>Имя базы данных в MySQL DSN</strong></div></div><h4>Как используется</h4><p>Подставляется после <code>tcp(host:port)/</code>. Поэтому фактически код трактует <code>OPENSHIFT_APP_NAME</code> не просто как имя приложения, а как имя MySQL database/schema в DSN.</p><h4>Фактическое поведение</h4><p>При PostgreSQL или Oracle весь собранный MySQL DSN заменяется значением <code>CRM_DB_CONN_STR</code>, и эта переменная в показанной ветке больше не влияет на подключение.</p><div class="recommendation"><strong>Рекомендация:</strong> Если исторически имя OpenShift-приложения и имя БД расходятся, это место кода стоит учитывать при миграциях: переменная здесь имеет именно DB-смысл.</div><div class="back-top"><a href="https://damubpm.github.io/help/damu_environment_variables.html#top">↑ К началу</a></div></article>
+<article class="env-card" id="OPENSHIFT_GO_IP"><div class="env-head"><div><h3><code>OPENSHIFT_GO_IP</code></h3><p class="lead">IP/host, который Lua API возвращает как адрес HTTP-listener.</p></div><a class="line-ref" href="https://damubpm.github.io/help/damu_environment_variables.html#source">Go #2: LuaGetHTTPListenHostPort()</a></div><div class="meta-grid"><div><span>Тип</span><strong>Строка</strong></div><div><span>По умолчанию</span><strong>Пустая строка</strong></div><div class="wide"><span>Использование</span><strong><code>OPENSHIFT_GO_IP + ":" + OPENSHIFT_GO_PORT</code></strong></div></div><h4>Как используется</h4><p>Lua-функция <code>GetHTTPListenHostPort()</code> не открывает сокет и не валидирует адрес. Она просто возвращает конкатенацию двух переменных окружения.</p><h4>Фактическое поведение</h4><p>Если IP не задан, но порт задан, результат будет вида <code>:8080</code>. Если не заданы обе переменные, результат будет просто <code>:</code>.</p><div class="recommendation"><strong>Рекомендация:</strong> Задавать адрес, который соответствует реальной модели прослушивания приложения, например <code>0.0.0.0</code> внутри контейнера либо конкретный bind IP, если это требуется архитектурой.</div><div class="back-top"><a href="https://damubpm.github.io/help/damu_environment_variables.html#top">↑ К началу</a></div></article>
+<article class="env-card" id="OPENSHIFT_GO_PORT"><div class="env-head"><div><h3><code>OPENSHIFT_GO_PORT</code></h3><p class="lead">Порт HTTP-сервиса, доступный Lua API и стартовому диагностическому логу.</p></div><a class="line-ref" href="https://damubpm.github.io/help/damu_environment_variables.html#source">Go #2: LuaGetHTTPListenHostPort(); main/init(): startup log</a></div><div class="meta-grid"><div><span>Тип</span><strong>Строковое представление порта</strong></div><div><span>По умолчанию</span><strong>Пустая строка</strong></div><div class="wide"><span>Пример</span><strong><code>8080</code></strong></div></div><h4>Как используется</h4><p>Во втором исходнике значение объединяется с <code>OPENSHIFT_GO_IP</code> и возвращается в Lua. В дополнительном <code>main/init()</code> оно также подставляется в стартовое сообщение <code>log.Printf(... port %s)</code>.</p><h4>Фактическое поведение</h4><p>В показанных местах переменная не преобразуется в число и сама по себе не запускает HTTP-listener. Это строковое конфигурационное значение, которое другие части проекта могут использовать дополнительно.</p><div class="recommendation"><strong>Рекомендация:</strong> Держать синхронизированной с реальным портом, который слушает HTTP-сервер и который опубликован Service/Ingress или контейнерной конфигурацией.</div><div class="back-top"><a href="https://damubpm.github.io/help/damu_environment_variables.html#top">↑ К началу</a></div></article>
 </section><section class="category-section" id="examples">
 <h2>Примеры конфигурации</h2>
 <p>Это примеры оформления переменных; фактические значения нужно подобрать под конкретный deployment.</p>
@@ -583,6 +641,8 @@ pre code { background:transparent; color:inherit; padding:0; }
 <pre><code>Environment="DAMUCRM_SALT=change-me-to-a-secret"
 Environment="DAMU_SESSION_MAXAGE_DAYS=30"
 Environment="DAMU_SESSION_SAMESITE=LaxMode"
+Environment="DAMU_ALLOW_INTERNET_AUTH=0"
+Environment="DAMU_ALLOW_INTERNET_AUTH_ROLES=admin,manager"
 Environment="DAMU_REDIS_SESSION=1"
 Environment="DAMU_LOGIN_LOG_OUTPUT=1"
 Environment="DAMU_DEFAULT_LANG=ru"
@@ -607,6 +667,8 @@ Environment="OPENSHIFT_GO_PORT=8080"</code></pre>
   DAMUCRM_SALT: "change-me-to-a-secret"
   DAMU_SESSION_MAXAGE_DAYS: "30"
   DAMU_SESSION_SAMESITE: "LaxMode"
+  DAMU_ALLOW_INTERNET_AUTH: "0"
+  DAMU_ALLOW_INTERNET_AUTH_ROLES: "admin,manager"
   DAMU_REDIS_SESSION: "1"
   DAMU_LOGIN_LOG_OUTPUT: "1"
   DAMU_DEFAULT_LANG: "ru"
@@ -629,11 +691,11 @@ Environment="OPENSHIFT_GO_PORT=8080"</code></pre>
 <div class="notice"><strong>Режим микросервиса.</strong> Если задать <code>DAMU_MICROSERVICE_LUA_FILE</code>, показанный init() делает ранний <code>return</code> после <code>restapi.HandleMicroService()</code>. Поэтому эту переменную не следует бездумно добавлять в общий шаблон production-конфигурации.</div></section>
 <section class="category-section" id="source">
 <h2>Источник</h2>
-<p>Документ обновлен по исходникам <code>Вставленный код(2).go</code>, <code>Вставленный текст(20260904-104638).txt</code>, <code>Вставленный код(3).go</code> и по дополнительному фрагменту <code>main/init()</code>, переданному в сообщении. Анализировались обращения к <code>os.Getenv()</code> для префиксов <code>DAMU*</code>, <code>DAMUCRM*</code> и <code>OPENSHIFT_*</code>. После удаления дублей справочник содержит 34 уникальные переменные: 27 DAMU/DAMUCRM и 7 OPENSHIFT.</p>
+<p>Документ обновлен по исходникам <code>Вставленный код(2).go</code>, <code>Вставленный текст(20260904-104638).txt</code>, <code>Вставленный код(3).go</code>, дополнительному фрагменту <code>main/init()</code> и файлу <code>grantutils.go</code>. Анализировались обращения к <code>os.Getenv()</code> для префиксов <code>DAMU*</code>, <code>DAMUCRM*</code> и <code>OPENSHIFT_*</code>. <code>grantutils.go</code> добавил две новые уникальные переменные — <code>DAMU_ALLOW_INTERNET_AUTH</code> и <code>DAMU_ALLOW_INTERNET_AUTH_ROLES</code> — и подтвердил дополнительное использование <code>DAMUCRM_DEBUG_SQL</code>. После удаления дублей справочник содержит 36 уникальных переменных: 29 DAMU/DAMUCRM и 7 OPENSHIFT.</p>
 </section>
 </main>
 <footer class="footer">
-<div class="container"><a class="home-link" href="index.html">← Вернуться на главную</a></div>
+<div class="container"><a class="home-link" href="https://damubpm.github.io/help/index.html">← Вернуться на главную</a></div>
 </footer>
 <script>
 (function () {
@@ -645,5 +707,6 @@ Environment="OPENSHIFT_GO_PORT=8080"</code></pre>
   });
 })();
 </script>
-</body>
-</html>
+
+
+</body></html>
