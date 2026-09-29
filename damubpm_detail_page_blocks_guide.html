@@ -1,0 +1,280 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>DamuBPM — Detail-страницы по UI-блокам</title>
+  <link rel="stylesheet" href="/cms/css/new_design_damubpm.css" type="text/css" />
+  <style>
+    :root{--doc-bg:#f5f7fb;--doc-card:#fff;--doc-text:#202632;--doc-muted:#677386;--doc-line:#dfe5ee;--doc-accent:#1467c7;--doc-accent-soft:#eaf3ff;--doc-code:#172033;--doc-code-text:#e7eef9;--doc-ok:#16794b;--doc-warn:#9a5b00}
+    *{box-sizing:border-box} html{scroll-behavior:smooth} body{margin:0;background:var(--doc-bg);color:var(--doc-text);font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;line-height:1.55}
+    a{color:var(--doc-accent)} code{font-family:"SFMono-Regular",Consolas,"Liberation Mono",monospace}
+    .doc-shell{display:grid;grid-template-columns:290px minmax(0,1fr);min-height:100vh}
+    .doc-side{position:sticky;top:0;height:100vh;overflow:auto;border-right:1px solid var(--doc-line);background:#fff;padding:22px 18px}
+    .doc-brand{font-weight:800;font-size:20px;margin-bottom:4px}.doc-sub{font-size:12px;color:var(--doc-muted);margin-bottom:16px}
+    .home-link{display:inline-flex;align-items:center;gap:7px;padding:8px 10px;border:1px solid var(--doc-line);border-radius:9px;text-decoration:none;margin-bottom:14px;background:#fff}
+    .search{width:100%;border:1px solid var(--doc-line);border-radius:9px;padding:10px 11px;font-size:14px;margin-bottom:14px;background:#f9fbfd}
+    .toc a{display:block;text-decoration:none;color:#344054;padding:7px 9px;border-radius:8px;font-size:13px;margin:2px 0}.toc a:hover{background:var(--doc-accent-soft);color:var(--doc-accent)}
+    .doc-main{max-width:1180px;width:100%;padding:34px 42px 90px;margin:0 auto}.hero{background:linear-gradient(135deg,#0f2747,#174b84);color:#fff;border-radius:18px;padding:30px 32px;margin-bottom:24px;box-shadow:0 14px 35px rgba(15,39,71,.16)}
+    .hero h1{margin:0 0 9px;font-size:34px;line-height:1.15}.hero p{margin:0;max-width:850px;color:#dbe8f7}.hero .meta{display:flex;gap:8px;flex-wrap:wrap;margin-top:18px}.chip{border:1px solid rgba(255,255,255,.22);background:rgba(255,255,255,.08);border-radius:999px;padding:5px 9px;font-size:12px}
+    .quick{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:18px 0 26px}.qcard{background:var(--doc-card);border:1px solid var(--doc-line);border-radius:14px;padding:15px}.qcard strong{display:block;font-size:18px}.qcard span{font-size:12px;color:var(--doc-muted)}
+    .doc-section{background:var(--doc-card);border:1px solid var(--doc-line);border-radius:16px;padding:24px 26px;margin:0 0 18px;box-shadow:0 3px 10px rgba(25,36,52,.025)}
+    .doc-section h2{margin:0 0 14px;font-size:23px}.doc-section h3{margin:24px 0 10px;font-size:17px}.doc-section p:first-of-type{margin-top:0}.lead{font-size:16px;color:#3a4656}
+    .callout{border-left:4px solid var(--doc-accent);background:var(--doc-accent-soft);padding:13px 15px;border-radius:0 10px 10px 0;margin:14px 0}.callout.warn{border-color:#e39a21;background:#fff7e8}.callout.ok{border-color:#25a66a;background:#ecfaf3}
+    .tree,.codebox{position:relative;background:var(--doc-code);color:var(--doc-code-text);border-radius:12px;padding:18px;overflow:auto;font-family:"SFMono-Regular",Consolas,"Liberation Mono",monospace;font-size:13px;line-height:1.58;white-space:pre}
+    .copy-btn{position:absolute;right:9px;top:9px;border:1px solid #52627a;background:#253049;color:#fff;border-radius:7px;padding:5px 8px;font-size:11px;cursor:pointer}.copy-btn:hover{background:#33435f}
+    .table-wrap{overflow:auto;border:1px solid var(--doc-line);border-radius:12px} table{width:100%;border-collapse:collapse;background:#fff;font-size:13px} th,td{padding:10px 12px;border-bottom:1px solid var(--doc-line);text-align:left;vertical-align:top} th{background:#f3f6fa;font-weight:700;white-space:nowrap} tr:last-child td{border-bottom:none}
+    .flow{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:13px 0}.flow span{background:#f8fafc;border:1px solid var(--doc-line);border-radius:9px;padding:8px 10px;font-family:Consolas,monospace;font-size:12px}.flow b{color:var(--doc-accent)}
+    .steps{counter-reset:s}.step{counter-increment:s;display:grid;grid-template-columns:34px 1fr;gap:10px;margin:13px 0}.step:before{content:counter(s);display:grid;place-items:center;width:30px;height:30px;border-radius:50%;background:var(--doc-accent);color:#fff;font-weight:800;font-size:13px}.step h3{margin:2px 0 4px}.step p{margin:0;color:#4d5969}
+    details{border:1px solid var(--doc-line);border-radius:10px;margin:8px 0;background:#fbfcfe} summary{cursor:pointer;font-weight:700;padding:11px 13px} details>div{padding:0 13px 13px}
+    .checkgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.check{padding:10px 12px;border:1px solid var(--doc-line);border-radius:9px;background:#fbfcfe}.small{font-size:12px;color:var(--doc-muted)}
+    .footer{color:var(--doc-muted);font-size:12px;text-align:center;margin-top:24px}.hidden-by-search{display:none!important}
+    @media(max-width:980px){.doc-shell{grid-template-columns:1fr}.doc-side{position:relative;height:auto;border-right:0;border-bottom:1px solid var(--doc-line)}.toc{display:none}.doc-main{padding:22px 16px 70px}.quick{grid-template-columns:1fr 1fr}.hero h1{font-size:28px}.checkgrid{grid-template-columns:1fr}}
+    @media(max-width:560px){.quick{grid-template-columns:1fr}.hero{padding:23px 20px}.doc-section{padding:20px 16px}.doc-main{padding-left:10px;padding-right:10px}}
+  </style>
+</head>
+<body>
+<div class="doc-shell">
+  <aside class="doc-side">
+    <a class="home-link" href="index.html">← Главная</a>
+    <div class="doc-brand">DamuBPM Docs</div>
+    <div class="doc-sub">Detail pages / UI blocks</div>
+    <input id="docSearch" class="search" type="search" placeholder="Поиск по справке…" />
+    <nav class="toc">
+      <a href="#model">1. Модель страницы</a>
+      <a href="#types">2. Типы элементов</a>
+      <a href="#tree">3. pagesdetails</a>
+      <a href="#generation">4. Генерация</a>
+      <a href="#render">5. Рендер блоков</a>
+      <a href="#recipe">6. Рецепт новой страницы</a>
+      <a href="#sql">7. Диагностика SQL</a>
+      <a href="#ai">8. Алгоритм для ИИ</a>
+      <a href="#errors">9. Ошибки</a>
+      <a href="#check">10. Чек-лист</a>
+    </nav>
+  </aside>
+
+  <main class="doc-main">
+    <section class="hero">
+      <h1>DamuBPM: detail-страницы по UI-блокам</h1>
+      <p>Практическая схема построения автогенерируемой карточки через <code>pages_ui_blocks</code> и <code>pages_ui_blocks_n</code> на реальном примере <code>pagesdetails</code>.</p>
+      <div class="meta"><span class="chip">test-helpdeskv19</span><span class="chip">pagesdetails · id 4478</span><span class="chip">is_auto = 1</span><span class="chip">pkg/page → ParseTemplate</span></div>
+    </section>
+
+    <div class="quick">
+      <div class="qcard"><strong>9</strong><span>UI-блоков в примере</span></div>
+      <div class="qcard"><strong>6</strong><span>поддерживаемых типов узлов</span></div>
+      <div class="qcard"><strong>4</strong><span>вкладки в TabView</span></div>
+      <div class="qcard"><strong>1</strong><span>источник истины: метаданные</span></div>
+    </div>
+
+    <section class="doc-section" id="model">
+      <h2>1. Модель страницы</h2>
+      <p class="lead">Страница — это дерево контейнеров. <code>pages_ui_blocks</code> хранит сами контейнеры, а <code>pages_ui_blocks_n</code> — содержимое и связи между ними.</p>
+      <div class="codebox"><button class="copy-btn">Копировать</button>pages
+└── pages_ui_blocks
+    └── pages_ui_blocks_n
+        ├── attr
+        ├── block
+        ├── tp
+        ├── html
+        ├── logic
+        └── ui_component</div>
+      <div class="callout"><strong>Критически важно:</strong> узел типа <code>block</code> — это не дочерний блок как запись. Это элемент родительского блока, который ссылается на другую запись <code>pages_ui_blocks</code>.</div>
+      <div class="table-wrap"><table><thead><tr><th>Слой</th><th>Роль</th><th>Пример</th></tr></thead><tbody>
+        <tr><td><code>pages</code></td><td>Общий шаблон страницы и параметры</td><td><code>pagesdetails</code></td></tr>
+        <tr><td><code>pages_ui_blocks</code></td><td>Контейнер, секция, вкладка, TabView</td><td><code>tabview</code>, <code>tabview_tab</code></td></tr>
+        <tr><td><code>pages_ui_blocks_n</code></td><td>Узел внутри блока</td><td><code>attr</code>, <code>block</code>, <code>tp</code></td></tr>
+        <tr><td><code>ui_block_tpl</code></td><td>HTML-шаблон блока</td><td><code>default_page</code></td></tr>
+      </tbody></table></div>
+    </section>
+
+    <section class="doc-section" id="types">
+      <h2>2. Типы элементов блока</h2>
+      <div class="table-wrap"><table><thead><tr><th>Тип</th><th>Назначение</th><th>Основная связь</th></tr></thead><tbody>
+        <tr><td><code>attr</code></td><td>Поле основной сущности</td><td><code>entity_attrs</code></td></tr>
+        <tr><td><code>block</code></td><td>Подключение дочернего UI-блока</td><td><code>pages_ui_blocks</code></td></tr>
+        <tr><td><code>tp</code></td><td>Табличная часть</td><td><code>table_parts</code></td></tr>
+        <tr><td><code>html</code></td><td>Произвольный HTML</td><td>HTML элемента</td></tr>
+        <tr><td><code>logic</code></td><td>Логика / шаблонный фрагмент</td><td>logic/angular template</td></tr>
+        <tr><td><code>ui_component</code></td><td>Явный компонент</td><td>UI component</td></tr>
+      </tbody></table></div>
+      <p class="small">В текущем <code>pagesdetails</code> используются block, attr, tp и logic.</p>
+    </section>
+
+    <section class="doc-section" id="tree">
+      <h2>3. Реальный пример: `pagesdetails`</h2>
+      <p>Корень страницы — <code>default_page</code>. В него элементом <code>block</code> подключён <code>TabView</code>, затем каждая вкладка подключается отдельным узлом типа <code>block</code>.</p>
+      <div class="tree"><button class="copy-btn">Копировать</button>pagesdetails
+└── default_page  pagesdetails_udsdsad
+    ├── [logic] pages_18153
+    └── [block]
+        └── TabView
+            ├── [block nn=50]  → tabview_tab «Информация»
+            │   └── default_page
+            │       ├── [attr] code
+            │       ├── [attr] entity_id
+            │       ├── [attr] module_id
+            │       ├── [attr] db_template
+            │       ├── [attr] title
+            │       ├── [attr] page_type_id
+            │       ├── [attr] url
+            │       └── [attr] is_auto
+            ├── [block nn=100] → tabview_tab «Логика»
+            │   └── default_page
+            │       └── [attr] angular_json
+            ├── [block nn=200] → tabview_tab «HTML»
+            │   └── default_page
+            │       └── [attr] angular_template
+            └── [block nn=300] → tabview_tab «Custom Blocks»
+                └── [tp] page_cus_blocks</div>
+      <div class="callout ok"><strong>Полезный паттерн:</strong> <code>TabView → tabview_tab → default_page → attr/tp</code>. Он хорошо разделяет навигацию, вкладку и раскладку содержимого.</div>
+    </section>
+
+    <section class="doc-section" id="generation">
+      <h2>4. Как выполняется генерация</h2>
+      <div class="flow"><span>genPages(entity_id)</span><b>→</b><span>Detail(page_id, pages_for_gen_ng)</span><b>→</b><span>ui_blocks / ui_attrs / table_parts</span><b>→</b><span>ParseTemplate</span><b>→</b><span>pages.angular_*</span></div>
+      <div class="steps">
+        <div class="step"><div><h3>Выбор страниц</h3><p>Берутся страницы сущности с <code>is_auto=1</code>.</p></div></div>
+        <div class="step"><div><h3>Контекст генерации</h3><p>Для каждой страницы вызывается Detail <code>pages_for_gen_ng</code>.</p></div></div>
+        <div class="step"><div><h3>Подготовка блоков и полей</h3><p>Формируются <code>ui_blocks</code>, <code>ui_blocks2</code>, <code>ui_attrs</code>, <code>table_parts</code> и связанные наборы.</p></div></div>
+        <div class="step"><div><h3>Параметры</h3><p>Добавляются component params, table part params, page params и custom blocks.</p></div></div>
+        <div class="step"><div><h3>ParseTemplate</h3><p>Шаблоны страницы и вложенных блоков превращаются в итоговый HTML/JS.</p></div></div>
+        <div class="step"><div><h3>Сохранение</h3><p>Результат записывается в <code>pages.angular_template</code> и <code>pages.angular_json</code>.</p></div></div>
+      </div>
+      <div class="callout warn"><strong>Не редактируйте результат как источник.</strong> У страницы <code>is_auto=1</code> следующая генерация может перезаписать ручные изменения в <code>angular_template</code> и <code>angular_json</code>.</div>
+    </section>
+
+    <section class="doc-section" id="render">
+      <h2>5. Как рендерится блок</h2>
+      <h3>Корневые блоки</h3>
+      <p><code>ui_blocks</code> содержит блоки страницы, которые не подключены как дочерние через узел типа <code>block</code>. Связи дочерних блоков попадают в <code>ui_blocks2</code>.</p>
+      <h3>Автоматический шаблон блока</h3>
+      <div class="codebox"><button class="copy-btn">Копировать</button>pages_ui_blocks.is_auto = 1
+    → ui_block_tpl.angular_template
+
+иначе
+    → pages_ui_blocks.angular_template</div>
+      <h3>Рекурсивный обход</h3>
+      <div class="codebox"><button class="copy-btn">Копировать</button>renderBlock(block):
+    nodes = nodes of block sorted by nn
+
+    attr → render field component
+    tp   → render table part
+    block→ renderBlock(child block)
+    logic/html/ui_component → render own template</div>
+      <p>Для рекурсивной обработки полезно хранить множество посещённых блоков и прекращать обход при обнаружении цикла.</p>
+      <h3>Порядок и ширина</h3>
+      <p>Порядок задаётся <code>nn</code>. Для ширины действует приоритет размещения элемента, затем ширины атрибута, затем default CSS-класс.</p>
+    </section>
+
+    <section class="doc-section" id="recipe">
+      <h2>6. Рецепт новой detail-страницы</h2>
+      <div class="steps">
+        <div class="step"><div><h3>Страница</h3><p>Привязать страницу к сущности, выбрать detail template, включить <code>is_auto=1</code>, задать code и URL.</p></div></div>
+        <div class="step"><div><h3>Корневой контейнер</h3><p>Создать <code>default_page</code> либо другой корневой UI block.</p></div></div>
+        <div class="step"><div><h3>TabView при необходимости</h3><p>Создать блок с template <code>tabview</code> и подключить его в корень узлом типа <code>block</code>.</p></div></div>
+        <div class="step"><div><h3>Вкладки</h3><p>Для каждой вкладки создать <code>tabview_tab</code>, заполнить <code>header_title</code> и подключить к TabView через <code>block</code>.</p></div></div>
+        <div class="step"><div><h3>Содержимое вкладок</h3><p>Обычно добавить внутрь вкладки <code>default_page</code>, а в него элементы <code>attr</code> и/или <code>tp</code>.</p></div></div>
+        <div class="step"><div><h3>Порядок</h3><p>Явно заполнить <code>nn</code>, при необходимости переопределить ширину конкретного элемента.</p></div></div>
+        <div class="step"><div><h3>Генерация</h3><p>Запустить <code>genPages(entity_id, user_id)</code>. Важно: передаётся ID сущности.</p></div></div>
+        <div class="step"><div><h3>Проверка</h3><p>Проверить HTML/JS, вкладки, поля, readonly/required, табличные части и повторную генерацию.</p></div></div>
+      </div>
+    </section>
+
+    <section class="doc-section" id="sql">
+      <h2>7. Диагностика структуры SQL</h2>
+      <p>Запрос ниже даёт плоский список блоков и узлов, из которого дерево строится по <code>parent_block_code → child_block_code</code>.</p>
+      <div class="codebox"><button class="copy-btn">Копировать</button>select
+    p.code as page_code,
+    b.code as parent_block_code,
+    ubt.code as block_tpl_code,
+    b.header_title,
+    n.code as element_code,
+    nt.code as element_type,
+    n.nn,
+    ea.code as attr_code,
+    tp.code as table_part_code,
+    cb.code as child_block_code
+from pages p
+join pages_ui_blocks b on b.pages_id = p.id
+left join ui_block_tpl ubt on ubt.id = b.ui_block_tpl_id
+left join pages_ui_blocks_n n on n.pages_ui_blocks_id = b.id
+left join pages_ui_blocks_n_t nt on nt.id = n.t_id
+left join entity_attrs ea on ea.id = n.attr_id
+left join table_parts tp on tp.id = n.tp_id
+left join pages_ui_blocks cb on cb.id = n.block_id
+where p.code = 'pagesdetails'
+order by coalesce(b.nn,b.id), coalesce(n.nn,n.id);</div>
+    </section>
+
+    <section class="doc-section" id="ai">
+      <h2>8. Алгоритм для ИИ/автоматизации</h2>
+      <div class="checkgrid">
+        <div class="check">1. Найти страницу и проверить <code>is_auto</code>.</div>
+        <div class="check">2. Загрузить все блоки страницы.</div>
+        <div class="check">3. Загрузить все элементы блоков.</div>
+        <div class="check">4. Разделить элементы по типам.</div>
+        <div class="check">5. Для <code>block</code> определить child block.</div>
+        <div class="check">6. Найти блоки, не используемые как child — корни.</div>
+        <div class="check">7. Построить adjacency map <code>parent → nodes</code>.</div>
+        <div class="check">8. Сортировать каждый список по <code>nn</code>.</div>
+        <div class="check">9. Рекурсивно построить дерево.</div>
+        <div class="check">10. Контролировать циклы.</div>
+        <div class="check">11. После изменения — генерация по <code>entity_id</code>.</div>
+        <div class="check">12. Проверить сгенерированный результат.</div>
+      </div>
+    </section>
+
+    <section class="doc-section" id="errors">
+      <h2>9. Типовые ошибки</h2>
+      <details open><summary>Блок создан, но не отображается</summary><div>Проверьте принадлежность странице, связь через узел <code>block</code>, корневой статус, шаблон, <code>is_auto</code> блока и <code>ng_if</code>.</div></details>
+      <details><summary>Вкладка есть, но пустая</summary><div>Внутри вкладки должен быть <code>attr</code>, <code>tp</code> или дочерний блок, обычно <code>default_page</code>.</div></details>
+      <details><summary>Поле есть в сущности, но не видно</summary><div>Проверьте узел <code>attr</code>, правильный атрибут, <code>ng_if</code>, hide-field, компонент и результат генерации.</div></details>
+      <details><summary>Порядок «плавает»</summary><div>Явно задайте <code>nn</code> у блоков и элементов.</div></details>
+      <details><summary>После генерации пропали ручные HTML-изменения</summary><div>Для <code>is_auto=1</code> правьте метаданные, UI block template или page template, а не итоговый HTML/JS.</div></details>
+      <details><summary>Рекурсивное зацикливание</summary><div>Проверьте цепочку child blocks. Связь вида <code>A → B → A</code> недопустима.</div></details>
+    </section>
+
+    <section class="doc-section" id="check">
+      <h2>10. Чек-лист</h2>
+      <h3>Перед генерацией</h3>
+      <div class="checkgrid">
+        <div class="check">☐ правильная сущность</div><div class="check">☐ <code>pages.is_auto=1</code></div>
+        <div class="check">☐ есть корневой блок</div><div class="check">☐ дочерние блоки подключены через <code>block</code></div>
+        <div class="check">☐ нет циклов</div><div class="check">☐ у вкладок есть <code>header_title</code></div>
+        <div class="check">☐ attr ссылаются на нужные поля</div><div class="check">☐ tp ссылаются на нужные table parts</div>
+        <div class="check">☐ задан <code>nn</code></div><div class="check">☐ выбран правильный <code>ui_block_tpl</code></div>
+      </div>
+      <h3>После генерации</h3>
+      <div class="checkgrid">
+        <div class="check">☐ создан <code>angular_template</code></div><div class="check">☐ создан <code>angular_json</code></div>
+        <div class="check">☐ структура совпадает с деревом</div><div class="check">☐ порядок вкладок правильный</div>
+        <div class="check">☐ readonly/required работают</div><div class="check">☐ табличные части загружаются</div>
+        <div class="check">☐ custom blocks вставились</div><div class="check">☐ повторная генерация стабильна</div>
+      </div>
+      <div class="callout ok"><strong>Главное правило:</strong> структура detail-страницы живёт в <code>pages_ui_blocks</code> + <code>pages_ui_blocks_n</code>. Итоговый Angular HTML/JS — скомпилированный результат этой структуры.</div>
+    </section>
+
+    <div class="footer"><a href="index.html">← Главная</a> · DamuBPM detail-page blocks reference · 29.09.2026</div>
+  </main>
+</div>
+<script>
+(function(){
+  const input=document.getElementById('docSearch');
+  const sections=[...document.querySelectorAll('.doc-section')];
+  input.addEventListener('input',()=>{
+    const q=input.value.trim().toLowerCase();
+    sections.forEach(s=>s.classList.toggle('hidden-by-search',q && !s.innerText.toLowerCase().includes(q)));
+  });
+  document.querySelectorAll('.copy-btn').forEach(btn=>{
+    btn.addEventListener('click',async()=>{
+      const box=btn.parentElement;
+      const text=[...box.childNodes].filter(n=>n!==btn).map(n=>n.textContent).join('').trim();
+      try{await navigator.clipboard.writeText(text);btn.textContent='Скопировано';setTimeout(()=>btn.textContent='Копировать',1200)}catch(e){btn.textContent='Ошибка'}
+    });
+  });
+})();
+</script>
+</body>
+</html>
