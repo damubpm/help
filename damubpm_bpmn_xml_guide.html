@@ -1,0 +1,1545 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>BPMN XML в DamuBPM — спецификация для ИИ</title>
+  <style>
+    html {
+      color: #1a1a1a;
+      background-color: #fdfdfd;
+    }
+    body {
+      margin: 0 auto;
+      max-width: 36em;
+      padding-left: 50px;
+      padding-right: 50px;
+      padding-top: 50px;
+      padding-bottom: 50px;
+      hyphens: auto;
+      overflow-wrap: break-word;
+      text-rendering: optimizeLegibility;
+      font-kerning: normal;
+    }
+    @media (max-width: 600px) {
+      body {
+        font-size: 0.9em;
+        padding: 12px;
+      }
+      h1 {
+        font-size: 1.8em;
+      }
+    }
+    @media print {
+      html {
+        background-color: white;
+      }
+      body {
+        background-color: transparent;
+        color: black;
+        font-size: 12pt;
+      }
+      p, h2, h3 {
+        orphans: 3;
+        widows: 3;
+      }
+      h2, h3, h4 {
+        page-break-after: avoid;
+      }
+    }
+    p {
+      margin: 1em 0;
+    }
+    a {
+      color: #1a1a1a;
+    }
+    a:visited {
+      color: #1a1a1a;
+    }
+    img {
+      max-width: 100%;
+    }
+    svg {
+      height: auto;
+      max-width: 100%;
+    }
+    h1, h2, h3, h4, h5, h6 {
+      margin-top: 1.4em;
+    }
+    h5, h6 {
+      font-size: 1em;
+      font-style: italic;
+    }
+    h6 {
+      font-weight: normal;
+    }
+    ol, ul {
+      padding-left: 1.7em;
+      margin-top: 1em;
+    }
+    li > ol, li > ul {
+      margin-top: 0;
+    }
+    blockquote {
+      margin: 1em 0 1em 1.7em;
+      padding-left: 1em;
+      border-left: 2px solid #e6e6e6;
+      color: #606060;
+    }
+    code {
+      font-family: Menlo, Monaco, Consolas, 'Lucida Console', monospace;
+      font-size: 85%;
+      margin: 0;
+      hyphens: manual;
+    }
+    pre {
+      margin: 1em 0;
+      overflow: auto;
+    }
+    pre code {
+      padding: 0;
+      overflow: visible;
+      overflow-wrap: normal;
+    }
+    .sourceCode {
+     background-color: transparent;
+     overflow: visible;
+    }
+    hr {
+      background-color: #1a1a1a;
+      border: none;
+      height: 1px;
+      margin: 1em 0;
+    }
+    table {
+      margin: 1em 0;
+      border-collapse: collapse;
+      width: 100%;
+      overflow-x: auto;
+      display: block;
+      font-variant-numeric: lining-nums tabular-nums;
+    }
+    table caption {
+      margin-bottom: 0.75em;
+    }
+    tbody {
+      margin-top: 0.5em;
+      border-top: 1px solid #1a1a1a;
+      border-bottom: 1px solid #1a1a1a;
+    }
+    th {
+      border-top: 1px solid #1a1a1a;
+      padding: 0.25em 0.5em 0.25em 0.5em;
+    }
+    td {
+      padding: 0.125em 0.5em 0.25em 0.5em;
+    }
+    header {
+      margin-bottom: 4em;
+      text-align: center;
+    }
+    #TOC li {
+      list-style: none;
+    }
+    #TOC ul {
+      padding-left: 1.3em;
+    }
+    #TOC > ul {
+      padding-left: 0;
+    }
+    #TOC a:not(:hover) {
+      text-decoration: none;
+    }
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+    /* CSS for syntax highlighting */
+    pre > code.sourceCode { white-space: pre; position: relative; }
+    pre > code.sourceCode > span { line-height: 1.25; }
+    pre > code.sourceCode > span:empty { height: 1.2em; }
+    .sourceCode { overflow: visible; }
+    code.sourceCode > span { color: inherit; text-decoration: inherit; }
+    div.sourceCode { margin: 1em 0; }
+    pre.sourceCode { margin: 0; }
+    @media screen {
+    div.sourceCode { overflow: auto; }
+    }
+    @media print {
+    pre > code.sourceCode { white-space: pre-wrap; }
+    pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
+    }
+    pre.numberSource code
+      { counter-reset: source-line 0; }
+    pre.numberSource code > span
+      { position: relative; left: -4em; counter-increment: source-line; }
+    pre.numberSource code > span > a:first-child::before
+      { content: counter(source-line);
+        position: relative; left: -1em; text-align: right; vertical-align: baseline;
+        border: none; display: inline-block;
+        -webkit-touch-callout: none; -webkit-user-select: none;
+        -khtml-user-select: none; -moz-user-select: none;
+        -ms-user-select: none; user-select: none;
+        padding: 0 4px; width: 4em;
+        color: #aaaaaa;
+      }
+    pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+    div.sourceCode
+      {   }
+    @media screen {
+    pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+    }
+    code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+    code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+    code span.at { color: #7d9029; } /* Attribute */
+    code span.bn { color: #40a070; } /* BaseN */
+    code span.bu { color: #008000; } /* BuiltIn */
+    code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+    code span.ch { color: #4070a0; } /* Char */
+    code span.cn { color: #880000; } /* Constant */
+    code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+    code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+    code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+    code span.dt { color: #902000; } /* DataType */
+    code span.dv { color: #40a070; } /* DecVal */
+    code span.er { color: #ff0000; font-weight: bold; } /* Error */
+    code span.ex { } /* Extension */
+    code span.fl { color: #40a070; } /* Float */
+    code span.fu { color: #06287e; } /* Function */
+    code span.im { color: #008000; font-weight: bold; } /* Import */
+    code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+    code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+    code span.op { color: #666666; } /* Operator */
+    code span.ot { color: #007020; } /* Other */
+    code span.pp { color: #bc7a00; } /* Preprocessor */
+    code span.sc { color: #4070a0; } /* SpecialChar */
+    code span.ss { color: #bb6688; } /* SpecialString */
+    code span.st { color: #4070a0; } /* String */
+    code span.va { color: #19177c; } /* Variable */
+    code span.vs { color: #4070a0; } /* VerbatimString */
+    code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+  </style>
+
+<style>
+:root{--bg:#f6f8fb;--surface:#fff;--text:#1c2430;--muted:#667085;--line:#e4e7ec;--brand:#175cd3;--brand2:#0b4db8;--soft:#eef4ff;--code:#101828;--warn:#fff7e6}
+*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;max-width:none;padding:0;background:var(--bg);color:var(--text);font:15px/1.62 Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif}
+a{color:var(--brand);text-decoration:none}a:hover{text-decoration:underline}
+body>header,.page>header{display:none}
+.homebar{position:sticky;top:0;z-index:20;background:rgba(255,255,255,.94);backdrop-filter:blur(10px);border-bottom:1px solid var(--line);padding:10px 22px;display:flex;align-items:center;gap:16px}
+.homebar a{display:inline-flex;align-items:center;gap:8px;background:var(--brand);color:#fff;padding:8px 13px;border-radius:9px;font-weight:700;text-decoration:none}.homebar .meta{color:var(--muted);font-size:13px}
+.page{max-width:1500px;margin:0 auto;display:grid;grid-template-columns:300px minmax(0,1fr);gap:28px;padding:26px 24px 60px}
+#TOC{position:sticky;top:70px;align-self:start;max-height:calc(100vh - 90px);overflow:auto;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:18px 18px 18px 20px;box-shadow:0 1px 2px rgba(16,24,40,.04)}
+#TOC:before{content:"Содержание";display:block;font-weight:800;font-size:16px;margin-bottom:10px}#TOC ul{padding-left:18px;margin:0}#TOC li{margin:6px 0}#TOC a{color:#344054;font-size:13px}
+main{min-width:0;background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:34px 42px;box-shadow:0 1px 3px rgba(16,24,40,.05)}
+h1{font-size:34px;line-height:1.2;margin:0 0 18px;color:#101828}h2{font-size:24px;line-height:1.3;margin-top:42px;padding-top:8px;border-top:1px solid var(--line)}h3{font-size:19px;margin-top:28px}h4{font-size:16px}p{margin:10px 0 14px}strong{color:#101828}
+blockquote{margin:18px 0;padding:14px 18px;background:var(--soft);border-left:4px solid var(--brand);border-radius:8px;color:#344054}blockquote p{margin:0 0 8px}blockquote p:last-child{margin-bottom:0}
+pre{overflow:auto;background:var(--code);color:#f8fafc;padding:16px 18px;border-radius:10px;font-size:13px;line-height:1.55;border:1px solid #344054}code{font-family:"SFMono-Regular",Consolas,"Liberation Mono",monospace}p code,li code,td code{background:#f2f4f7;border:1px solid #eaecf0;padding:1px 5px;border-radius:5px;color:#b42318;font-size:.92em}
+table{width:100%;border-collapse:collapse;margin:18px 0 24px;display:block;overflow:auto}th,td{border:1px solid var(--line);padding:9px 11px;text-align:left;vertical-align:top}th{background:#f9fafb;color:#344054;font-weight:700}tr:nth-child(even) td{background:#fcfcfd}
+ul,ol{padding-left:24px}li{margin:5px 0}hr{border:0;border-top:1px solid var(--line);margin:32px 0}.task-list-item{list-style:none;margin-left:-22px}
+@media(max-width:1000px){.page{grid-template-columns:1fr;padding:14px}.homebar{padding:9px 14px}.homebar .meta{display:none}#TOC{position:relative;top:auto;max-height:none}main{padding:24px 20px}h1{font-size:28px}}
+@media print{.homebar,#TOC{display:none}.page{display:block;max-width:none;padding:0}main{border:0;box-shadow:none;padding:0}pre{white-space:pre-wrap}}
+</style>
+</head>
+<body>
+<div class="homebar"><a href="index.html">← На главную</a><span class="meta">DamuBPM · BPMN XML · практическая спецификация для ИИ</span></div>
+<div class="page">
+<nav id="TOC" role="doc-toc">
+<ul>
+<li><a
+href="#bpmn-xml-в-damubpm-практическая-спецификация-для-автоматического-редактирования-ии"
+id="toc-bpmn-xml-в-damubpm-практическая-спецификация-для-автоматического-редактирования-ии">BPMN
+XML в DamuBPM: практическая спецификация для автоматического
+редактирования ИИ</a>
+<ul>
+<li><a
+href="#1-главная-модель-один-процесс-хранится-в-двух-синхронных-слоях"
+id="toc-1-главная-модель-один-процесс-хранится-в-двух-синхронных-слоях">1.
+Главная модель: один процесс хранится в двух синхронных слоях</a>
+<ul>
+<li><a href="#наблюдаемые-показатели-файлов"
+id="toc-наблюдаемые-показатели-файлов">Наблюдаемые показатели
+файлов</a></li>
+</ul></li>
+<li><a href="#2-корневой-xml-каркас" id="toc-2-корневой-xml-каркас">2.
+Корневой XML-каркас</a>
+<ul>
+<li><a href="#наблюдаемые-атрибуты-process"
+id="toc-наблюдаемые-атрибуты-process">Наблюдаемые атрибуты
+process</a></li>
+</ul></li>
+<li><a href="#3-id-сохранять-стиль-исходного-файла-а-не-нормализовать"
+id="toc-3-id-сохранять-стиль-исходного-файла-а-не-нормализовать">3. ID:
+сохранять стиль исходного файла, а не нормализовать</a>
+<ul>
+<li><a href="#uuid-подобный-стиль"
+id="toc-uuid-подобный-стиль">UUID-подобный стиль</a></li>
+<li><a href="#короткий-bpmnjs-подобный-стиль"
+id="toc-короткий-bpmnjs-подобный-стиль">Короткий bpmn.js-подобный
+стиль</a></li>
+</ul></li>
+<li><a
+href="#4-семантические-элементы-реально-присутствующие-в-экспортах"
+id="toc-4-семантические-элементы-реально-присутствующие-в-экспортах">4.
+Семантические элементы, реально присутствующие в экспортах</a>
+<ul>
+<li><a href="#41-startevent" id="toc-41-startevent">4.1
+StartEvent</a></li>
+<li><a href="#42-endevent" id="toc-42-endevent">4.2 EndEvent</a></li>
+<li><a href="#43-scripttask" id="toc-43-scripttask">4.3
+ScriptTask</a></li>
+<li><a href="#44-usertask" id="toc-44-usertask">4.4 UserTask</a></li>
+<li><a href="#45-subprocess" id="toc-45-subprocess">4.5
+SubProcess</a></li>
+<li><a href="#46-exclusivegateway" id="toc-46-exclusivegateway">4.6
+ExclusiveGateway</a></li>
+</ul></li>
+<li><a
+href="#5-sequenceflow-единый-источник-связности-должен-быть-согласован-в-трёх-местах"
+id="toc-5-sequenceflow-единый-источник-связности-должен-быть-согласован-в-трёх-местах">5.
+SequenceFlow: единый источник связности должен быть согласован в трёх
+местах</a>
+<ul>
+<li><a href="#инвариант" id="toc-инвариант">Инвариант</a></li>
+</ul></li>
+<li><a href="#6-порядок-xml-элементов-не-определяет-порядок-выполнения"
+id="toc-6-порядок-xml-элементов-не-определяет-порядок-выполнения">6.
+Порядок XML-элементов не определяет порядок выполнения</a></li>
+<li><a href="#7-bpmn-di-графическое-представление"
+id="toc-7-bpmn-di-графическое-представление">7. BPMN-DI: графическое
+представление</a>
+<ul>
+<li><a href="#71-bpmndiagram-и-bpmnplane"
+id="toc-71-bpmndiagram-и-bpmnplane">7.1 BPMNDiagram и BPMNPlane</a></li>
+<li><a href="#72-bpmnshape" id="toc-72-bpmnshape">7.2 BPMNShape</a></li>
+<li><a href="#73-gateway-shape" id="toc-73-gateway-shape">7.3 Gateway
+shape</a></li>
+<li><a href="#74-event-label" id="toc-74-event-label">7.4 Event
+label</a></li>
+<li><a href="#75-bpmnedge" id="toc-75-bpmnedge">7.5 BPMNEdge</a></li>
+<li><a href="#76-waypoints" id="toc-76-waypoints">7.6 Waypoints</a></li>
+</ul></li>
+<li><a href="#8-что-нельзя-выводить-из-этих-xml"
+id="toc-8-что-нельзя-выводить-из-этих-xml">8. Что нельзя выводить из
+этих XML</a></li>
+<li><a href="#9-безопасный-алгоритм-вставки-нового-элемента-между-a-и-b"
+id="toc-9-безопасный-алгоритм-вставки-нового-элемента-между-a-и-b">9.
+Безопасный алгоритм вставки нового элемента между A и B</a>
+<ul>
+<li><a href="#предпочтительный-вариант-минимальная-мутация"
+id="toc-предпочтительный-вариант-минимальная-мутация">Предпочтительный
+вариант: минимальная мутация</a></li>
+<li><a href="#почему-этот-вариант-предпочтителен"
+id="toc-почему-этот-вариант-предпочтителен">Почему этот вариант
+предпочтителен</a></li>
+<li><a href="#особый-случай-именованная-ветка-gateway"
+id="toc-особый-случай-именованная-ветка-gateway">Особый случай:
+именованная ветка gateway</a></li>
+</ul></li>
+<li><a href="#10-добавление-нового-scripttask"
+id="toc-10-добавление-нового-scripttask">10. Добавление нового
+ScriptTask</a>
+<ul>
+<li><a href="#семантика" id="toc-семантика">Семантика</a></li>
+<li><a href="#di" id="toc-di">DI</a></li>
+</ul></li>
+<li><a href="#11-добавление-usertask"
+id="toc-11-добавление-usertask">11. Добавление UserTask</a>
+<ul>
+<li><a href="#семантика-1" id="toc-семантика-1">Семантика</a></li>
+<li><a href="#di-1" id="toc-di-1">DI</a></li>
+</ul></li>
+<li><a href="#12-добавление-subprocess"
+id="toc-12-добавление-subprocess">12. Добавление SubProcess</a></li>
+<li><a href="#13-добавление-exclusivegateway-с-двумя-ветками"
+id="toc-13-добавление-exclusivegateway-с-двумя-ветками">13. Добавление
+ExclusiveGateway с двумя ветками</a>
+<ul>
+<li><a href="#семантика-2" id="toc-семантика-2">Семантика</a></li>
+<li><a href="#di-2" id="toc-di-2">DI</a></li>
+</ul></li>
+<li><a href="#14-добавление-endevent"
+id="toc-14-добавление-endevent">14. Добавление EndEvent</a></li>
+<li><a
+href="#15-безопасное-удаление-обычного-узла-с-одним-входом-и-одним-выходом"
+id="toc-15-безопасное-удаление-обычного-узла-с-одним-входом-и-одним-выходом">15.
+Безопасное удаление обычного узла с одним входом и одним
+выходом</a></li>
+<li><a href="#16-перемещение-элемента-без-изменения-логики"
+id="toc-16-перемещение-элемента-без-изменения-логики">16. Перемещение
+элемента без изменения логики</a></li>
+<li><a href="#17-переименование-элемента"
+id="toc-17-переименование-элемента">17. Переименование элемента</a></li>
+<li><a href="#18-геометрия-автоматической-вставки"
+id="toc-18-геометрия-автоматической-вставки">18. Геометрия
+автоматической вставки</a>
+<ul>
+<li><a href="#горизонтальная-цепочка"
+id="toc-горизонтальная-цепочка">Горизонтальная цепочка</a></li>
+<li><a href="#ветка-вверхвниз-от-gateway"
+id="toc-ветка-вверхвниз-от-gateway">Ветка вверх/вниз от gateway</a></li>
+<li><a href="#не-рассчитывать-layout-по-bpmnlabel"
+id="toc-не-рассчитывать-layout-по-bpmnlabel">Не рассчитывать layout по
+BPMNLabel</a></li>
+</ul></li>
+<li><a href="#19-алгоритм-ии-перед-изменением-xml"
+id="toc-19-алгоритм-ии-перед-изменением-xml">19. Алгоритм ИИ перед
+изменением XML</a>
+<ul>
+<li><a href="#фаза-a-разбор" id="toc-фаза-a-разбор">Фаза A.
+Разбор</a></li>
+<li><a href="#фаза-b-проверка-до-правки"
+id="toc-фаза-b-проверка-до-правки">Фаза B. Проверка до правки</a></li>
+<li><a href="#фаза-c-минимальная-мутация"
+id="toc-фаза-c-минимальная-мутация">Фаза C. Минимальная мутация</a></li>
+<li><a href="#фаза-d-полная-валидация"
+id="toc-фаза-d-полная-валидация">Фаза D. Полная валидация</a></li>
+<li><a href="#фаза-e-отчёт" id="toc-фаза-e-отчёт">Фаза E. Отчёт</a></li>
+</ul></li>
+<li><a href="#20-обязательный-валидатор-после-каждой-правки"
+id="toc-20-обязательный-валидатор-после-каждой-правки">20. Обязательный
+валидатор после каждой правки</a>
+<ul>
+<li><a href="#201-xml" id="toc-201-xml">20.1 XML</a></li>
+<li><a href="#202-уникальность-id" id="toc-202-уникальность-id">20.2
+Уникальность ID</a></li>
+<li><a href="#203-sequenceflow" id="toc-203-sequenceflow">20.3
+SequenceFlow</a></li>
+<li><a href="#204-di" id="toc-204-di">20.4 DI</a></li>
+<li><a href="#205-базовая-логика-наблюдаемых-типов"
+id="toc-205-базовая-логика-наблюдаемых-типов">20.5 Базовая логика
+наблюдаемых типов</a></li>
+</ul></li>
+<li><a href="#21-машинный-псевдокод-проверки-ссылок"
+id="toc-21-машинный-псевдокод-проверки-ссылок">21. Машинный псевдокод
+проверки ссылок</a></li>
+<li><a
+href="#22-xml-фрагмент-новый-scripttask-между-двумя-существующими-задачами"
+id="toc-22-xml-фрагмент-новый-scripttask-между-двумя-существующими-задачами">22.
+XML-фрагмент: новый ScriptTask между двумя существующими
+задачами</a></li>
+<li><a href="#23-разбор-task_sign_cloud1xml-как-эталона-ветвления"
+id="toc-23-разбор-task_sign_cloud1xml-как-эталона-ветвления">23. Разбор
+<code>task_sign_cloud(1).xml</code> как эталона ветвления</a></li>
+<li><a
+href="#24-разбор-entity_publish1xml-как-эталона-длинного-процесса"
+id="toc-24-разбор-entity_publish1xml-как-эталона-длинного-процесса">24.
+Разбор <code>entity_publish(1).xml</code> как эталона длинного
+процесса</a></li>
+<li><a href="#25-что-ии-должен-сохранять-при-локальной-правке"
+id="toc-25-что-ии-должен-сохранять-при-локальной-правке">25. Что ИИ
+должен сохранять при локальной правке</a></li>
+<li><a href="#26-что-ии-не-должен-делать"
+id="toc-26-что-ии-не-должен-делать">26. Что ИИ не должен делать</a></li>
+<li><a href="#27-рекомендованный-контракт-команды-для-будущего-ии"
+id="toc-27-рекомендованный-контракт-команды-для-будущего-ии">27.
+Рекомендованный контракт команды для будущего ИИ</a></li>
+<li><a href="#28-связь-с-runtime-damubpm"
+id="toc-28-связь-с-runtime-damubpm">28. Связь с runtime DamuBPM</a></li>
+<li><a href="#29-финальный-чек-лист-для-автономной-работы-ии"
+id="toc-29-финальный-чек-лист-для-автономной-работы-ии">29. Финальный
+чек-лист для автономной работы ИИ</a></li>
+<li><a href="#30-короткая-памятка-для-навыка-damubpm-development"
+id="toc-30-короткая-памятка-для-навыка-damubpm-development">30. Короткая
+памятка для навыка <code>damubpm-development</code></a></li>
+</ul></li>
+</ul>
+</nav>
+<main>
+
+<p><a href="index.html">← На главную</a></p>
+<h1
+id="bpmn-xml-в-damubpm-практическая-спецификация-для-автоматического-редактирования-ии">BPMN
+XML в DamuBPM: практическая спецификация для автоматического
+редактирования ИИ</h1>
+<blockquote>
+<p><strong>Назначение.</strong> Этот документ описывает наблюдаемый
+XML-контракт BPMN в DamuBPM по двум реальным экспортам:
+<code>task_sign_cloud(1).xml</code> и
+<code>entity_publish(1).xml</code>. Цель — дать ИИ безопасный алгоритм
+добавления, удаления, соединения и перемещения BPMN-элементов без
+разрушения схемы и визуального представления.</p>
+<p>Это <strong>не полная спецификация BPMN 2.0</strong> и не описание
+всех внутренних таблиц DamuBPM. Правила ниже основаны на реально
+присутствующих конструкциях двух файлов и существующем DamuBPM
+BPM/Lua-контракте. То, чего в XML нет, нельзя автоматически
+додумывать.</p>
+</blockquote>
+<hr />
+<h2
+id="1-главная-модель-один-процесс-хранится-в-двух-синхронных-слоях">1.
+Главная модель: один процесс хранится в двух синхронных слоях</h2>
+<p>В обоих файлах XML состоит из двух логических частей:</p>
+<ol type="1">
+<li><strong>Семантический граф процесса</strong> внутри
+<code>&lt;process&gt;</code>:
+<ul>
+<li>события;</li>
+<li>задачи;</li>
+<li>подпроцессы;</li>
+<li>шлюзы;</li>
+<li><code>sequenceFlow</code>;</li>
+<li>ссылки <code>&lt;incoming&gt;</code> /
+<code>&lt;outgoing&gt;</code>.</li>
+</ul></li>
+<li><strong>Графическое представление</strong> внутри
+<code>&lt;bpmndi:BPMNDiagram&gt;</code> /
+<code>&lt;bpmndi:BPMNPlane&gt;</code>:
+<ul>
+<li><code>BPMNShape</code> для каждого узла;</li>
+<li><code>BPMNEdge</code> для каждого <code>sequenceFlow</code>;</li>
+<li><code>omgdc:Bounds</code> для координат и размеров;</li>
+<li><code>omgdi:waypoint</code> для маршрута стрелок.</li>
+</ul></li>
+</ol>
+<p><strong>Критическое правило для ИИ:</strong> нельзя добавить только
+BPMN-узел или только картинку. Любое изменение графа должно согласованно
+менять оба слоя.</p>
+<h3 id="наблюдаемые-показатели-файлов">Наблюдаемые показатели
+файлов</h3>
+<table>
+<thead>
+<tr class="header">
+<th>Файл</th>
+<th style="text-align: right;">Узлы</th>
+<th style="text-align: right;">SequenceFlow</th>
+<th style="text-align: right;">ScriptTask</th>
+<th style="text-align: right;">UserTask</th>
+<th style="text-align: right;">SubProcess</th>
+<th style="text-align: right;">ExclusiveGateway</th>
+<th style="text-align: right;">EndEvent</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>task_sign_cloud(1).xml</code></td>
+<td style="text-align: right;">15</td>
+<td style="text-align: right;">14</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">4</td>
+</tr>
+<tr class="even">
+<td><code>entity_publish(1).xml</code></td>
+<td style="text-align: right;">30</td>
+<td style="text-align: right;">29</td>
+<td style="text-align: right;">22</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">2</td>
+</tr>
+</tbody>
+</table>
+<p>В обоих примерах:</p>
+<ul>
+<li>все <code>sourceRef</code> / <code>targetRef</code> ссылаются на
+существующие узлы;</li>
+<li>все <code>incoming</code> / <code>outgoing</code> согласованы с
+<code>sequenceFlow</code>;</li>
+<li>каждому семантическому узлу соответствует ровно один
+<code>BPMNShape</code>;</li>
+<li>каждому <code>sequenceFlow</code> соответствует ровно один
+<code>BPMNEdge</code>.</li>
+</ul>
+<p>Количество <code>sequenceFlow = nodes - 1</code> в обоих файлах —
+<strong>наблюдение этих конкретных схем, а не универсальное правило
+BPMN</strong>.</p>
+<hr />
+<h2 id="2-корневой-xml-каркас">2. Корневой XML-каркас</h2>
+<p>В обоих файлах используется один и тот же набор namespace:</p>
+<div class="sourceCode" id="cb1"><pre
+class="sourceCode xml"><code class="sourceCode xml"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">&lt;?xml</span><span class="ot"> version=</span><span class="st">&quot;1.0&quot;</span><span class="ot"> encoding=</span><span class="st">&quot;UTF-8&quot;</span><span class="fu">?&gt;</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>&lt;<span class="kw">definitions</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="ot">  xmlns=</span><span class="st">&quot;http://www.omg.org/spec/BPMN/20100524/MODEL&quot;</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="ot">  xmlns:bpmndi=</span><span class="st">&quot;http://www.omg.org/spec/BPMN/20100524/DI&quot;</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="ot">  xmlns:omgdc=</span><span class="st">&quot;http://www.omg.org/spec/DD/20100524/DC&quot;</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="ot">  xmlns:omgdi=</span><span class="st">&quot;http://www.omg.org/spec/DD/20100524/DI&quot;</span></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="ot">  xmlns:xsi=</span><span class="st">&quot;http://www.w3.org/2001/XMLSchema-instance&quot;</span></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="ot">  targetNamespace=</span><span class="st">&quot;&quot;</span></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a><span class="ot">  xsi:schemaLocation=</span><span class="st">&quot;http://www.omg.org/spec/BPMN/20100524/MODEL http://www.omg.org/spec/BPMN/2.0/20100501/BPMN20.xsd&quot;</span>&gt;</span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>  &lt;<span class="kw">process</span> <span class="er">...</span>&gt;</span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>    <span class="co">&lt;!-- семантический граф --&gt;</span></span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>  &lt;/<span class="kw">process</span>&gt;</span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a>  &lt;<span class="kw">bpmndi:BPMNDiagram</span> <span class="er">...</span>&gt;</span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a>    &lt;<span class="kw">bpmndi:BPMNPlane</span> <span class="er">...</span>&gt;</span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a>      <span class="co">&lt;!-- формы и линии --&gt;</span></span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a>    &lt;/<span class="kw">bpmndi:BPMNPlane</span>&gt;</span>
+<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a>  &lt;/<span class="kw">bpmndi:BPMNDiagram</span>&gt;</span>
+<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a>&lt;/<span class="kw">definitions</span>&gt;</span></code></pre></div>
+<h3 id="наблюдаемые-атрибуты-process">Наблюдаемые атрибуты process</h3>
+<div class="sourceCode" id="cb2"><pre
+class="sourceCode xml"><code class="sourceCode xml"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>&lt;<span class="kw">process</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="ot">  id=</span><span class="st">&quot;sid-...&quot;</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="ot">  name=</span><span class="st">&quot;Customer&quot;</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="ot">  processType=</span><span class="st">&quot;None&quot;</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="ot">  isClosed=</span><span class="st">&quot;false&quot;</span></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a><span class="ot">  isExecutable=</span><span class="st">&quot;false&quot;</span>&gt;</span></code></pre></div>
+<p><strong>Правило:</strong> при локальном редактировании не менять
+<code>process.id</code>, <code>name</code>, <code>processType</code>,
+<code>isClosed</code>, <code>isExecutable</code>,
+<code>targetNamespace</code> и namespace без отдельной причины. В
+частности, не переключать <code>isExecutable</code> в <code>true</code>
+только потому, что это кажется логичным по стандартному BPMN.</p>
+<hr />
+<h2 id="3-id-сохранять-стиль-исходного-файла-а-не-нормализовать">3. ID:
+сохранять стиль исходного файла, а не нормализовать</h2>
+<p>В предоставленных XML встречаются два стиля идентификаторов.</p>
+<h3 id="uuid-подобный-стиль">UUID-подобный стиль</h3>
+<pre class="text"><code>ScriptTask_6c0312e2-d95b-4968-9862-210ead9a628f
+SequenceFlow_11d31b8f-6782-45ad-8060-a4245154509b
+ExclusiveGW_10b442de-6beb-4930-9ca7-fb9b09489ab9</code></pre>
+<h3 id="короткий-bpmnjs-подобный-стиль">Короткий bpmn.js-подобный
+стиль</h3>
+<pre class="text"><code>ScriptTask_02pgcmn
+SequenceFlow_1wwr10z
+ExclusiveGateway_0dr9gt3</code></pre>
+<p><strong>Правила генерации ID:</strong></p>
+<ol type="1">
+<li>ID должен быть уникален во всём документе.</li>
+<li>Сохранять локальный стиль конкретного XML.</li>
+<li>Не переименовывать существующие ID без необходимости.</li>
+<li>Не нормализовать <code>ExclusiveGW_...</code> в
+<code>ExclusiveGateway_...</code> или обратно — оба варианта реально
+встречаются.</li>
+<li>Для DI использовать стабильное соответствие:
+<ul>
+<li>shape: <code>&lt;elementId&gt;_di</code>;</li>
+<li>edge: <code>&lt;sequenceFlowId&gt;_di</code>.</li>
+</ul></li>
+<li><code>BPMNPlane/@bpmnElement</code> должен ссылаться на
+<code>process/@id</code>.</li>
+</ol>
+<hr />
+<h2 id="4-семантические-элементы-реально-присутствующие-в-экспортах">4.
+Семантические элементы, реально присутствующие в экспортах</h2>
+<h3 id="41-startevent">4.1 StartEvent</h3>
+<p>Наблюдаемый шаблон:</p>
+<div class="sourceCode" id="cb5"><pre
+class="sourceCode xml"><code class="sourceCode xml"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>&lt;<span class="kw">startEvent</span><span class="ot"> id=</span><span class="st">&quot;StartEvent_...&quot;</span>&gt;</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>  &lt;<span class="kw">outgoing</span>&gt;SequenceFlow_...&lt;/<span class="kw">outgoing</span>&gt;</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>&lt;/<span class="kw">startEvent</span>&gt;</span></code></pre></div>
+<p>В обоих файлах стартовое событие одно, без имени и с одним исходящим
+потоком.</p>
+<h3 id="42-endevent">4.2 EndEvent</h3>
+<div class="sourceCode" id="cb6"><pre
+class="sourceCode xml"><code class="sourceCode xml"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>&lt;<span class="kw">endEvent</span><span class="ot"> id=</span><span class="st">&quot;EndEvent_...&quot;</span><span class="ot"> name=</span><span class="st">&quot;Завершено&quot;</span>&gt;</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>  &lt;<span class="kw">incoming</span>&gt;SequenceFlow_...&lt;/<span class="kw">incoming</span>&gt;</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>&lt;/<span class="kw">endEvent</span>&gt;</span></code></pre></div>
+<p>Имена используются как человекочитаемый результат:
+<code>Завершено</code>, <code>Ошибка</code>,
+<code>Не прошла проверка ЭЦП на сервере</code>, <code>Success</code>,
+<code>Error Found</code>.</p>
+<h3 id="43-scripttask">4.3 ScriptTask</h3>
+<div class="sourceCode" id="cb7"><pre
+class="sourceCode xml"><code class="sourceCode xml"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>&lt;<span class="kw">scriptTask</span><span class="ot"> id=</span><span class="st">&quot;ScriptTask_...&quot;</span><span class="ot"> name=</span><span class="st">&quot;Сформировать подписываемые данные&quot;</span>&gt;</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>  &lt;<span class="kw">incoming</span>&gt;SequenceFlow_IN&lt;/<span class="kw">incoming</span>&gt;</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>  &lt;<span class="kw">outgoing</span>&gt;SequenceFlow_OUT&lt;/<span class="kw">outgoing</span>&gt;</span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>&lt;/<span class="kw">scriptTask</span>&gt;</span></code></pre></div>
+<p>В одном примере встречается ScriptTask без <code>name</code>. Поэтому
+<code>name</code> фактически опционален в наблюдаемом формате.</p>
+<p><strong>Важно:</strong> внутри XML нет Lua-кода или
+<code>&lt;script&gt;</code>. Из этих файлов нельзя определить, где и как
+хранится тело ScriptTask. ИИ не должен вставлять
+<code>&lt;script&gt;</code> или <code>extensionElements</code>, пока
+такой формат не подтверждён отдельным рабочим примером DamuBPM.</p>
+<h3 id="44-usertask">4.4 UserTask</h3>
+<div class="sourceCode" id="cb8"><pre
+class="sourceCode xml"><code class="sourceCode xml"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>&lt;<span class="kw">userTask</span><span class="ot"> id=</span><span class="st">&quot;UserTask_...&quot;</span><span class="ot"> name=</span><span class="st">&quot;Подписывание&quot;</span>&gt;</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>  &lt;<span class="kw">incoming</span>&gt;SequenceFlow_IN&lt;/<span class="kw">incoming</span>&gt;</span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>  &lt;<span class="kw">outgoing</span>&gt;SequenceFlow_OUT&lt;/<span class="kw">outgoing</span>&gt;</span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>&lt;/<span class="kw">userTask</span>&gt;</span></code></pre></div>
+<p>XML-пример содержит только графовую часть UserTask. Настройки формы,
+акторов и обязательных переменных в этих XML не представлены.</p>
+<p>По существующему DamuBPM BPM/Lua-контракту UserTask в рантайме имеет
+<code>task</code> UUID и продолжение выполняется через UserTask
+API/механизм задачи. Поэтому добавление <code>&lt;userTask&gt;</code> в
+XML <strong>не означает</strong>, что форма и права уже настроены.</p>
+<h3 id="45-subprocess">4.5 SubProcess</h3>
+<div class="sourceCode" id="cb9"><pre
+class="sourceCode xml"><code class="sourceCode xml"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>&lt;<span class="kw">subProcess</span><span class="ot"> id=</span><span class="st">&quot;SubProcess_...&quot;</span><span class="ot"> name=</span><span class="st">&quot;Согласовать&quot;</span>&gt;</span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>  &lt;<span class="kw">incoming</span>&gt;SequenceFlow_IN&lt;/<span class="kw">incoming</span>&gt;</span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>  &lt;<span class="kw">outgoing</span>&gt;SequenceFlow_OUT&lt;/<span class="kw">outgoing</span>&gt;</span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>&lt;/<span class="kw">subProcess</span>&gt;</span></code></pre></div>
+<p>В предоставленных XML <code>subProcess</code> не содержит вложенного
+BPMN-графа. Следовательно, нельзя автоматически предполагать стандартный
+embedded subprocess или добавлять дочерние элементы внутрь него без
+отдельного образца DamuBPM.</p>
+<h3 id="46-exclusivegateway">4.6 ExclusiveGateway</h3>
+<div class="sourceCode" id="cb10"><pre
+class="sourceCode xml"><code class="sourceCode xml"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>&lt;<span class="kw">exclusiveGateway</span><span class="ot"> id=</span><span class="st">&quot;ExclusiveGateway_...&quot;</span>&gt;</span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>  &lt;<span class="kw">incoming</span>&gt;SequenceFlow_IN&lt;/<span class="kw">incoming</span>&gt;</span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>  &lt;<span class="kw">outgoing</span>&gt;SequenceFlow_OK&lt;/<span class="kw">outgoing</span>&gt;</span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>  &lt;<span class="kw">outgoing</span>&gt;SequenceFlow_ERROR&lt;/<span class="kw">outgoing</span>&gt;</span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>&lt;/<span class="kw">exclusiveGateway</span>&gt;</span></code></pre></div>
+<p>В примерах gateway имеет один вход и два выхода.</p>
+<p>В <code>entity_publish(1).xml</code> выходы названы:</p>
+<div class="sourceCode" id="cb11"><pre
+class="sourceCode xml"><code class="sourceCode xml"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>&lt;<span class="kw">sequenceFlow</span><span class="ot"> id=</span><span class="st">&quot;SequenceFlow_1d0fmly&quot;</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="ot">              name=</span><span class="st">&quot;No errors&quot;</span></span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a><span class="ot">              sourceRef=</span><span class="st">&quot;ExclusiveGateway_0dr9gt3&quot;</span></span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a><span class="ot">              targetRef=</span><span class="st">&quot;EndEvent_00pun4z&quot;</span> /&gt;</span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>&lt;<span class="kw">sequenceFlow</span><span class="ot"> id=</span><span class="st">&quot;SequenceFlow_046r2np&quot;</span></span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a><span class="ot">              name=</span><span class="st">&quot;If Error&quot;</span></span>
+<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a><span class="ot">              sourceRef=</span><span class="st">&quot;ExclusiveGateway_0dr9gt3&quot;</span></span>
+<span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a><span class="ot">              targetRef=</span><span class="st">&quot;EndEvent_1ajzp6r&quot;</span> /&gt;</span></code></pre></div>
+<p>Но <code>conditionExpression</code> в XML отсутствует. Поэтому
+<code>name</code> ветки — подпись, а не доказательство того, что условие
+исполнения хранится в этом XML.</p>
+<hr />
+<h2
+id="5-sequenceflow-единый-источник-связности-должен-быть-согласован-в-трёх-местах">5.
+SequenceFlow: единый источник связности должен быть согласован в трёх
+местах</h2>
+<p>Каждая стрелка представлена одновременно:</p>
+<ol type="1">
+<li><code>&lt;outgoing&gt;</code> у source-узла;</li>
+<li><code>&lt;incoming&gt;</code> у target-узла;</li>
+<li><code>&lt;sequenceFlow sourceRef="..." targetRef="..."/&gt;</code>.</li>
+</ol>
+<p>Пример:</p>
+<div class="sourceCode" id="cb12"><pre
+class="sourceCode xml"><code class="sourceCode xml"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>&lt;<span class="kw">scriptTask</span><span class="ot"> id=</span><span class="st">&quot;ScriptTask_A&quot;</span><span class="ot"> name=</span><span class="st">&quot;A&quot;</span>&gt;</span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>  &lt;<span class="kw">outgoing</span>&gt;SequenceFlow_AB&lt;/<span class="kw">outgoing</span>&gt;</span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>&lt;/<span class="kw">scriptTask</span>&gt;</span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a>&lt;<span class="kw">scriptTask</span><span class="ot"> id=</span><span class="st">&quot;ScriptTask_B&quot;</span><span class="ot"> name=</span><span class="st">&quot;B&quot;</span>&gt;</span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a>  &lt;<span class="kw">incoming</span>&gt;SequenceFlow_AB&lt;/<span class="kw">incoming</span>&gt;</span>
+<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a>&lt;/<span class="kw">scriptTask</span>&gt;</span>
+<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-9"><a href="#cb12-9" aria-hidden="true" tabindex="-1"></a>&lt;<span class="kw">sequenceFlow</span><span class="ot"> id=</span><span class="st">&quot;SequenceFlow_AB&quot;</span></span>
+<span id="cb12-10"><a href="#cb12-10" aria-hidden="true" tabindex="-1"></a><span class="ot">              sourceRef=</span><span class="st">&quot;ScriptTask_A&quot;</span></span>
+<span id="cb12-11"><a href="#cb12-11" aria-hidden="true" tabindex="-1"></a><span class="ot">              targetRef=</span><span class="st">&quot;ScriptTask_B&quot;</span> /&gt;</span></code></pre></div>
+<h3 id="инвариант">Инвариант</h3>
+<p>Для каждого <code>sequenceFlow F</code>:</p>
+<pre class="text"><code>F.sourceRef = A  =&gt; A содержит &lt;outgoing&gt;F&lt;/outgoing&gt;
+F.targetRef = B  =&gt; B содержит &lt;incoming&gt;F&lt;/incoming&gt;</code></pre>
+<p>И наоборот, каждый ID, упомянутый в <code>incoming/outgoing</code>,
+должен существовать как <code>sequenceFlow</code> с правильным
+направлением.</p>
+<p><strong>Запрещено:</strong> менять только
+<code>sourceRef/targetRef</code> и забывать про
+<code>incoming/outgoing</code>.</p>
+<hr />
+<h2 id="6-порядок-xml-элементов-не-определяет-порядок-выполнения">6.
+Порядок XML-элементов не определяет порядок выполнения</h2>
+<p>В <code>process</code> элементы расположены не строго топологически:
+<code>sequenceFlow</code> может стоять раньше или позже связанных task.
+Следовательно:</p>
+<ul>
+<li>нельзя определять предыдущий/следующий шаг по соседству
+XML-тегов;</li>
+<li>нельзя вставлять новый узел «между строками» и считать этого
+достаточным;</li>
+<li>граф восстанавливается только по <code>sourceRef</code>,
+<code>targetRef</code>, <code>incoming</code>,
+<code>outgoing</code>.</li>
+</ul>
+<p>При редактировании допустимо сохранять существующий порядок XML и
+добавлять новые элементы рядом с логически связанными блоками, но
+семантика от этого не меняется.</p>
+<hr />
+<h2 id="7-bpmn-di-графическое-представление">7. BPMN-DI: графическое
+представление</h2>
+<h3 id="71-bpmndiagram-и-bpmnplane">7.1 BPMNDiagram и BPMNPlane</h3>
+<div class="sourceCode" id="cb14"><pre
+class="sourceCode xml"><code class="sourceCode xml"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>&lt;<span class="kw">bpmndi:BPMNDiagram</span><span class="ot"> id=</span><span class="st">&quot;sid-...&quot;</span>&gt;</span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>  &lt;<span class="kw">bpmndi:BPMNPlane</span><span class="ot"> id=</span><span class="st">&quot;sid-...&quot;</span><span class="ot"> bpmnElement=</span><span class="st">&quot;PROCESS_ID&quot;</span>&gt;</span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>    ...</span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a>  &lt;/<span class="kw">bpmndi:BPMNPlane</span>&gt;</span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a>&lt;/<span class="kw">bpmndi:BPMNDiagram</span>&gt;</span></code></pre></div>
+<p><code>bpmnElement</code> у plane должен совпадать с
+<code>process/@id</code>.</p>
+<h3 id="72-bpmnshape">7.2 BPMNShape</h3>
+<div class="sourceCode" id="cb15"><pre
+class="sourceCode xml"><code class="sourceCode xml"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>&lt;<span class="kw">bpmndi:BPMNShape</span><span class="ot"> id=</span><span class="st">&quot;ScriptTask_X_di&quot;</span><span class="ot"> bpmnElement=</span><span class="st">&quot;ScriptTask_X&quot;</span>&gt;</span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>  &lt;<span class="kw">omgdc:Bounds</span><span class="ot"> x=</span><span class="st">&quot;100&quot;</span><span class="ot"> y=</span><span class="st">&quot;220&quot;</span><span class="ot"> width=</span><span class="st">&quot;100&quot;</span><span class="ot"> height=</span><span class="st">&quot;80&quot;</span> /&gt;</span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>&lt;/<span class="kw">bpmndi:BPMNShape</span>&gt;</span></code></pre></div>
+<p>Наблюдаемые размеры:</p>
+<table>
+<thead>
+<tr class="header">
+<th>Тип</th>
+<th style="text-align: right;">width</th>
+<th style="text-align: right;">height</th>
+<th>Дополнительно</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>startEvent</code></td>
+<td style="text-align: right;">36</td>
+<td style="text-align: right;">36</td>
+<td>внешний <code>BPMNLabel</code> присутствует</td>
+</tr>
+<tr class="even">
+<td><code>endEvent</code></td>
+<td style="text-align: right;">36</td>
+<td style="text-align: right;">36</td>
+<td>внешний <code>BPMNLabel</code> присутствует</td>
+</tr>
+<tr class="odd">
+<td><code>scriptTask</code></td>
+<td style="text-align: right;">100</td>
+<td style="text-align: right;">80</td>
+<td>отдельного <code>BPMNLabel</code> нет</td>
+</tr>
+<tr class="even">
+<td><code>userTask</code></td>
+<td style="text-align: right;">100</td>
+<td style="text-align: right;">80</td>
+<td>отдельного <code>BPMNLabel</code> нет</td>
+</tr>
+<tr class="odd">
+<td><code>subProcess</code></td>
+<td style="text-align: right;">100</td>
+<td style="text-align: right;">80</td>
+<td>отдельного <code>BPMNLabel</code> нет</td>
+</tr>
+<tr class="even">
+<td><code>exclusiveGateway</code></td>
+<td style="text-align: right;">50</td>
+<td style="text-align: right;">50</td>
+<td><code>isMarkerVisible="true"</code>, внешний label</td>
+</tr>
+</tbody>
+</table>
+<p>Для нового элемента лучше использовать эти размеры, пока конкретный
+исходный файл не показывает иной локальный стиль.</p>
+<h3 id="73-gateway-shape">7.3 Gateway shape</h3>
+<div class="sourceCode" id="cb16"><pre
+class="sourceCode xml"><code class="sourceCode xml"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>&lt;<span class="kw">bpmndi:BPMNShape</span></span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a><span class="ot">  id=</span><span class="st">&quot;ExclusiveGateway_X_di&quot;</span></span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a><span class="ot">  bpmnElement=</span><span class="st">&quot;ExclusiveGateway_X&quot;</span></span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a><span class="ot">  isMarkerVisible=</span><span class="st">&quot;true&quot;</span>&gt;</span>
+<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a>  &lt;<span class="kw">omgdc:Bounds</span><span class="ot"> x=</span><span class="st">&quot;660&quot;</span><span class="ot"> y=</span><span class="st">&quot;235&quot;</span><span class="ot"> width=</span><span class="st">&quot;50&quot;</span><span class="ot"> height=</span><span class="st">&quot;50&quot;</span> /&gt;</span>
+<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a>  &lt;<span class="kw">bpmndi:BPMNLabel</span>&gt;</span>
+<span id="cb16-7"><a href="#cb16-7" aria-hidden="true" tabindex="-1"></a>    &lt;<span class="kw">omgdc:Bounds</span><span class="ot"> x=</span><span class="st">&quot;640&quot;</span><span class="ot"> y=</span><span class="st">&quot;285&quot;</span><span class="ot"> width=</span><span class="st">&quot;90&quot;</span><span class="ot"> height=</span><span class="st">&quot;20&quot;</span> /&gt;</span>
+<span id="cb16-8"><a href="#cb16-8" aria-hidden="true" tabindex="-1"></a>  &lt;/<span class="kw">bpmndi:BPMNLabel</span>&gt;</span>
+<span id="cb16-9"><a href="#cb16-9" aria-hidden="true" tabindex="-1"></a>&lt;/<span class="kw">bpmndi:BPMNShape</span>&gt;</span></code></pre></div>
+<h3 id="74-event-label">7.4 Event label</h3>
+<p>Для start/end event в обоих примерах используется внешний label
+90×20. Обычно он расположен под событием:</p>
+<div class="sourceCode" id="cb17"><pre
+class="sourceCode xml"><code class="sourceCode xml"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>&lt;<span class="kw">bpmndi:BPMNLabel</span>&gt;</span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>  &lt;<span class="kw">omgdc:Bounds</span><span class="ot"> x=</span><span class="st">&quot;CENTER_X_MINUS_45&quot;</span></span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a><span class="ot">                y=</span><span class="st">&quot;EVENT_Y_PLUS_36&quot;</span></span>
+<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a><span class="ot">                width=</span><span class="st">&quot;90&quot;</span></span>
+<span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a><span class="ot">                height=</span><span class="st">&quot;20&quot;</span> /&gt;</span>
+<span id="cb17-6"><a href="#cb17-6" aria-hidden="true" tabindex="-1"></a>&lt;/<span class="kw">bpmndi:BPMNLabel</span>&gt;</span></code></pre></div>
+<h3 id="75-bpmnedge">7.5 BPMNEdge</h3>
+<div class="sourceCode" id="cb18"><pre
+class="sourceCode xml"><code class="sourceCode xml"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>&lt;<span class="kw">bpmndi:BPMNEdge</span><span class="ot"> id=</span><span class="st">&quot;SequenceFlow_X_di&quot;</span><span class="ot"> bpmnElement=</span><span class="st">&quot;SequenceFlow_X&quot;</span>&gt;</span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>  &lt;<span class="kw">omgdi:waypoint</span><span class="ot"> xsi:type=</span><span class="st">&quot;omgdc:Point&quot;</span><span class="ot"> x=</span><span class="st">&quot;SOURCE_X&quot;</span><span class="ot"> y=</span><span class="st">&quot;SOURCE_Y&quot;</span> /&gt;</span>
+<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a>  &lt;<span class="kw">omgdi:waypoint</span><span class="ot"> xsi:type=</span><span class="st">&quot;omgdc:Point&quot;</span><span class="ot"> x=</span><span class="st">&quot;TARGET_X&quot;</span><span class="ot"> y=</span><span class="st">&quot;TARGET_Y&quot;</span> /&gt;</span>
+<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a>  &lt;<span class="kw">bpmndi:BPMNLabel</span>&gt;</span>
+<span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a>    &lt;<span class="kw">omgdc:Bounds</span><span class="ot"> x=</span><span class="st">&quot;...&quot;</span><span class="ot"> y=</span><span class="st">&quot;...&quot;</span><span class="ot"> width=</span><span class="st">&quot;90&quot;</span><span class="ot"> height=</span><span class="st">&quot;20&quot;</span> /&gt;</span>
+<span id="cb18-6"><a href="#cb18-6" aria-hidden="true" tabindex="-1"></a>  &lt;/<span class="kw">bpmndi:BPMNLabel</span>&gt;</span>
+<span id="cb18-7"><a href="#cb18-7" aria-hidden="true" tabindex="-1"></a>&lt;/<span class="kw">bpmndi:BPMNEdge</span>&gt;</span></code></pre></div>
+<p>Все flow в обоих примерах имеют <code>BPMNLabel</code>, даже когда
+<code>sequenceFlow/@name</code> отсутствует.</p>
+<h3 id="76-waypoints">7.6 Waypoints</h3>
+<p>Наблюдаются:</p>
+<ul>
+<li>прямые связи — 2 waypoint;</li>
+<li>ортогональные повороты — 3 waypoint.</li>
+</ul>
+<p>Типичная горизонтальная связь справа налево/слева направо использует
+точки на границах фигур, а не в центрах.</p>
+<p>Для task 100×80:</p>
+<pre class="text"><code>left center  = (x, y + 40)
+right center = (x + 100, y + 40)
+top center   = (x + 50, y)
+bottom center= (x + 50, y + 80)</code></pre>
+<p>Для gateway 50×50:</p>
+<pre class="text"><code>left center  = (x, y + 25)
+right center = (x + 50, y + 25)
+top center   = (x + 25, y)
+bottom center= (x + 25, y + 50)</code></pre>
+<p>Для event 36×36:</p>
+<pre class="text"><code>left center  = (x, y + 18)
+right center = (x + 36, y + 18)
+top center   = (x + 18, y)
+bottom center= (x + 18, y + 36)</code></pre>
+<p><strong>Правило:</strong> первый waypoint должен лежать на стороне
+source-элемента, последний — на стороне target-элемента. Промежуточные
+точки используются для обхода фигур и ортогональных поворотов.</p>
+<hr />
+<h2 id="8-что-нельзя-выводить-из-этих-xml">8. Что нельзя выводить из
+этих XML</h2>
+<p>В предоставленных файлах <strong>нет достаточных данных</strong>,
+чтобы описать формат хранения следующих вещей:</p>
+<ul>
+<li>Lua-код ScriptTask;</li>
+<li><code>conditionExpression</code> gateway;</li>
+<li>actor/role настройки UserTask;</li>
+<li>HTML/Angular форма UserTask;</li>
+<li>входные/выходные переменные точек;</li>
+<li>содержимое/код вызываемого SubProcess;</li>
+<li>таймеры, message/signal events, boundary events;</li>
+<li>parallel/inclusive gateway;</li>
+<li>serviceTask, manualTask, callActivity;</li>
+<li>DamuBPM-специфические <code>extensionElements</code>.</li>
+</ul>
+<p>Если задача требует что-либо из этого, ИИ должен:</p>
+<ol type="1">
+<li>найти отдельный рабочий пример или документацию DamuBPM;</li>
+<li>использовать существующий DamuBPM API/MCP/сущности;</li>
+<li>не придумывать XML-атрибуты и расширения на основе общего знания
+BPMN 2.0.</li>
+</ol>
+<hr />
+<h2 id="9-безопасный-алгоритм-вставки-нового-элемента-между-a-и-b">9.
+Безопасный алгоритм вставки нового элемента между A и B</h2>
+<p>Пусть существует связь:</p>
+<pre class="text"><code>A --F1--&gt; B</code></pre>
+<p>Нужно вставить новый элемент <code>N</code>:</p>
+<pre class="text"><code>A --F1--&gt; N --F2--&gt; B</code></pre>
+<h3 id="предпочтительный-вариант-минимальная-мутация">Предпочтительный
+вариант: минимальная мутация</h3>
+<p>Сохраняем существующий <code>F1</code>, создаём только новый
+<code>F2</code>.</p>
+<h4 id="шаг-1-найти-прямой-flow">Шаг 1. Найти прямой flow</h4>
+<div class="sourceCode" id="cb24"><pre
+class="sourceCode xml"><code class="sourceCode xml"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a>&lt;<span class="kw">sequenceFlow</span><span class="ot"> id=</span><span class="st">&quot;F1&quot;</span><span class="ot"> sourceRef=</span><span class="st">&quot;A&quot;</span><span class="ot"> targetRef=</span><span class="st">&quot;B&quot;</span> /&gt;</span></code></pre></div>
+<h4 id="шаг-2-перенаправить-f1-на-n">Шаг 2. Перенаправить F1 на N</h4>
+<div class="sourceCode" id="cb25"><pre
+class="sourceCode xml"><code class="sourceCode xml"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a>&lt;<span class="kw">sequenceFlow</span><span class="ot"> id=</span><span class="st">&quot;F1&quot;</span><span class="ot"> sourceRef=</span><span class="st">&quot;A&quot;</span><span class="ot"> targetRef=</span><span class="st">&quot;N&quot;</span> /&gt;</span></code></pre></div>
+<p><code>A/&lt;outgoing&gt;F1&lt;/outgoing&gt;</code> остаётся без
+изменений.</p>
+<h4 id="шаг-3-создать-n">Шаг 3. Создать N</h4>
+<p>Для ScriptTask:</p>
+<div class="sourceCode" id="cb26"><pre
+class="sourceCode xml"><code class="sourceCode xml"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a>&lt;<span class="kw">scriptTask</span><span class="ot"> id=</span><span class="st">&quot;N&quot;</span><span class="ot"> name=</span><span class="st">&quot;Новый шаг&quot;</span>&gt;</span>
+<span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a>  &lt;<span class="kw">incoming</span>&gt;F1&lt;/<span class="kw">incoming</span>&gt;</span>
+<span id="cb26-3"><a href="#cb26-3" aria-hidden="true" tabindex="-1"></a>  &lt;<span class="kw">outgoing</span>&gt;F2&lt;/<span class="kw">outgoing</span>&gt;</span>
+<span id="cb26-4"><a href="#cb26-4" aria-hidden="true" tabindex="-1"></a>&lt;/<span class="kw">scriptTask</span>&gt;</span></code></pre></div>
+<h4 id="шаг-4-изменить-incoming-у-b">Шаг 4. Изменить incoming у B</h4>
+<p>Было:</p>
+<div class="sourceCode" id="cb27"><pre
+class="sourceCode xml"><code class="sourceCode xml"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a>&lt;<span class="kw">incoming</span>&gt;F1&lt;/<span class="kw">incoming</span>&gt;</span></code></pre></div>
+<p>Стало:</p>
+<div class="sourceCode" id="cb28"><pre
+class="sourceCode xml"><code class="sourceCode xml"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a>&lt;<span class="kw">incoming</span>&gt;F2&lt;/<span class="kw">incoming</span>&gt;</span></code></pre></div>
+<h4 id="шаг-5-создать-f2">Шаг 5. Создать F2</h4>
+<div class="sourceCode" id="cb29"><pre
+class="sourceCode xml"><code class="sourceCode xml"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a>&lt;<span class="kw">sequenceFlow</span><span class="ot"> id=</span><span class="st">&quot;F2&quot;</span><span class="ot"> sourceRef=</span><span class="st">&quot;N&quot;</span><span class="ot"> targetRef=</span><span class="st">&quot;B&quot;</span> /&gt;</span></code></pre></div>
+<h4 id="шаг-6-добавить-bpmnshape-n">Шаг 6. Добавить BPMNShape N</h4>
+<div class="sourceCode" id="cb30"><pre
+class="sourceCode xml"><code class="sourceCode xml"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a>&lt;<span class="kw">bpmndi:BPMNShape</span><span class="ot"> id=</span><span class="st">&quot;N_di&quot;</span><span class="ot"> bpmnElement=</span><span class="st">&quot;N&quot;</span>&gt;</span>
+<span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a>  &lt;<span class="kw">omgdc:Bounds</span><span class="ot"> x=</span><span class="st">&quot;...&quot;</span><span class="ot"> y=</span><span class="st">&quot;...&quot;</span><span class="ot"> width=</span><span class="st">&quot;100&quot;</span><span class="ot"> height=</span><span class="st">&quot;80&quot;</span> /&gt;</span>
+<span id="cb30-3"><a href="#cb30-3" aria-hidden="true" tabindex="-1"></a>&lt;/<span class="kw">bpmndi:BPMNShape</span>&gt;</span></code></pre></div>
+<h4 id="шаг-7-обновить-bpmnedge-f1">Шаг 7. Обновить BPMNEdge F1</h4>
+<p>Сохранить <code>F1_di</code>, но его последний waypoint должен теперь
+упираться в <code>N</code>.</p>
+<h4 id="шаг-8-создать-bpmnedge-f2">Шаг 8. Создать BPMNEdge F2</h4>
+<p>Новая линия от <code>N</code> к <code>B</code>, включая
+<code>BPMNLabel</code>.</p>
+<h3 id="почему-этот-вариант-предпочтителен">Почему этот вариант
+предпочтителен</h3>
+<ul>
+<li>сохраняется существующий ID F1;</li>
+<li>source A вообще не нужно менять;</li>
+<li>меньше вероятность сломать внешние ссылки на существующий flow;</li>
+<li>дифф XML меньше.</li>
+</ul>
+<h3 id="особый-случай-именованная-ветка-gateway">Особый случай:
+именованная ветка gateway</h3>
+<p>Если <code>F1</code> выходит из gateway и имеет
+<code>name="If Error"</code>, сохранение F1 на сегменте
+<code>gateway -&gt; N</code> обычно сохраняет смысл подписи ветки. Не
+переносить имя автоматически на <code>N -&gt; B</code> без причины.</p>
+<hr />
+<h2 id="10-добавление-нового-scripttask">10. Добавление нового
+ScriptTask</h2>
+<h3 id="семантика">Семантика</h3>
+<div class="sourceCode" id="cb31"><pre
+class="sourceCode xml"><code class="sourceCode xml"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a>&lt;<span class="kw">scriptTask</span><span class="ot"> id=</span><span class="st">&quot;ScriptTask_NEW&quot;</span><span class="ot"> name=</span><span class="st">&quot;Новая обработка&quot;</span>&gt;</span>
+<span id="cb31-2"><a href="#cb31-2" aria-hidden="true" tabindex="-1"></a>  &lt;<span class="kw">incoming</span>&gt;SequenceFlow_IN&lt;/<span class="kw">incoming</span>&gt;</span>
+<span id="cb31-3"><a href="#cb31-3" aria-hidden="true" tabindex="-1"></a>  &lt;<span class="kw">outgoing</span>&gt;SequenceFlow_OUT&lt;/<span class="kw">outgoing</span>&gt;</span>
+<span id="cb31-4"><a href="#cb31-4" aria-hidden="true" tabindex="-1"></a>&lt;/<span class="kw">scriptTask</span>&gt;</span></code></pre></div>
+<h3 id="di">DI</h3>
+<div class="sourceCode" id="cb32"><pre
+class="sourceCode xml"><code class="sourceCode xml"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a>&lt;<span class="kw">bpmndi:BPMNShape</span><span class="ot"> id=</span><span class="st">&quot;ScriptTask_NEW_di&quot;</span><span class="ot"> bpmnElement=</span><span class="st">&quot;ScriptTask_NEW&quot;</span>&gt;</span>
+<span id="cb32-2"><a href="#cb32-2" aria-hidden="true" tabindex="-1"></a>  &lt;<span class="kw">omgdc:Bounds</span><span class="ot"> x=</span><span class="st">&quot;X&quot;</span><span class="ot"> y=</span><span class="st">&quot;Y&quot;</span><span class="ot"> width=</span><span class="st">&quot;100&quot;</span><span class="ot"> height=</span><span class="st">&quot;80&quot;</span> /&gt;</span>
+<span id="cb32-3"><a href="#cb32-3" aria-hidden="true" tabindex="-1"></a>&lt;/<span class="kw">bpmndi:BPMNShape</span>&gt;</span></code></pre></div>
+<p><strong>После XML-правки:</strong> отдельно настроить исполняемую
+логику ScriptTask штатным механизмом DamuBPM. XML из примеров не
+содержит тело скрипта.</p>
+<hr />
+<h2 id="11-добавление-usertask">11. Добавление UserTask</h2>
+<h3 id="семантика-1">Семантика</h3>
+<div class="sourceCode" id="cb33"><pre
+class="sourceCode xml"><code class="sourceCode xml"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a>&lt;<span class="kw">userTask</span><span class="ot"> id=</span><span class="st">&quot;UserTask_NEW&quot;</span><span class="ot"> name=</span><span class="st">&quot;Проверить документ&quot;</span>&gt;</span>
+<span id="cb33-2"><a href="#cb33-2" aria-hidden="true" tabindex="-1"></a>  &lt;<span class="kw">incoming</span>&gt;SequenceFlow_IN&lt;/<span class="kw">incoming</span>&gt;</span>
+<span id="cb33-3"><a href="#cb33-3" aria-hidden="true" tabindex="-1"></a>  &lt;<span class="kw">outgoing</span>&gt;SequenceFlow_OUT&lt;/<span class="kw">outgoing</span>&gt;</span>
+<span id="cb33-4"><a href="#cb33-4" aria-hidden="true" tabindex="-1"></a>&lt;/<span class="kw">userTask</span>&gt;</span></code></pre></div>
+<h3 id="di-1">DI</h3>
+<div class="sourceCode" id="cb34"><pre
+class="sourceCode xml"><code class="sourceCode xml"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a>&lt;<span class="kw">bpmndi:BPMNShape</span><span class="ot"> id=</span><span class="st">&quot;UserTask_NEW_di&quot;</span><span class="ot"> bpmnElement=</span><span class="st">&quot;UserTask_NEW&quot;</span>&gt;</span>
+<span id="cb34-2"><a href="#cb34-2" aria-hidden="true" tabindex="-1"></a>  &lt;<span class="kw">omgdc:Bounds</span><span class="ot"> x=</span><span class="st">&quot;X&quot;</span><span class="ot"> y=</span><span class="st">&quot;Y&quot;</span><span class="ot"> width=</span><span class="st">&quot;100&quot;</span><span class="ot"> height=</span><span class="st">&quot;80&quot;</span> /&gt;</span>
+<span id="cb34-3"><a href="#cb34-3" aria-hidden="true" tabindex="-1"></a>&lt;/<span class="kw">bpmndi:BPMNShape</span>&gt;</span></code></pre></div>
+<p><strong>После XML-правки:</strong> отдельно проверить/создать форму,
+акторов и контракт входных/выходных переменных. В существующей
+документации DamuBPM UserTask работает через <code>task</code> UUID;
+XML-фрагмент сам по себе не настраивает этот runtime-контракт.</p>
+<hr />
+<h2 id="12-добавление-subprocess">12. Добавление SubProcess</h2>
+<div class="sourceCode" id="cb35"><pre
+class="sourceCode xml"><code class="sourceCode xml"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a>&lt;<span class="kw">subProcess</span><span class="ot"> id=</span><span class="st">&quot;SubProcess_NEW&quot;</span><span class="ot"> name=</span><span class="st">&quot;Согласование&quot;</span>&gt;</span>
+<span id="cb35-2"><a href="#cb35-2" aria-hidden="true" tabindex="-1"></a>  &lt;<span class="kw">incoming</span>&gt;SequenceFlow_IN&lt;/<span class="kw">incoming</span>&gt;</span>
+<span id="cb35-3"><a href="#cb35-3" aria-hidden="true" tabindex="-1"></a>  &lt;<span class="kw">outgoing</span>&gt;SequenceFlow_OUT&lt;/<span class="kw">outgoing</span>&gt;</span>
+<span id="cb35-4"><a href="#cb35-4" aria-hidden="true" tabindex="-1"></a>&lt;/<span class="kw">subProcess</span>&gt;</span></code></pre></div>
+<div class="sourceCode" id="cb36"><pre
+class="sourceCode xml"><code class="sourceCode xml"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a>&lt;<span class="kw">bpmndi:BPMNShape</span><span class="ot"> id=</span><span class="st">&quot;SubProcess_NEW_di&quot;</span><span class="ot"> bpmnElement=</span><span class="st">&quot;SubProcess_NEW&quot;</span>&gt;</span>
+<span id="cb36-2"><a href="#cb36-2" aria-hidden="true" tabindex="-1"></a>  &lt;<span class="kw">omgdc:Bounds</span><span class="ot"> x=</span><span class="st">&quot;X&quot;</span><span class="ot"> y=</span><span class="st">&quot;Y&quot;</span><span class="ot"> width=</span><span class="st">&quot;100&quot;</span><span class="ot"> height=</span><span class="st">&quot;80&quot;</span> /&gt;</span>
+<span id="cb36-3"><a href="#cb36-3" aria-hidden="true" tabindex="-1"></a>&lt;/<span class="kw">bpmndi:BPMNShape</span>&gt;</span></code></pre></div>
+<p>Не добавлять внутрь <code>&lt;subProcess&gt;</code> вложенный граф,
+<code>calledElement</code> или DamuBPM extension без отдельного
+подтверждённого примера.</p>
+<hr />
+<h2 id="13-добавление-exclusivegateway-с-двумя-ветками">13. Добавление
+ExclusiveGateway с двумя ветками</h2>
+<p>Целевая структура:</p>
+<pre class="text"><code>A -&gt; G -&gt; B
+     └-&gt; E</code></pre>
+<h3 id="семантика-2">Семантика</h3>
+<div class="sourceCode" id="cb38"><pre
+class="sourceCode xml"><code class="sourceCode xml"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a>&lt;<span class="kw">exclusiveGateway</span><span class="ot"> id=</span><span class="st">&quot;ExclusiveGateway_NEW&quot;</span>&gt;</span>
+<span id="cb38-2"><a href="#cb38-2" aria-hidden="true" tabindex="-1"></a>  &lt;<span class="kw">incoming</span>&gt;SequenceFlow_AG&lt;/<span class="kw">incoming</span>&gt;</span>
+<span id="cb38-3"><a href="#cb38-3" aria-hidden="true" tabindex="-1"></a>  &lt;<span class="kw">outgoing</span>&gt;SequenceFlow_GB&lt;/<span class="kw">outgoing</span>&gt;</span>
+<span id="cb38-4"><a href="#cb38-4" aria-hidden="true" tabindex="-1"></a>  &lt;<span class="kw">outgoing</span>&gt;SequenceFlow_GE&lt;/<span class="kw">outgoing</span>&gt;</span>
+<span id="cb38-5"><a href="#cb38-5" aria-hidden="true" tabindex="-1"></a>&lt;/<span class="kw">exclusiveGateway</span>&gt;</span>
+<span id="cb38-6"><a href="#cb38-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb38-7"><a href="#cb38-7" aria-hidden="true" tabindex="-1"></a>&lt;<span class="kw">sequenceFlow</span><span class="ot"> id=</span><span class="st">&quot;SequenceFlow_GB&quot;</span></span>
+<span id="cb38-8"><a href="#cb38-8" aria-hidden="true" tabindex="-1"></a><span class="ot">              name=</span><span class="st">&quot;Успех&quot;</span></span>
+<span id="cb38-9"><a href="#cb38-9" aria-hidden="true" tabindex="-1"></a><span class="ot">              sourceRef=</span><span class="st">&quot;ExclusiveGateway_NEW&quot;</span></span>
+<span id="cb38-10"><a href="#cb38-10" aria-hidden="true" tabindex="-1"></a><span class="ot">              targetRef=</span><span class="st">&quot;B&quot;</span> /&gt;</span>
+<span id="cb38-11"><a href="#cb38-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb38-12"><a href="#cb38-12" aria-hidden="true" tabindex="-1"></a>&lt;<span class="kw">sequenceFlow</span><span class="ot"> id=</span><span class="st">&quot;SequenceFlow_GE&quot;</span></span>
+<span id="cb38-13"><a href="#cb38-13" aria-hidden="true" tabindex="-1"></a><span class="ot">              name=</span><span class="st">&quot;Ошибка&quot;</span></span>
+<span id="cb38-14"><a href="#cb38-14" aria-hidden="true" tabindex="-1"></a><span class="ot">              sourceRef=</span><span class="st">&quot;ExclusiveGateway_NEW&quot;</span></span>
+<span id="cb38-15"><a href="#cb38-15" aria-hidden="true" tabindex="-1"></a><span class="ot">              targetRef=</span><span class="st">&quot;E&quot;</span> /&gt;</span></code></pre></div>
+<h3 id="di-2">DI</h3>
+<div class="sourceCode" id="cb39"><pre
+class="sourceCode xml"><code class="sourceCode xml"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a>&lt;<span class="kw">bpmndi:BPMNShape</span></span>
+<span id="cb39-2"><a href="#cb39-2" aria-hidden="true" tabindex="-1"></a><span class="ot">  id=</span><span class="st">&quot;ExclusiveGateway_NEW_di&quot;</span></span>
+<span id="cb39-3"><a href="#cb39-3" aria-hidden="true" tabindex="-1"></a><span class="ot">  bpmnElement=</span><span class="st">&quot;ExclusiveGateway_NEW&quot;</span></span>
+<span id="cb39-4"><a href="#cb39-4" aria-hidden="true" tabindex="-1"></a><span class="ot">  isMarkerVisible=</span><span class="st">&quot;true&quot;</span>&gt;</span>
+<span id="cb39-5"><a href="#cb39-5" aria-hidden="true" tabindex="-1"></a>  &lt;<span class="kw">omgdc:Bounds</span><span class="ot"> x=</span><span class="st">&quot;X&quot;</span><span class="ot"> y=</span><span class="st">&quot;Y&quot;</span><span class="ot"> width=</span><span class="st">&quot;50&quot;</span><span class="ot"> height=</span><span class="st">&quot;50&quot;</span> /&gt;</span>
+<span id="cb39-6"><a href="#cb39-6" aria-hidden="true" tabindex="-1"></a>  &lt;<span class="kw">bpmndi:BPMNLabel</span>&gt;</span>
+<span id="cb39-7"><a href="#cb39-7" aria-hidden="true" tabindex="-1"></a>    &lt;<span class="kw">omgdc:Bounds</span><span class="ot"> x=</span><span class="st">&quot;X_MINUS_20&quot;</span><span class="ot"> y=</span><span class="st">&quot;Y_PLUS_50&quot;</span><span class="ot"> width=</span><span class="st">&quot;90&quot;</span><span class="ot"> height=</span><span class="st">&quot;20&quot;</span> /&gt;</span>
+<span id="cb39-8"><a href="#cb39-8" aria-hidden="true" tabindex="-1"></a>  &lt;/<span class="kw">bpmndi:BPMNLabel</span>&gt;</span>
+<span id="cb39-9"><a href="#cb39-9" aria-hidden="true" tabindex="-1"></a>&lt;/<span class="kw">bpmndi:BPMNShape</span>&gt;</span></code></pre></div>
+<p><strong>Критично:</strong> названия
+<code>Успех</code>/<code>Ошибка</code> — только подписи веток. Условие
+маршрутизации нельзя выдумывать как <code>conditionExpression</code>,
+потому что такого механизма нет в предоставленных XML.</p>
+<hr />
+<h2 id="14-добавление-endevent">14. Добавление EndEvent</h2>
+<div class="sourceCode" id="cb40"><pre
+class="sourceCode xml"><code class="sourceCode xml"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a>&lt;<span class="kw">endEvent</span><span class="ot"> id=</span><span class="st">&quot;EndEvent_NEW&quot;</span><span class="ot"> name=</span><span class="st">&quot;Ошибка&quot;</span>&gt;</span>
+<span id="cb40-2"><a href="#cb40-2" aria-hidden="true" tabindex="-1"></a>  &lt;<span class="kw">incoming</span>&gt;SequenceFlow_TO_END&lt;/<span class="kw">incoming</span>&gt;</span>
+<span id="cb40-3"><a href="#cb40-3" aria-hidden="true" tabindex="-1"></a>&lt;/<span class="kw">endEvent</span>&gt;</span></code></pre></div>
+<div class="sourceCode" id="cb41"><pre
+class="sourceCode xml"><code class="sourceCode xml"><span id="cb41-1"><a href="#cb41-1" aria-hidden="true" tabindex="-1"></a>&lt;<span class="kw">bpmndi:BPMNShape</span><span class="ot"> id=</span><span class="st">&quot;EndEvent_NEW_di&quot;</span><span class="ot"> bpmnElement=</span><span class="st">&quot;EndEvent_NEW&quot;</span>&gt;</span>
+<span id="cb41-2"><a href="#cb41-2" aria-hidden="true" tabindex="-1"></a>  &lt;<span class="kw">omgdc:Bounds</span><span class="ot"> x=</span><span class="st">&quot;X&quot;</span><span class="ot"> y=</span><span class="st">&quot;Y&quot;</span><span class="ot"> width=</span><span class="st">&quot;36&quot;</span><span class="ot"> height=</span><span class="st">&quot;36&quot;</span> /&gt;</span>
+<span id="cb41-3"><a href="#cb41-3" aria-hidden="true" tabindex="-1"></a>  &lt;<span class="kw">bpmndi:BPMNLabel</span>&gt;</span>
+<span id="cb41-4"><a href="#cb41-4" aria-hidden="true" tabindex="-1"></a>    &lt;<span class="kw">omgdc:Bounds</span><span class="ot"> x=</span><span class="st">&quot;X_MINUS_27&quot;</span><span class="ot"> y=</span><span class="st">&quot;Y_PLUS_36&quot;</span><span class="ot"> width=</span><span class="st">&quot;90&quot;</span><span class="ot"> height=</span><span class="st">&quot;20&quot;</span> /&gt;</span>
+<span id="cb41-5"><a href="#cb41-5" aria-hidden="true" tabindex="-1"></a>  &lt;/<span class="kw">bpmndi:BPMNLabel</span>&gt;</span>
+<span id="cb41-6"><a href="#cb41-6" aria-hidden="true" tabindex="-1"></a>&lt;/<span class="kw">bpmndi:BPMNShape</span>&gt;</span></code></pre></div>
+<p>Новый входящий <code>sequenceFlow</code> должен быть отражён и в
+<code>&lt;incoming&gt;</code>, и в <code>BPMNEdge</code>.</p>
+<hr />
+<h2
+id="15-безопасное-удаление-обычного-узла-с-одним-входом-и-одним-выходом">15.
+Безопасное удаление обычного узла с одним входом и одним выходом</h2>
+<p>Исходно:</p>
+<pre class="text"><code>A --F1--&gt; N --F2--&gt; B</code></pre>
+<p>После удаления:</p>
+<pre class="text"><code>A --F1--&gt; B</code></pre>
+<p>Алгоритм:</p>
+<ol type="1">
+<li>убедиться, что у <code>N</code> ровно один incoming и один
+outgoing;</li>
+<li>изменить <code>F1.targetRef</code> с <code>N</code> на
+<code>B</code>;</li>
+<li>у <code>B</code> заменить
+<code>&lt;incoming&gt;F2&lt;/incoming&gt;</code> на
+<code>&lt;incoming&gt;F1&lt;/incoming&gt;</code>;</li>
+<li>удалить <code>F2</code>;</li>
+<li>удалить <code>N</code>;</li>
+<li>удалить <code>N_di</code>;</li>
+<li>удалить <code>F2_di</code>;</li>
+<li>обновить последний waypoint <code>F1_di</code>, чтобы он
+заканчивался на <code>B</code>;</li>
+<li>выполнить полный валидатор связности.</li>
+</ol>
+<p><strong>Не применять автоматически</strong> к gateway, узлу с
+несколькими входами/выходами или любому участку, где удаление меняет
+ветвление. Там требуется явное перестроение графа.</p>
+<hr />
+<h2 id="16-перемещение-элемента-без-изменения-логики">16. Перемещение
+элемента без изменения логики</h2>
+<p>Если нужно только изменить положение блока:</p>
+<ol type="1">
+<li>поменять <code>x/y</code> его <code>omgdc:Bounds</code>;</li>
+<li>не менять semantic XML;</li>
+<li>пересчитать первый/последний waypoint всех подключённых edge;</li>
+<li>при необходимости добавить промежуточные waypoint для обхода;</li>
+<li>обновить внешний <code>BPMNLabel</code> события/gateway;</li>
+<li>не менять ID.</li>
+</ol>
+<p><strong>Главное:</strong> перемещение — DI-операция, а не
+бизнес-операция.</p>
+<hr />
+<h2 id="17-переименование-элемента">17. Переименование элемента</h2>
+<p>Для task/subprocess/endEvent:</p>
+<div class="sourceCode" id="cb44"><pre
+class="sourceCode xml"><code class="sourceCode xml"><span id="cb44-1"><a href="#cb44-1" aria-hidden="true" tabindex="-1"></a>name=&quot;Новое название&quot;</span></code></pre></div>
+<p>При переименовании:</p>
+<ul>
+<li>ID не менять;</li>
+<li>sequenceFlow не менять;</li>
+<li>DI shape не менять;</li>
+<li>для event при длинной подписи можно скорректировать
+<code>BPMNLabel/Bounds</code>, но это визуальная правка.</li>
+</ul>
+<p>Для sequenceFlow изменение <code>name</code> меняет только подпись
+ветки в наблюдаемом XML. Не считать это изменением runtime-условия.</p>
+<hr />
+<h2 id="18-геометрия-автоматической-вставки">18. Геометрия
+автоматической вставки</h2>
+<h3 id="горизонтальная-цепочка">Горизонтальная цепочка</h3>
+<p>Если <code>A</code> и <code>B</code> расположены на одной горизонтали
+и между ними достаточно места:</p>
+<pre class="text"><code>N.x = midpoint(A.right, B.left) - N.width / 2
+N.y = common_center_y - N.height / 2</code></pre>
+<p>Для task/subprocess используйте 100×80.</p>
+<p>Если места недостаточно:</p>
+<ol type="1">
+<li>сдвинуть B и все последующие элементы вправо на безопасный шаг;</li>
+<li>сохранить существующую вертикальную полосу/ряд;</li>
+<li>обновить connected edge.</li>
+</ol>
+<h3 id="ветка-вверхвниз-от-gateway">Ветка вверх/вниз от gateway</h3>
+<p>Предпочтительно:</p>
+<ul>
+<li>gateway оставить в основной линии;</li>
+<li>альтернативный end/task поставить вертикально выше или ниже;</li>
+<li>исходный waypoint взять из <code>top center</code> или
+<code>bottom center</code> gateway;</li>
+<li>последний waypoint — соответствующая ближайшая сторона target;</li>
+<li>при необходимости использовать один ортогональный поворот.</li>
+</ul>
+<h3 id="не-рассчитывать-layout-по-bpmnlabel">Не рассчитывать layout по
+BPMNLabel</h3>
+<p>В исходных файлах координаты некоторых <code>BPMNLabel</code> у flow
+визуально не совпадают с серединой соответствующей линии. Поэтому label
+bounds нельзя использовать как источник геометрии графа. Источники
+геометрии — <code>BPMNShape/Bounds</code> и
+<code>BPMNEdge/waypoint</code>.</p>
+<hr />
+<h2 id="19-алгоритм-ии-перед-изменением-xml">19. Алгоритм ИИ перед
+изменением XML</h2>
+<h3 id="фаза-a-разбор">Фаза A. Разбор</h3>
+<ol type="1">
+<li>распарсить XML с namespace;</li>
+<li>найти единственный/целевой <code>&lt;process&gt;</code>;</li>
+<li>собрать <code>nodesById</code> по всем узлам кроме
+<code>sequenceFlow</code>;</li>
+<li>собрать <code>flowsById</code>;</li>
+<li>построить <code>incomingByNode</code> и <code>outgoingByNode</code>
+из <code>sourceRef/targetRef</code>;</li>
+<li>найти <code>BPMNPlane</code>;</li>
+<li>собрать <code>shapesByElement</code>;</li>
+<li>собрать <code>edgesByFlow</code>;</li>
+<li>определить локальный стиль ID;</li>
+<li>определить локальные размеры и типичную сетку координат.</li>
+</ol>
+<h3 id="фаза-b-проверка-до-правки">Фаза B. Проверка до правки</h3>
+<p>Перед изменением убедиться, что исходник уже согласован. Если нет —
+не маскировать проблему новой правкой.</p>
+<h3 id="фаза-c-минимальная-мутация">Фаза C. Минимальная мутация</h3>
+<ul>
+<li>изменять только нужные semantic элементы;</li>
+<li>сохранять существующие ID;</li>
+<li>создавать минимальное число новых flow;</li>
+<li>отдельно синхронизировать DI.</li>
+</ul>
+<h3 id="фаза-d-полная-валидация">Фаза D. Полная валидация</h3>
+<p>После изменения выполнить проверки из раздела 20.</p>
+<h3 id="фаза-e-отчёт">Фаза E. Отчёт</h3>
+<p>ИИ должен сообщить:</p>
+<ul>
+<li>какие узлы добавлены/удалены;</li>
+<li>какие flow изменены/созданы;</li>
+<li>какие runtime-настройки <strong>не были</strong> заданы через
+XML;</li>
+<li>прошла ли структурная проверка.</li>
+</ul>
+<hr />
+<h2 id="20-обязательный-валидатор-после-каждой-правки">20. Обязательный
+валидатор после каждой правки</h2>
+<h3 id="201-xml">20.1 XML</h3>
+<ul>
+<li>документ парсится без ошибок;</li>
+<li>исходные namespace сохранены;</li>
+<li>XML остаётся UTF-8.</li>
+</ul>
+<h3 id="202-уникальность-id">20.2 Уникальность ID</h3>
+<ul>
+<li>все <code>id</code> уникальны;</li>
+<li>нет конфликта semantic ID и DI ID;</li>
+<li>новые ID не совпадают со старыми.</li>
+</ul>
+<h3 id="203-sequenceflow">20.3 SequenceFlow</h3>
+<p>Для каждого flow:</p>
+<ul>
+<li><code>sourceRef</code> существует;</li>
+<li><code>targetRef</code> существует;</li>
+<li>source содержит
+<code>&lt;outgoing&gt;flowId&lt;/outgoing&gt;</code>;</li>
+<li>target содержит
+<code>&lt;incoming&gt;flowId&lt;/incoming&gt;</code>.</li>
+</ul>
+<p>Для каждого <code>&lt;incoming&gt;/&lt;outgoing&gt;</code>:</p>
+<ul>
+<li>flow существует;</li>
+<li>направление совпадает.</li>
+</ul>
+<h3 id="204-di">20.4 DI</h3>
+<ul>
+<li>каждый узел имеет <code>BPMNShape</code>;</li>
+<li>каждый flow имеет <code>BPMNEdge</code>;</li>
+<li>каждый <code>BPMNShape/@bpmnElement</code> существует;</li>
+<li>каждый <code>BPMNEdge/@bpmnElement</code> существует и является
+<code>sequenceFlow</code>;</li>
+<li><code>BPMNPlane/@bpmnElement == process/@id</code>;</li>
+<li><code>Bounds</code> содержит числовые
+<code>x/y/width/height</code>;</li>
+<li><code>width &gt; 0</code>, <code>height &gt; 0</code>;</li>
+<li>каждый edge имеет минимум 2 waypoint;</li>
+<li>waypoint имеют числовые <code>x/y</code>.</li>
+</ul>
+<h3 id="205-базовая-логика-наблюдаемых-типов">20.5 Базовая логика
+наблюдаемых типов</h3>
+<p>Для автоматически создаваемого обычного шага:</p>
+<ul>
+<li>ScriptTask/UserTask/SubProcess: обычно 1 incoming + 1 outgoing;</li>
+<li>StartEvent: outgoing, без incoming;</li>
+<li>EndEvent: incoming, без outgoing;</li>
+<li>ExclusiveGateway: в наблюдаемом паттерне 1 incoming + 2
+outgoing.</li>
+</ul>
+<p>Это шаблоны данных файлов, а не запрет на другие валидные
+BPMN-конструкции.</p>
+<hr />
+<h2 id="21-машинный-псевдокод-проверки-ссылок">21. Машинный псевдокод
+проверки ссылок</h2>
+<pre class="text"><code>nodes = all process children except sequenceFlow
+flows = all sequenceFlow
+
+for flow in flows:
+    assert flow.sourceRef in nodes
+    assert flow.targetRef in nodes
+    assert flow.id in nodes[flow.sourceRef].outgoing
+    assert flow.id in nodes[flow.targetRef].incoming
+
+for node in nodes:
+    for flowId in node.incoming:
+        assert flowId in flows
+        assert flows[flowId].targetRef == node.id
+
+    for flowId in node.outgoing:
+        assert flowId in flows
+        assert flows[flowId].sourceRef == node.id
+
+for node in nodes:
+    assert exactly_one_shape_for(node.id)
+
+for flow in flows:
+    assert exactly_one_edge_for(flow.id)</code></pre>
+<hr />
+<h2
+id="22-xml-фрагмент-новый-scripttask-между-двумя-существующими-задачами">22.
+XML-фрагмент: новый ScriptTask между двумя существующими задачами</h2>
+<p>Исходно:</p>
+<div class="sourceCode" id="cb47"><pre
+class="sourceCode xml"><code class="sourceCode xml"><span id="cb47-1"><a href="#cb47-1" aria-hidden="true" tabindex="-1"></a>&lt;<span class="kw">scriptTask</span><span class="ot"> id=</span><span class="st">&quot;ScriptTask_A&quot;</span><span class="ot"> name=</span><span class="st">&quot;A&quot;</span>&gt;</span>
+<span id="cb47-2"><a href="#cb47-2" aria-hidden="true" tabindex="-1"></a>  &lt;<span class="kw">outgoing</span>&gt;SequenceFlow_AB&lt;/<span class="kw">outgoing</span>&gt;</span>
+<span id="cb47-3"><a href="#cb47-3" aria-hidden="true" tabindex="-1"></a>&lt;/<span class="kw">scriptTask</span>&gt;</span>
+<span id="cb47-4"><a href="#cb47-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb47-5"><a href="#cb47-5" aria-hidden="true" tabindex="-1"></a>&lt;<span class="kw">scriptTask</span><span class="ot"> id=</span><span class="st">&quot;ScriptTask_B&quot;</span><span class="ot"> name=</span><span class="st">&quot;B&quot;</span>&gt;</span>
+<span id="cb47-6"><a href="#cb47-6" aria-hidden="true" tabindex="-1"></a>  &lt;<span class="kw">incoming</span>&gt;SequenceFlow_AB&lt;/<span class="kw">incoming</span>&gt;</span>
+<span id="cb47-7"><a href="#cb47-7" aria-hidden="true" tabindex="-1"></a>&lt;/<span class="kw">scriptTask</span>&gt;</span>
+<span id="cb47-8"><a href="#cb47-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb47-9"><a href="#cb47-9" aria-hidden="true" tabindex="-1"></a>&lt;<span class="kw">sequenceFlow</span><span class="ot"> id=</span><span class="st">&quot;SequenceFlow_AB&quot;</span></span>
+<span id="cb47-10"><a href="#cb47-10" aria-hidden="true" tabindex="-1"></a><span class="ot">              sourceRef=</span><span class="st">&quot;ScriptTask_A&quot;</span></span>
+<span id="cb47-11"><a href="#cb47-11" aria-hidden="true" tabindex="-1"></a><span class="ot">              targetRef=</span><span class="st">&quot;ScriptTask_B&quot;</span> /&gt;</span></code></pre></div>
+<p>После вставки:</p>
+<div class="sourceCode" id="cb48"><pre
+class="sourceCode xml"><code class="sourceCode xml"><span id="cb48-1"><a href="#cb48-1" aria-hidden="true" tabindex="-1"></a>&lt;<span class="kw">scriptTask</span><span class="ot"> id=</span><span class="st">&quot;ScriptTask_A&quot;</span><span class="ot"> name=</span><span class="st">&quot;A&quot;</span>&gt;</span>
+<span id="cb48-2"><a href="#cb48-2" aria-hidden="true" tabindex="-1"></a>  &lt;<span class="kw">outgoing</span>&gt;SequenceFlow_AB&lt;/<span class="kw">outgoing</span>&gt;</span>
+<span id="cb48-3"><a href="#cb48-3" aria-hidden="true" tabindex="-1"></a>&lt;/<span class="kw">scriptTask</span>&gt;</span>
+<span id="cb48-4"><a href="#cb48-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb48-5"><a href="#cb48-5" aria-hidden="true" tabindex="-1"></a>&lt;<span class="kw">scriptTask</span><span class="ot"> id=</span><span class="st">&quot;ScriptTask_NEW&quot;</span><span class="ot"> name=</span><span class="st">&quot;Новый шаг&quot;</span>&gt;</span>
+<span id="cb48-6"><a href="#cb48-6" aria-hidden="true" tabindex="-1"></a>  &lt;<span class="kw">incoming</span>&gt;SequenceFlow_AB&lt;/<span class="kw">incoming</span>&gt;</span>
+<span id="cb48-7"><a href="#cb48-7" aria-hidden="true" tabindex="-1"></a>  &lt;<span class="kw">outgoing</span>&gt;SequenceFlow_NEW_B&lt;/<span class="kw">outgoing</span>&gt;</span>
+<span id="cb48-8"><a href="#cb48-8" aria-hidden="true" tabindex="-1"></a>&lt;/<span class="kw">scriptTask</span>&gt;</span>
+<span id="cb48-9"><a href="#cb48-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb48-10"><a href="#cb48-10" aria-hidden="true" tabindex="-1"></a>&lt;<span class="kw">scriptTask</span><span class="ot"> id=</span><span class="st">&quot;ScriptTask_B&quot;</span><span class="ot"> name=</span><span class="st">&quot;B&quot;</span>&gt;</span>
+<span id="cb48-11"><a href="#cb48-11" aria-hidden="true" tabindex="-1"></a>  &lt;<span class="kw">incoming</span>&gt;SequenceFlow_NEW_B&lt;/<span class="kw">incoming</span>&gt;</span>
+<span id="cb48-12"><a href="#cb48-12" aria-hidden="true" tabindex="-1"></a>&lt;/<span class="kw">scriptTask</span>&gt;</span>
+<span id="cb48-13"><a href="#cb48-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb48-14"><a href="#cb48-14" aria-hidden="true" tabindex="-1"></a>&lt;<span class="kw">sequenceFlow</span><span class="ot"> id=</span><span class="st">&quot;SequenceFlow_AB&quot;</span></span>
+<span id="cb48-15"><a href="#cb48-15" aria-hidden="true" tabindex="-1"></a><span class="ot">              sourceRef=</span><span class="st">&quot;ScriptTask_A&quot;</span></span>
+<span id="cb48-16"><a href="#cb48-16" aria-hidden="true" tabindex="-1"></a><span class="ot">              targetRef=</span><span class="st">&quot;ScriptTask_NEW&quot;</span> /&gt;</span>
+<span id="cb48-17"><a href="#cb48-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb48-18"><a href="#cb48-18" aria-hidden="true" tabindex="-1"></a>&lt;<span class="kw">sequenceFlow</span><span class="ot"> id=</span><span class="st">&quot;SequenceFlow_NEW_B&quot;</span></span>
+<span id="cb48-19"><a href="#cb48-19" aria-hidden="true" tabindex="-1"></a><span class="ot">              sourceRef=</span><span class="st">&quot;ScriptTask_NEW&quot;</span></span>
+<span id="cb48-20"><a href="#cb48-20" aria-hidden="true" tabindex="-1"></a><span class="ot">              targetRef=</span><span class="st">&quot;ScriptTask_B&quot;</span> /&gt;</span></code></pre></div>
+<p>DI:</p>
+<div class="sourceCode" id="cb49"><pre
+class="sourceCode xml"><code class="sourceCode xml"><span id="cb49-1"><a href="#cb49-1" aria-hidden="true" tabindex="-1"></a>&lt;<span class="kw">bpmndi:BPMNShape</span><span class="ot"> id=</span><span class="st">&quot;ScriptTask_NEW_di&quot;</span><span class="ot"> bpmnElement=</span><span class="st">&quot;ScriptTask_NEW&quot;</span>&gt;</span>
+<span id="cb49-2"><a href="#cb49-2" aria-hidden="true" tabindex="-1"></a>  &lt;<span class="kw">omgdc:Bounds</span><span class="ot"> x=</span><span class="st">&quot;500&quot;</span><span class="ot"> y=</span><span class="st">&quot;220&quot;</span><span class="ot"> width=</span><span class="st">&quot;100&quot;</span><span class="ot"> height=</span><span class="st">&quot;80&quot;</span> /&gt;</span>
+<span id="cb49-3"><a href="#cb49-3" aria-hidden="true" tabindex="-1"></a>&lt;/<span class="kw">bpmndi:BPMNShape</span>&gt;</span>
+<span id="cb49-4"><a href="#cb49-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb49-5"><a href="#cb49-5" aria-hidden="true" tabindex="-1"></a>&lt;<span class="kw">bpmndi:BPMNEdge</span><span class="ot"> id=</span><span class="st">&quot;SequenceFlow_AB_di&quot;</span><span class="ot"> bpmnElement=</span><span class="st">&quot;SequenceFlow_AB&quot;</span>&gt;</span>
+<span id="cb49-6"><a href="#cb49-6" aria-hidden="true" tabindex="-1"></a>  &lt;<span class="kw">omgdi:waypoint</span><span class="ot"> xsi:type=</span><span class="st">&quot;omgdc:Point&quot;</span><span class="ot"> x=</span><span class="st">&quot;450&quot;</span><span class="ot"> y=</span><span class="st">&quot;260&quot;</span> /&gt;</span>
+<span id="cb49-7"><a href="#cb49-7" aria-hidden="true" tabindex="-1"></a>  &lt;<span class="kw">omgdi:waypoint</span><span class="ot"> xsi:type=</span><span class="st">&quot;omgdc:Point&quot;</span><span class="ot"> x=</span><span class="st">&quot;500&quot;</span><span class="ot"> y=</span><span class="st">&quot;260&quot;</span> /&gt;</span>
+<span id="cb49-8"><a href="#cb49-8" aria-hidden="true" tabindex="-1"></a>  &lt;<span class="kw">bpmndi:BPMNLabel</span>&gt;</span>
+<span id="cb49-9"><a href="#cb49-9" aria-hidden="true" tabindex="-1"></a>    &lt;<span class="kw">omgdc:Bounds</span><span class="ot"> x=</span><span class="st">&quot;430&quot;</span><span class="ot"> y=</span><span class="st">&quot;250&quot;</span><span class="ot"> width=</span><span class="st">&quot;90&quot;</span><span class="ot"> height=</span><span class="st">&quot;20&quot;</span> /&gt;</span>
+<span id="cb49-10"><a href="#cb49-10" aria-hidden="true" tabindex="-1"></a>  &lt;/<span class="kw">bpmndi:BPMNLabel</span>&gt;</span>
+<span id="cb49-11"><a href="#cb49-11" aria-hidden="true" tabindex="-1"></a>&lt;/<span class="kw">bpmndi:BPMNEdge</span>&gt;</span>
+<span id="cb49-12"><a href="#cb49-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb49-13"><a href="#cb49-13" aria-hidden="true" tabindex="-1"></a>&lt;<span class="kw">bpmndi:BPMNEdge</span><span class="ot"> id=</span><span class="st">&quot;SequenceFlow_NEW_B_di&quot;</span><span class="ot"> bpmnElement=</span><span class="st">&quot;SequenceFlow_NEW_B&quot;</span>&gt;</span>
+<span id="cb49-14"><a href="#cb49-14" aria-hidden="true" tabindex="-1"></a>  &lt;<span class="kw">omgdi:waypoint</span><span class="ot"> xsi:type=</span><span class="st">&quot;omgdc:Point&quot;</span><span class="ot"> x=</span><span class="st">&quot;600&quot;</span><span class="ot"> y=</span><span class="st">&quot;260&quot;</span> /&gt;</span>
+<span id="cb49-15"><a href="#cb49-15" aria-hidden="true" tabindex="-1"></a>  &lt;<span class="kw">omgdi:waypoint</span><span class="ot"> xsi:type=</span><span class="st">&quot;omgdc:Point&quot;</span><span class="ot"> x=</span><span class="st">&quot;650&quot;</span><span class="ot"> y=</span><span class="st">&quot;260&quot;</span> /&gt;</span>
+<span id="cb49-16"><a href="#cb49-16" aria-hidden="true" tabindex="-1"></a>  &lt;<span class="kw">bpmndi:BPMNLabel</span>&gt;</span>
+<span id="cb49-17"><a href="#cb49-17" aria-hidden="true" tabindex="-1"></a>    &lt;<span class="kw">omgdc:Bounds</span><span class="ot"> x=</span><span class="st">&quot;580&quot;</span><span class="ot"> y=</span><span class="st">&quot;250&quot;</span><span class="ot"> width=</span><span class="st">&quot;90&quot;</span><span class="ot"> height=</span><span class="st">&quot;20&quot;</span> /&gt;</span>
+<span id="cb49-18"><a href="#cb49-18" aria-hidden="true" tabindex="-1"></a>  &lt;/<span class="kw">bpmndi:BPMNLabel</span>&gt;</span>
+<span id="cb49-19"><a href="#cb49-19" aria-hidden="true" tabindex="-1"></a>&lt;/<span class="kw">bpmndi:BPMNEdge</span>&gt;</span></code></pre></div>
+<hr />
+<h2 id="23-разбор-task_sign_cloud1xml-как-эталона-ветвления">23. Разбор
+<code>task_sign_cloud(1).xml</code> как эталона ветвления</h2>
+<p>Высокоуровневая цепочка:</p>
+<pre class="text"><code>Start
+  -&gt; Поиск Export Templates
+  -&gt; Поиск файлов в сущности
+  -&gt; Сформировать подписываемые данные
+  -&gt; Gateway
+       -&gt; Ошибка
+       -&gt; Подписывание (UserTask)
+          -&gt; Проверка ЭЦП на сервере
+          -&gt; ScriptTask без name
+          -&gt; Gateway
+               -&gt; Не прошла проверка ЭЦП на сервере
+               -&gt; Согласовать (SubProcess)
+                  -&gt; Gateway
+                       -&gt; Ошибка
+                       -&gt; Завершено</code></pre>
+<p>Этот файл полезен как образец для:</p>
+<ul>
+<li>UserTask;</li>
+<li>нескольких ExclusiveGateway;</li>
+<li>вертикальных error-веток;</li>
+<li>SubProcess;</li>
+<li>русского <code>name</code>;</li>
+<li>UUID-подобных ID;</li>
+<li>прямых edge из 2 waypoint.</li>
+</ul>
+<hr />
+<h2 id="24-разбор-entity_publish1xml-как-эталона-длинного-процесса">24.
+Разбор <code>entity_publish(1).xml</code> как эталона длинного
+процесса</h2>
+<p>Файл показывает длинную цепочку из ScriptTask/SubProcess, разложенную
+в два горизонтальных ряда. В конце:</p>
+<pre class="text"><code>... -&gt; ClearCache -&gt; ExclusiveGateway
+                     -&gt; &quot;No errors&quot; -&gt; Success
+                     -&gt; &quot;If Error&quot;  -&gt; Error Found</code></pre>
+<p>Полезные особенности:</p>
+<ul>
+<li>короткие ID (<code>ScriptTask_...</code>,
+<code>SequenceFlow_...</code>);</li>
+<li>22 ScriptTask;</li>
+<li>несколько SubProcess;</li>
+<li>именованные ветки sequenceFlow;</li>
+<li>3-точечные ортогональные edge на финальном gateway;</li>
+<li>смешанная геометрия слева-направо и справа-налево;</li>
+<li>отсутствие runtime condition в самом XML.</li>
+</ul>
+<hr />
+<h2 id="25-что-ии-должен-сохранять-при-локальной-правке">25. Что ИИ
+должен сохранять при локальной правке</h2>
+<p>По умолчанию сохранять неизменными:</p>
+<ul>
+<li>XML declaration;</li>
+<li>namespace и <code>schemaLocation</code>;</li>
+<li>process ID и BPMNPlane link;</li>
+<li>все не затронутые IDs;</li>
+<li>все не затронутые <code>name</code>;</li>
+<li>существующую ID-конвенцию;</li>
+<li>существующие координаты не затронутых фигур;</li>
+<li>существующие flow labels;</li>
+<li>порядок веток gateway, если пользователь не просил его менять;</li>
+<li>неизвестные атрибуты/узлы, если они появятся в других файлах.</li>
+</ul>
+<p><strong>Не выполнять глобальное форматирование или переименование
+всей схемы ради красоты.</strong> Для автоматизированной разработки
+важнее минимальный дифф.</p>
+<hr />
+<h2 id="26-что-ии-не-должен-делать">26. Что ИИ не должен делать</h2>
+<ol type="1">
+<li>Не добавлять элемент только в <code>&lt;process&gt;</code> без
+DI.</li>
+<li>Не добавлять DI без semantic элемента.</li>
+<li>Не менять <code>sourceRef/targetRef</code> без
+<code>incoming/outgoing</code>.</li>
+<li>Не генерировать <code>conditionExpression</code>,
+<code>extensionElements</code>, <code>&lt;script&gt;</code> по
+догадке.</li>
+<li>Не считать <code>sequenceFlow/@name</code> условием выполнения.</li>
+<li>Не менять все ID на UUID или короткий формат.</li>
+<li>Не менять <code>isExecutable</code> автоматически.</li>
+<li>Не считать порядок XML-тегов порядком процесса.</li>
+<li>Не использовать координаты <code>BPMNLabel</code> для восстановления
+топологии.</li>
+<li>Не удалять gateway как обычный узел с одним входом/выходом.</li>
+<li>Не перезаписывать весь XML, если нужна локальная вставка.</li>
+<li>Не считать, что добавленный UserTask уже имеет форму и акторов.</li>
+<li>Не считать, что добавленный ScriptTask уже имеет Lua-код.</li>
+</ol>
+<hr />
+<h2 id="27-рекомендованный-контракт-команды-для-будущего-ии">27.
+Рекомендованный контракт команды для будущего ИИ</h2>
+<p>Для автоматической операции удобно мыслить структурой:</p>
+<pre class="text"><code>operation: insert_node
+node_type: scriptTask | userTask | subProcess | exclusiveGateway | endEvent
+name: &quot;...&quot;
+insert_after: EXISTING_ELEMENT_ID
+insert_before: EXISTING_ELEMENT_ID
+branch_name: optional
+placement: auto | {x, y}</code></pre>
+<p>Алгоритм ИИ:</p>
+<pre class="text"><code>1. parse
+2. validate source
+3. locate source/target/flow
+4. generate IDs in local style
+5. mutate semantic graph minimally
+6. mutate DI
+7. validate all references
+8. serialize UTF-8
+9. report runtime metadata still required</code></pre>
+<p>Это не формат API DamuBPM, а внутренний безопасный алгоритм для
+агента/навыка.</p>
+<hr />
+<h2 id="28-связь-с-runtime-damubpm">28. Связь с runtime DamuBPM</h2>
+<p>XML отвечает за структуру процесса, но выполнение DamuBPM
+дополнительно связано с runtime-механизмом процесса.</p>
+<p>Из существующей документации DamuBPM:</p>
+<ul>
+<li>процесс запускается через <code>BPMSStartProcess</code> /
+<code>BPMSStartProcess2</code>;</li>
+<li>UserTask/ожидающая задача идентифицируется <code>task</code>
+UUID;</li>
+<li>продолжение задачи выполняется через <code>BPMSRunManualTask</code>
+или UserTask REST-контракт;</li>
+<li>процесс использует <code>var</code> для глобальных переменных и
+<code>sys</code> для системного контекста.</li>
+</ul>
+<p><strong>Практический вывод:</strong> BPMN XML-правка должна отвечать
+только за подтверждённую часть модели. ScriptTask-код, условия, формы,
+акторы и переменные настраиваются тем механизмом DamuBPM, который
+реально хранит эти данные. Если такого механизма/примера нет в контексте
+— остановиться на корректной структурной правке и явно отметить
+недостающую runtime-настройку.</p>
+<hr />
+<h2 id="29-финальный-чек-лист-для-автономной-работы-ии">29. Финальный
+чек-лист для автономной работы ИИ</h2>
+<p>Перед сохранением изменённого BPMN XML убедиться:</p>
+<ul class="task-list">
+<li><label><input type="checkbox" />XML парсится.</label></li>
+<li><label><input type="checkbox" />Namespace не потеряны.</label></li>
+<li><label><input type="checkbox" />Все ID уникальны.</label></li>
+<li><label><input type="checkbox" />Существующие ID без необходимости не
+изменены.</label></li>
+<li><label><input type="checkbox" />Каждый <code>sequenceFlow</code>
+ссылается на существующие source/target.</label></li>
+<li><label><input type="checkbox" />Каждый source содержит правильный
+<code>outgoing</code>.</label></li>
+<li><label><input type="checkbox" />Каждый target содержит правильный
+<code>incoming</code>.</label></li>
+<li><label><input type="checkbox" />Каждый узел имеет
+<code>BPMNShape</code>.</label></li>
+<li><label><input type="checkbox" />Каждый flow имеет
+<code>BPMNEdge</code>.</label></li>
+<li><label><input type="checkbox" /><code>BPMNPlane/@bpmnElement</code>
+совпадает с <code>process/@id</code>.</label></li>
+<li><label><input type="checkbox" />Размеры новых элементов
+соответствуют локальному паттерну.</label></li>
+<li><label><input type="checkbox" />Edge начинаются/заканчиваются на
+границах соответствующих фигур.</label></li>
+<li><label><input type="checkbox" />Gateway имеет
+<code>isMarkerVisible="true"</code>.</label></li>
+<li><label><input type="checkbox" />Для event/gateway добавлены внешние
+labels по локальному стилю.</label></li>
+<li><label><input type="checkbox" />Для flow добавлен
+<code>BPMNLabel</code> по локальному стилю.</label></li>
+<li><label><input type="checkbox" />Не добавлены неподтверждённые
+DamuBPM extension/script/condition поля.</label></li>
+<li><label><input type="checkbox" />Пользователю/следующему агенту
+сообщено, какие runtime-настройки ещё нужны.</label></li>
+</ul>
+<hr />
+<h2 id="30-короткая-памятка-для-навыка-damubpm-development">30. Короткая
+памятка для навыка <code>damubpm-development</code></h2>
+<pre class="text"><code>DamuBPM BPMN XML = semantic graph + BPMN-DI.
+
+При любой правке:
+- semantic node &lt;-&gt; BPMNShape
+- sequenceFlow &lt;-&gt; BPMNEdge
+- sourceRef &lt;-&gt; source/outgoing
+- targetRef &lt;-&gt; target/incoming
+
+Наблюдаемые размеры:
+- event 36x36
+- task/userTask/subProcess 100x80
+- exclusiveGateway 50x50 + isMarkerVisible=true
+
+Не придумывать:
+- Lua script в XML
+- conditionExpression
+- UserTask actors/forms
+- SubProcess internals
+- extensionElements
+
+Вставка A-&gt;B:
+- сохранить F1 и retarget A-&gt;N
+- создать F2 N-&gt;B
+- заменить incoming B: F1 -&gt; F2
+- добавить N incoming=F1/outgoing=F2
+- добавить N_di, обновить F1_di, создать F2_di
+- прогнать полный валидатор ссылок и DI</code></pre>
+<hr />
+<p><a href="index.html">← На главную</a></p>
+</main>
+</div>
+</body>
+</html>
