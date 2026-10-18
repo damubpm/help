@@ -1,0 +1,1194 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>REST API DamuBPM для Flutter и Mobile</title>
+<style>
+:root {
+  --bg: #f6f7f9; --card: #ffffff; --text: #1b2430; --muted: #5d6b79; --line: #e1e6ec;
+  --accent: #0e6e7e; --code-bg: #f1f4f7; --pre-bg: #1e2733; --pre-text: #e6edf3; --quote: #eef6f7;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #11161c; --card: #171e26; --text: #e2e8ee; --muted: #93a1af; --line: #2a3440;
+    --accent: #4fb8c7; --code-bg: #212a35; --pre-bg: #0c1117; --pre-text: #e6edf3; --quote: #1a2a30;
+  }
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--text);
+  font: 16px/1.6 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+.topbar { position: sticky; top: 0; z-index: 10; background: var(--card); border-bottom: 1px solid var(--line); }
+.topbar .in { max-width: 1040px; margin: 0 auto; padding: 10px 16px; display: flex; gap: 16px; align-items: center; }
+.topbar a { color: var(--accent); text-decoration: none; font-weight: 600; white-space: nowrap; }
+.topbar span { color: var(--muted); font-size: 14px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+main { max-width: 1040px; margin: 24px auto 48px; padding: 0 16px; }
+article { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 28px 32px; }
+@media (max-width: 640px) { article { padding: 18px 16px; } }
+h1 { font-size: 30px; line-height: 1.25; margin: 0 0 16px; }
+h2 { font-size: 23px; margin: 36px 0 12px; padding-top: 12px; border-top: 1px solid var(--line); }
+h3 { font-size: 18px; margin: 26px 0 8px; }
+h1, h2, h3, h4 { scroll-margin-top: 64px; }
+a { color: var(--accent); }
+p, ul, ol { margin: 10px 0; }
+li { margin: 3px 0; }
+code { font: 13.5px/1.5 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; background: var(--code-bg);
+  padding: 1px 5px; border-radius: 5px; overflow-wrap: anywhere; }
+pre { background: var(--pre-bg); color: var(--pre-text); padding: 14px 16px; border-radius: 10px; overflow-x: auto; }
+pre code { background: none; padding: 0; color: inherit; overflow-wrap: normal; }
+.tbl { overflow-x: auto; margin: 12px 0; }
+table { border-collapse: collapse; width: 100%; font-size: 14.5px; }
+th, td { border: 1px solid var(--line); padding: 7px 10px; text-align: left; vertical-align: top; }
+th { background: var(--code-bg); }
+blockquote { margin: 12px 0; padding: 10px 14px; background: var(--quote); border-left: 4px solid var(--accent);
+  border-radius: 0 8px 8px 0; }
+blockquote p { margin: 4px 0; }
+hr { border: 0; border-top: 1px solid var(--line); margin: 28px 0; }
+.foot { max-width: 1040px; margin: 0 auto 32px; padding: 0 16px; color: var(--muted); font-size: 14px; }
+.foot a { font-weight: 600; text-decoration: none; }
+</style>
+</head>
+<body>
+<div class="topbar"><div class="in"><a href="index.html">← Главная</a><span>REST API DamuBPM для Flutter и Mobile</span></div></div>
+<main><article>
+<h1 id="rest-api-damubpm-для-flutter-и-mobile">REST API DamuBPM для Flutter и Mobile</h1>
+<p>Практическая документация по REST API DamuBPM для мобильных приложений, включая Flutter/Dart.</p>
+<p>Документ охватывает:</p>
+<ul>
+<li>пользовательские Lua REST-сервисы;</li>
+<li>BPM REST API;</li>
+<li>UserTask;</li>
+<li>формы BPM-задач и экземпляров;</li>
+<li><code>/update_v_1_1</code>;</li>
+<li>JSON request/response;</li>
+<li>HTTP status codes;</li>
+<li>async;</li>
+<li><code>no_parallel</code>;</li>
+<li>API Key;</li>
+<li>Flutter/Dart client;</li>
+<li>примеры интеграции.</li>
+</ul>
+<blockquote>
+<p>Важно: здесь перечислены REST-контракты, подтверждённые предоставленными материалами. Это не означает, что в полном серверном коде DamuBPM нет дополнительных endpoint’ов.</p>
+</blockquote>
+<hr />
+<h2 id="содержание">Содержание</h2>
+<ol>
+<li><a href="#1-общая-схема-rest-api">Общая схема REST API</a></li>
+<li><a href="#2-lua-rest-services">Lua REST Services</a></li>
+<li><a href="#3-объект-request">Объект request</a></li>
+<li><a href="#4-формирование-ответа">Формирование ответа</a></li>
+<li><a href="#5-bpm-rest-api">BPM REST API</a></li>
+<li><a href="#6-формы-usertask-и-instance">Формы UserTask и Instance</a></li>
+<li><a href="#7-update_v_1_1">update_v_1_1</a></li>
+<li><a href="#8-flutter-api-client">Flutter API Client</a></li>
+<li><a href="#9-flutter-примеры">Flutter примеры</a></li>
+<li><a href="#10-http-status-и-ошибки">HTTP status и ошибки</a></li>
+<li><a href="#11-async-и-no_parallel">Async и no_parallel</a></li>
+<li><a href="#12-авторизация-и-headers">Авторизация и headers</a></li>
+<li><a href="#13-mobile-bpm-flow">Mobile BPM Flow</a></li>
+<li><a href="#14-checklist">Checklist</a></li>
+<li><a href="#15-проверенные-практики-мобильных-проектов">Проверенные практики мобильных проектов</a></li>
+</ol>
+<blockquote>
+<p>Полное руководство по модулю <code>flt</code> (проект, OAuth2 PKCE, MapLibre, разрешения, CI/CD iOS, известные ошибки): <a href="damubpm_flutter_mobile_guide.html"><code>damubpm_flutter_mobile_guide.md</code></a>.</p>
+</blockquote>
+<hr />
+<h1 id="1-общая-схема-rest-api">1. Общая схема REST API</h1>
+<p>Основное семейство пользовательских REST API DamuBPM:</p>
+<pre><code class="language-text">/restapi/services/run/&lt;code&gt;
+</code></pre>
+<p>Например, если код сервиса:</p>
+<pre><code class="language-text">api/v1/customer/create
+</code></pre>
+<p>то endpoint:</p>
+<pre><code class="language-text">/restapi/services/run/api/v1/customer/create
+</code></pre>
+<p>Поддерживаются методы:</p>
+<pre><code class="language-text">GET
+POST
+PUT
+OPTIONS
+</code></pre>
+<hr />
+<h1 id="2-lua-rest-services">2. Lua REST Services</h1>
+<h2 id="универсальный-endpoint">Универсальный endpoint</h2>
+<pre><code class="language-text">GET /restapi/services/run/&lt;code&gt;
+POST /restapi/services/run/&lt;code&gt;
+PUT /restapi/services/run/&lt;code&gt;
+OPTIONS /restapi/services/run/&lt;code&gt;
+</code></pre>
+<p><code>&lt;code&gt;</code> — код пользовательского Lua REST-сервиса.</p>
+<p>Пример:</p>
+<pre><code class="language-text">/restapi/services/run/api/v1/customer/create
+</code></pre>
+<h2 id="get">GET</h2>
+<p>Запрос:</p>
+<pre><code class="language-http">GET /restapi/services/run/customer/get?id=123
+</code></pre>
+<p>Lua:</p>
+<pre><code class="language-lua">local id = request.get.id
+
+output = {
+    success = true,
+    id = id
+}
+</code></pre>
+<h3 id="пример-json-ответа">Пример JSON ответа</h3>
+<pre><code class="language-json">{
+  &quot;success&quot;: true,
+  &quot;id&quot;: &quot;123&quot;
+}
+</code></pre>
+<hr />
+<h2 id="post">POST</h2>
+<p>Запрос:</p>
+<pre><code class="language-http">POST /restapi/services/run/customer/create
+Content-Type: application/json
+</code></pre>
+<p>Body:</p>
+<pre><code class="language-json">{
+  &quot;title&quot;: &quot;ТОО Test&quot;,
+  &quot;email&quot;: &quot;info@test.kz&quot;
+}
+</code></pre>
+<p>Lua:</p>
+<pre><code class="language-lua">local input = request.input
+
+output = {
+    success = true,
+    title = input.title,
+    email = input.email
+}
+</code></pre>
+<h3 id="пример-json-ответа_1">Пример JSON ответа</h3>
+<pre><code class="language-json">{
+  &quot;success&quot;: true,
+  &quot;title&quot;: &quot;ТОО Test&quot;,
+  &quot;email&quot;: &quot;info@test.kz&quot;
+}
+</code></pre>
+<hr />
+<h2 id="put">PUT</h2>
+<p>Запрос:</p>
+<pre><code class="language-http">PUT /restapi/services/run/customer/update?id=123
+Content-Type: application/json
+</code></pre>
+<p>Body:</p>
+<pre><code class="language-json">{
+  &quot;title&quot;: &quot;Новое название&quot;
+}
+</code></pre>
+<p>Lua:</p>
+<pre><code class="language-lua">local id = tonumber(request.get.id)
+local input = request.input
+
+output = {
+    success = true,
+    id = id,
+    title = input.title
+}
+</code></pre>
+<h3 id="пример-json-ответа_2">Пример JSON ответа</h3>
+<pre><code class="language-json">{
+  &quot;success&quot;: true,
+  &quot;id&quot;: 123,
+  &quot;title&quot;: &quot;Новое название&quot;
+}
+</code></pre>
+<hr />
+<h2 id="универсальный-json-response">Универсальный JSON response</h2>
+<p>Lua-сервис сам формирует структуру <code>output</code>.</p>
+<p>Например:</p>
+<pre><code class="language-lua">http_response_code = 200
+
+output = {
+    success = true,
+    data = {
+        id = 123,
+        title = &quot;Test&quot;
+    }
+}
+</code></pre>
+<p>Ответ:</p>
+<pre><code class="language-json">{
+  &quot;success&quot;: true,
+  &quot;data&quot;: {
+    &quot;id&quot;: 123,
+    &quot;title&quot;: &quot;Test&quot;
+  }
+}
+</code></pre>
+<blockquote>
+<p>Точная JSON-структура <code>/restapi/services/run/&lt;code&gt;</code> зависит от Lua-кода конкретного сервиса.</p>
+</blockquote>
+<hr />
+<h1 id="3-объект-request">3. Объект request</h1>
+<p>В Lua REST-сервисе доступен глобальный объект:</p>
+<pre><code class="language-lua">request
+</code></pre>
+<div class="tbl"><table>
+<thead>
+<tr>
+<th>Поле</th>
+<th>Назначение</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>request.input</code></td>
+<td>JSON body как Lua-таблица</td>
+</tr>
+<tr>
+<td><code>request.input_raw</code></td>
+<td>исходное тело запроса</td>
+</tr>
+<tr>
+<td><code>request.get</code></td>
+<td>query/form параметры</td>
+</tr>
+<tr>
+<td><code>request.header</code></td>
+<td>HTTP headers</td>
+</tr>
+<tr>
+<td><code>request.user_id</code></td>
+<td>ID текущего пользователя</td>
+</tr>
+<tr>
+<td><code>request.last_user_id</code></td>
+<td>предыдущий user ID</td>
+</tr>
+<tr>
+<td><code>request.lang</code></td>
+<td>язык</td>
+</tr>
+<tr>
+<td><code>request.anonymous_session_id</code></td>
+<td>ID анонимной сессии</td>
+</tr>
+<tr>
+<td><code>request.host</code></td>
+<td>HTTP Host</td>
+</tr>
+<tr>
+<td><code>request.method</code></td>
+<td>HTTP method</td>
+</tr>
+<tr>
+<td><code>request.RemoteAddr</code></td>
+<td>адрес клиента</td>
+</tr>
+<tr>
+<td><code>request.NTLM_DOMAIN</code></td>
+<td>NTLM domain</td>
+</tr>
+<tr>
+<td><code>request.NTLM_USER</code></td>
+<td>NTLM user</td>
+</tr>
+<tr>
+<td><code>request.NTLM_HOST</code></td>
+<td>NTLM host</td>
+</tr>
+</tbody>
+</table></div>
+<p>Текущий пользователь:</p>
+<pre><code class="language-lua">local userId = tonumber(request.user_id)
+</code></pre>
+<p>GET:</p>
+<pre><code class="language-lua">local id = request.get.id
+</code></pre>
+<p>POST JSON:</p>
+<pre><code class="language-lua">local input = request.input
+</code></pre>
+<p>Header:</p>
+<pre><code class="language-lua">local apiKey = request.header[&quot;X-Api-Key&quot;]
+</code></pre>
+<hr />
+<h1 id="4-формирование-ответа">4. Формирование ответа</h1>
+<p>Основные глобальные переменные:</p>
+<pre><code class="language-lua">output
+http_response_code
+header
+</code></pre>
+<p>Пример:</p>
+<pre><code class="language-lua">http_response_code = 200
+
+header = {
+    [&quot;X-Service&quot;] = &quot;mobile-api&quot;,
+    [&quot;Cache-Control&quot;] = &quot;no-store&quot;
+}
+
+output = {
+    success = true,
+    data = {
+        id = 123
+    }
+}
+</code></pre>
+<p>JSON:</p>
+<pre><code class="language-json">{
+  &quot;success&quot;: true,
+  &quot;data&quot;: {
+    &quot;id&quot;: 123
+  }
+}
+</code></pre>
+<hr />
+<h1 id="5-bpm-rest-api">5. BPM REST API</h1>
+<h2 id="post-restapibpmsstart">POST /restapi/bpms/start</h2>
+<p>Запускает BPM-процесс.</p>
+<pre><code class="language-http">POST /restapi/bpms/start
+Content-Type: application/json
+</code></pre>
+<p>Request:</p>
+<pre><code class="language-json">{
+  &quot;processCode&quot;: &quot;process_code&quot;,
+  &quot;input&quot;: {
+    &quot;id&quot;: 125,
+    &quot;title&quot;: &quot;Заявка №125&quot;
+  }
+}
+</code></pre>
+<h3 id="json-response">JSON response</h3>
+<pre><code class="language-json">{
+  &quot;ok&quot;: true,
+  &quot;instance&quot;: &quot;INSTANCE-UUID&quot;,
+  &quot;task&quot;: &quot;TASK-UUID&quot;,
+  &quot;errorText&quot;: &quot;&quot;,
+  &quot;output&quot;: {},
+  &quot;instanceIsFinished&quot;: false
+}
+</code></pre>
+<h3 id="поля">Поля</h3>
+<div class="tbl"><table>
+<thead>
+<tr>
+<th>Поле</th>
+<th>Назначение</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>ok</code></td>
+<td>результат выполнения</td>
+</tr>
+<tr>
+<td><code>instance</code></td>
+<td>UUID экземпляра BPM</td>
+</tr>
+<tr>
+<td><code>task</code></td>
+<td>UUID текущей ожидающей задачи</td>
+</tr>
+<tr>
+<td><code>errorText</code></td>
+<td>текст ошибки</td>
+</tr>
+<tr>
+<td><code>output</code></td>
+<td>выходные переменные процесса</td>
+</tr>
+<tr>
+<td><code>instanceIsFinished</code></td>
+<td>завершён ли процесс</td>
+</tr>
+</tbody>
+</table></div>
+<p>Если:</p>
+<pre><code class="language-json">{
+  &quot;instanceIsFinished&quot;: true
+}
+</code></pre>
+<p>процесс завершён.</p>
+<hr />
+<h2 id="post-restapibpmsrunusertaskbytask">POST /restapi/bpms/runUserTaskByTask/</h2>
+<p>Рекомендуемый endpoint для завершения UserTask.</p>
+<pre><code class="language-http">POST /restapi/bpms/runUserTaskByTask/
+Content-Type: application/json
+</code></pre>
+<p>Request:</p>
+<pre><code class="language-json">{
+  &quot;task&quot;: &quot;TASK-UUID&quot;,
+  &quot;input&quot;: {
+    &quot;decision&quot;: &quot;approve&quot;,
+    &quot;comment&quot;: &quot;Согласовано&quot;
+  }
+}
+</code></pre>
+<h3 id="пример-json-ответа_3">Пример JSON ответа</h3>
+<pre><code class="language-json">{
+  &quot;ok&quot;: true,
+  &quot;errorVars&quot;: {},
+  &quot;errorText&quot;: &quot;&quot;,
+  &quot;task&quot;: &quot;NEXT-TASK-UUID&quot;,
+  &quot;output&quot;: {},
+  &quot;instance&quot;: &quot;INSTANCE-UUID&quot;,
+  &quot;instanceIsFinished&quot;: false
+}
+</code></pre>
+<p>Основной принцип:</p>
+<pre><code class="language-text">task + input
+</code></pre>
+<p>Для нового кода рекомендуется продолжать BPM именно по UUID <code>task</code>.</p>
+<hr />
+<h1 id="6-формы-usertask-и-instance">6. Формы UserTask и Instance</h1>
+<h2 id="get-restapibpmsshowusertaskformtask">GET /restapi/bpms/ShowUserTaskForm/:task</h2>
+<pre><code class="language-http">GET /restapi/bpms/ShowUserTaskForm/TASK-UUID
+</code></pre>
+<p>Назначение:</p>
+<ul>
+<li>получить форму UserTask;</li>
+<li>переменные;</li>
+<li>информацию по шагам.</li>
+</ul>
+<h3 id="ориентировочный-json">Ориентировочный JSON</h3>
+<pre><code class="language-json">{
+  &quot;task&quot;: &quot;TASK-UUID&quot;,
+  &quot;form&quot;: &quot;...&quot;,
+  &quot;variables&quot;: {},
+  &quot;steps&quot;: []
+}
+</code></pre>
+<blockquote>
+<p>Точные имена полей ответа в предоставленном справочнике не зафиксированы.</p>
+</blockquote>
+<hr />
+<h2 id="get-restapibpmsshowusertaskformangulartask">GET /restapi/bpms/ShowUserTaskFormAngular/:task</h2>
+<pre><code class="language-http">GET /restapi/bpms/ShowUserTaskFormAngular/TASK-UUID
+</code></pre>
+<h3 id="ориентировочный-json_1">Ориентировочный JSON</h3>
+<pre><code class="language-json">{
+  &quot;task&quot;: &quot;TASK-UUID&quot;,
+  &quot;angularForm&quot;: &quot;...&quot;,
+  &quot;data&quot;: {}
+}
+</code></pre>
+<blockquote>
+<p>Точная структура ответа в предоставленных знаниях не описана.</p>
+</blockquote>
+<hr />
+<h2 id="get-restapibpmsshowinstanceforminstance">GET /restapi/bpms/ShowInstanceForm/:instance</h2>
+<pre><code class="language-http">GET /restapi/bpms/ShowInstanceForm/INSTANCE-UUID
+</code></pre>
+<h3 id="ориентировочный-json_2">Ориентировочный JSON</h3>
+<pre><code class="language-json">{
+  &quot;instance&quot;: &quot;INSTANCE-UUID&quot;,
+  &quot;form&quot;: &quot;...&quot;,
+  &quot;data&quot;: {}
+}
+</code></pre>
+<hr />
+<h2 id="get-restapibpmsshowinstanceangularclassinstance">GET /restapi/bpms/ShowInstanceAngularClass/:instance</h2>
+<pre><code class="language-http">GET /restapi/bpms/ShowInstanceAngularClass/INSTANCE-UUID
+</code></pre>
+<h3 id="ориентировочный-json_3">Ориентировочный JSON</h3>
+<pre><code class="language-json">{
+  &quot;instance&quot;: &quot;INSTANCE-UUID&quot;,
+  &quot;angularClass&quot;: &quot;...&quot;
+}
+</code></pre>
+<hr />
+<h2 id="get-restapibpmsshowinstanceangularforminstance">GET /restapi/bpms/ShowInstanceAngularForm/:instance</h2>
+<pre><code class="language-http">GET /restapi/bpms/ShowInstanceAngularForm/INSTANCE-UUID
+</code></pre>
+<h3 id="ориентировочный-json_4">Ориентировочный JSON</h3>
+<pre><code class="language-json">{
+  &quot;instance&quot;: &quot;INSTANCE-UUID&quot;,
+  &quot;angularForm&quot;: &quot;...&quot;
+}
+</code></pre>
+<hr />
+<h1 id="7-update_v_1_1">7. update_v_1_1</h1>
+<p>Это связанный data API DamuBPM.</p>
+<p>Endpoint:</p>
+<pre><code class="language-text">/update_v_1_1
+</code></pre>
+<h2 id="insert">Insert</h2>
+<pre><code class="language-http">POST /update_v_1_1
+Content-Type: application/json
+</code></pre>
+<p>Request:</p>
+<pre><code class="language-json">{
+  &quot;items&quot;: [
+    {
+      &quot;table_name&quot;: &quot;entity_code&quot;,
+      &quot;action&quot;: &quot;insert&quot;,
+      &quot;values&quot;: [
+        {
+          &quot;sys$uuid&quot;: &quot;UUID&quot;,
+          &quot;id&quot;: 0,
+          &quot;title&quot;: &quot;Новая запись&quot;
+        }
+      ]
+    }
+  ]
+}
+</code></pre>
+<h3 id="пример-json-ответа_4">Пример JSON ответа</h3>
+<pre><code class="language-json">{
+  &quot;error&quot;: 0,
+  &quot;error_text&quot;: &quot;&quot;,
+  &quot;items&quot;: [],
+  &quot;last_insert_id&quot;: 123
+}
+</code></pre>
+<hr />
+<h2 id="delete">Delete</h2>
+<p>Request:</p>
+<pre><code class="language-json">{
+  &quot;items&quot;: [
+    {
+      &quot;table_name&quot;: &quot;entity_code&quot;,
+      &quot;action&quot;: &quot;delete&quot;,
+      &quot;values&quot;: [
+        {
+          &quot;id&quot;: 10
+        },
+        {
+          &quot;id&quot;: 11
+        }
+      ]
+    }
+  ]
+}
+</code></pre>
+<h3 id="пример-json-ответа_5">Пример JSON ответа</h3>
+<pre><code class="language-json">{
+  &quot;error&quot;: 0,
+  &quot;error_text&quot;: &quot;&quot;,
+  &quot;items&quot;: []
+}
+</code></pre>
+<hr />
+<h1 id="8-flutter-api-client">8. Flutter API Client</h1>
+<p>Добавьте пакет:</p>
+<pre><code class="language-yaml">dependencies:
+  http: ^1.0.0
+</code></pre>
+<p>Client:</p>
+<pre><code class="language-dart">import 'dart:convert';
+import 'package:http/http.dart' as http;
+
+class DamuApiClient {
+  DamuApiClient({
+    required this.baseUrl,
+    this.defaultHeaders = const {},
+  });
+
+  final String baseUrl;
+  final Map&lt;String, String&gt; defaultHeaders;
+
+  Uri uri(
+    String path, [
+    Map&lt;String, dynamic&gt;? query,
+  ]) {
+    final base = Uri.parse('$baseUrl$path');
+
+    if (query == null || query.isEmpty) {
+      return base;
+    }
+
+    return base.replace(
+      queryParameters: query.map(
+        (key, value) =&gt; MapEntry(
+          key,
+          value?.toString() ?? '',
+        ),
+      ),
+    );
+  }
+
+  Future&lt;Map&lt;String, dynamic&gt;&gt; getJson(
+    String path, {
+    Map&lt;String, dynamic&gt;? query,
+    Map&lt;String, String&gt;? headers,
+  }) async {
+    final response = await http.get(
+      uri(path, query),
+      headers: {
+        ...defaultHeaders,
+        ...?headers,
+      },
+    ).timeout(const Duration(seconds: 25));
+
+    return _decode(response);
+  }
+
+  Future&lt;Map&lt;String, dynamic&gt;&gt; postJson(
+    String path,
+    Object body, {
+    Map&lt;String, dynamic&gt;? query,
+    Map&lt;String, String&gt;? headers,
+  }) async {
+    final response = await http.post(
+      uri(path, query),
+      headers: {
+        'Content-Type': 'application/json',
+        ...defaultHeaders,
+        ...?headers,
+      },
+      body: jsonEncode(body),
+    ).timeout(const Duration(seconds: 25));
+
+    return _decode(response);
+  }
+
+  Future&lt;Map&lt;String, dynamic&gt;&gt; putJson(
+    String path,
+    Object body, {
+    Map&lt;String, dynamic&gt;? query,
+    Map&lt;String, String&gt;? headers,
+  }) async {
+    final response = await http.put(
+      uri(path, query),
+      headers: {
+        'Content-Type': 'application/json',
+        ...defaultHeaders,
+        ...?headers,
+      },
+      body: jsonEncode(body),
+    ).timeout(const Duration(seconds: 25));
+
+    return _decode(response);
+  }
+
+  Map&lt;String, dynamic&gt; _decode(
+    http.Response response,
+  ) {
+    // Не response.body: без charset в Content-Type кириллица ломается.
+    final dynamic decoded =
+        response.bodyBytes.isEmpty
+            ? &lt;String, dynamic&gt;{}
+            : jsonDecode(utf8.decode(response.bodyBytes));
+
+    if (response.statusCode &lt; 200 ||
+        response.statusCode &gt;= 300) {
+      throw DamuApiException(
+        statusCode: response.statusCode,
+        body: decoded,
+      );
+    }
+
+    if (decoded is Map&lt;String, dynamic&gt;) {
+      return decoded;
+    }
+
+    return {
+      'data': decoded,
+    };
+  }
+}
+
+class DamuApiException implements Exception {
+  DamuApiException({
+    required this.statusCode,
+    required this.body,
+  });
+
+  final int statusCode;
+  final Object body;
+
+  @override
+  String toString() {
+    return 'DamuApiException($statusCode): $body';
+  }
+}
+</code></pre>
+<hr />
+<h1 id="9-flutter-примеры">9. Flutter примеры</h1>
+<h2 id="создание-клиента">Создание клиента</h2>
+<pre><code class="language-dart">final api = DamuApiClient(
+  baseUrl: 'https://example.kz',
+  defaultHeaders: {
+    // Заголовки авторизации проекта.
+  },
+);
+</code></pre>
+<hr />
+<h2 id="get-lua-rest">GET Lua REST</h2>
+<pre><code class="language-dart">final result = await api.getJson(
+  '/restapi/services/run/api/v1/customer/get',
+  query: {
+    'id': 123,
+  },
+);
+
+print(result);
+</code></pre>
+<hr />
+<h2 id="post-lua-rest">POST Lua REST</h2>
+<pre><code class="language-dart">final result = await api.postJson(
+  '/restapi/services/run/api/v1/customer/create',
+  {
+    'title': 'ТОО Test',
+    'email': 'info@test.kz',
+  },
+);
+
+print(result);
+</code></pre>
+<hr />
+<h2 id="put-lua-rest">PUT Lua REST</h2>
+<pre><code class="language-dart">final result = await api.putJson(
+  '/restapi/services/run/api/v1/customer/update',
+  {
+    'title': 'Новое название',
+  },
+  query: {
+    'id': 123,
+  },
+);
+</code></pre>
+<hr />
+<h2 id="запуск-bpm">Запуск BPM</h2>
+<pre><code class="language-dart">final result = await api.postJson(
+  '/restapi/bpms/start',
+  {
+    'processCode': 'process_code',
+    'input': {
+      'id': 125,
+      'title': 'Заявка №125',
+    },
+  },
+);
+
+final instance = result['instance'];
+final task = result['task'];
+final finished = result['instanceIsFinished'] == true;
+</code></pre>
+<hr />
+<h2 id="завершение-usertask">Завершение UserTask</h2>
+<pre><code class="language-dart">final result = await api.postJson(
+  '/restapi/bpms/runUserTaskByTask/',
+  {
+    'task': task,
+    'input': {
+      'decision': 'approve',
+      'comment': 'Согласовано из Flutter',
+    },
+  },
+);
+
+final nextTask = result['task'];
+final finished =
+    result['instanceIsFinished'] == true;
+</code></pre>
+<hr />
+<h2 id="получение-формы-usertask">Получение формы UserTask</h2>
+<pre><code class="language-dart">final form = await api.getJson(
+  '/restapi/bpms/ShowUserTaskForm/$task',
+);
+</code></pre>
+<hr />
+<h2 id="insert-через-update_v_1_1">Insert через update_v_1_1</h2>
+<pre><code class="language-dart">final result = await api.postJson(
+  '/update_v_1_1',
+  {
+    'items': [
+      {
+        'table_name': 'entity_code',
+        'action': 'insert',
+        'values': [
+          {
+            r'sys$uuid': 'UUID',
+            'id': 0,
+            'title': 'Новая запись',
+          },
+        ],
+      },
+    ],
+  },
+);
+</code></pre>
+<hr />
+<h1 id="10-http-status-и-ошибки">10. HTTP status и ошибки</h1>
+<p>В Lua REST можно задавать:</p>
+<pre><code class="language-lua">http_response_code = 200
+</code></pre>
+<p>Поддерживаемые примеры:</p>
+<div class="tbl"><table>
+<thead>
+<tr>
+<th style="text-align: right;">HTTP</th>
+<th>Назначение</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: right;"><code>200</code></td>
+<td>OK</td>
+</tr>
+<tr>
+<td style="text-align: right;"><code>201</code></td>
+<td>Created</td>
+</tr>
+<tr>
+<td style="text-align: right;"><code>400</code></td>
+<td>Bad Request</td>
+</tr>
+<tr>
+<td style="text-align: right;"><code>401</code></td>
+<td>Unauthorized</td>
+</tr>
+<tr>
+<td style="text-align: right;"><code>404</code></td>
+<td>Not Found</td>
+</tr>
+<tr>
+<td style="text-align: right;"><code>405</code></td>
+<td>Method Not Allowed</td>
+</tr>
+<tr>
+<td style="text-align: right;"><code>409</code></td>
+<td>Conflict</td>
+</tr>
+</tbody>
+</table></div>
+<p>Рекомендуемый helper:</p>
+<pre><code class="language-lua">local function fail(status, code, message)
+    http_response_code = status
+
+    output = {
+        success = false,
+        error = {
+            code = code,
+            message = message
+        }
+    }
+end
+</code></pre>
+<p>Пример:</p>
+<pre><code class="language-lua">local input = request.input
+
+if not input then
+    fail(
+        400,
+        &quot;INVALID_BODY&quot;,
+        &quot;JSON body required&quot;
+    )
+    return
+end
+</code></pre>
+<p>JSON:</p>
+<pre><code class="language-json">{
+  &quot;success&quot;: false,
+  &quot;error&quot;: {
+    &quot;code&quot;: &quot;INVALID_BODY&quot;,
+    &quot;message&quot;: &quot;JSON body required&quot;
+  }
+}
+</code></pre>
+<hr />
+<h1 id="11-async-и-no_parallel">11. Async и no_parallel</h1>
+<h2 id="async">Async</h2>
+<p>Для POST и PUT:</p>
+<pre><code class="language-text">?async=1
+</code></pre>
+<p>Пример:</p>
+<pre><code class="language-text">/restapi/services/run/import/run?async=1
+</code></pre>
+<p>Ответ:</p>
+<pre><code class="language-text">ASYNC OK
+</code></pre>
+<hr />
+<h2 id="no_parallel">no_parallel</h2>
+<p>Настройка:</p>
+<pre><code class="language-text">no_parallel = 1
+</code></pre>
+<p>Одновременно может выполняться только один экземпляр REST-сервиса.</p>
+<p>Полезно для:</p>
+<ul>
+<li>импорта;</li>
+<li>синхронизации;</li>
+<li>массовых операций;</li>
+<li>перерасчётов;</li>
+<li>больших отчётов;</li>
+<li>интеграционных процедур.</li>
+</ul>
+<p>Если сервис уже выполняется:</p>
+<pre><code class="language-text">Service already started
+</code></pre>
+<p>Служебный код:</p>
+<pre><code class="language-text">7
+</code></pre>
+<hr />
+<h1 id="12-авторизация-и-headers">12. Авторизация и headers</h1>
+<h2 id="текущий-пользователь">Текущий пользователь</h2>
+<pre><code class="language-lua">local userId = tonumber(request.user_id)
+</code></pre>
+<hr />
+<h2 id="api-key">API Key</h2>
+<pre><code class="language-lua">local apiKey =
+    request.header[&quot;X-Api-Key&quot;]
+
+if apiKey ~= &quot;replace-with-secret&quot; then
+
+    http_response_code = 401
+
+    output = {
+        success = false,
+        error = &quot;Invalid API key&quot;
+    }
+
+    return
+end
+</code></pre>
+<p>Flutter:</p>
+<pre><code class="language-dart">final result = await api.postJson(
+  '/restapi/services/run/api/v1/private/check',
+  {
+    'action': 'check',
+  },
+  headers: {
+    'X-Api-Key': 'demo-secret',
+  },
+);
+</code></pre>
+<blockquote>
+<p>Не рекомендуется хранить привилегированный API Key прямо в исходниках мобильного приложения.</p>
+<p>Для приложений сотрудников API Key не используется: вход — OAuth2 Authorization Code + PKCE через REST <code>&lt;mod&gt;_mobile_oauth_authorize</code> / <code>_token</code>, далее каждый запрос с <code>Authorization: Bearer &lt;access_token&gt;</code>. Сервер видит пользователя в <code>request.user_id</code> и проверяет его роли. См. раздел 15 и <a href="damubpm_flutter_mobile_guide.html"><code>damubpm_flutter_mobile_guide.md</code></a>.</p>
+</blockquote>
+<h2 id="bearer-токен-мобильного-пользователя">Bearer-токен мобильного пользователя</h2>
+<pre><code class="language-dart">final result = await api.postJson(
+  '/restapi/services/run/map_api',
+  {'action': 'config', 'data': {}},
+  headers: {'Authorization': 'Bearer $accessToken'},
+);
+</code></pre>
+<p>Access-токен живёт 15 минут. На 401 клиент один раз обновляет его через <code>grant_type=refresh_token</code> и повторяет запрос.</p>
+<hr />
+<h2 id="response-headers">Response headers</h2>
+<p>Lua:</p>
+<pre><code class="language-lua">header = {
+    [&quot;X-Service&quot;] = &quot;customer&quot;,
+    [&quot;Cache-Control&quot;] = &quot;no-store&quot;
+}
+</code></pre>
+<hr />
+<h2 id="cors">CORS</h2>
+<p>В настройках REST-сервиса можно использовать:</p>
+<pre><code class="language-text">Access-Control-Allow-Origin: {{Origin}}
+</code></pre>
+<p>Для нативного Flutter mobile CORS обычно не является browser-ограничением, но становится важен для Flutter Web.</p>
+<hr />
+<h1 id="13-mobile-bpm-flow">13. Mobile BPM Flow</h1>
+<p>Рекомендуемая последовательность:</p>
+<pre><code class="language-text">Flutter
+   |
+   v
+POST /restapi/bpms/start
+   |
+   +--&gt; instance
+   |
+   +--&gt; task
+   |
+   +--&gt; output
+   |
+   v
+task существует?
+   |
+   +-- нет --&gt; instanceIsFinished
+   |
+   +-- да
+         |
+         v
+GET ShowUserTaskForm/:task
+         |
+         v
+Flutter UI
+         |
+         v
+POST runUserTaskByTask
+         |
+         +--&gt; next task
+         |
+         +--&gt; output
+         |
+         +--&gt; instanceIsFinished
+</code></pre>
+<p>Главный идентификатор продолжения процесса:</p>
+<pre><code class="language-text">task
+</code></pre>
+<p>Не следует строить новый мобильный API вокруг <code>pointCode</code>, если доступен UUID <code>task</code>.</p>
+<hr />
+<h1 id="14-checklist">14. Checklist</h1>
+<p>Перед подключением Flutter к DamuBPM REST API:</p>
+<ul>
+<li>☐ используется HTTPS;</li>
+<li>☐ определён <code>baseUrl</code>;</li>
+<li>☐ используется <code>/restapi/services/run/&lt;code&gt;</code>;</li>
+<li>☐ JSON отправляется с <code>Content-Type: application/json</code>;</li>
+<li>☐ проверяется HTTP status;</li>
+<li>☐ ошибки сервера обрабатываются отдельно;</li>
+<li>☐ обязательные <code>request.input</code> поля валидируются;</li>
+<li>☐ GET параметры валидируются;</li>
+<li>☐ <code>request.user_id</code> преобразуется через <code>tonumber</code>;</li>
+<li>☐ секреты не хранятся открыто в Flutter;</li>
+<li>☐ для BPM сохраняется <code>task</code>;</li>
+<li>☐ проверяется <code>instanceIsFinished</code>;</li>
+<li>☐ UserTask завершается через <code>runUserTaskByTask</code>;</li>
+<li>☐ async используется только при необходимости;</li>
+<li>☐ <code>no_parallel</code> включается для тяжёлых процедур;</li>
+<li>☐ response JSON имеет единый формат;</li>
+<li>☐ обработаны 400/401/404/409;</li>
+<li>☐ Flutter client имеет timeout/retry стратегию проекта;</li>
+<li>☐ проверены ошибочные сценарии;</li>
+<li>☐ ответ декодируется через <code>utf8.decode(response.bodyBytes)</code>;</li>
+<li>☐ списки в Lua-ответах собраны через <code>array({})</code>;</li>
+<li>☐ числа и флаги разбираются терпимо (могут прийти строками);</li>
+<li>☐ изменения данных идут через <code>&lt;mod&gt;_bp</code> → бизнес-процесс с белым списком;</li>
+<li>☐ вход — OAuth2 PKCE, токены в <code>flutter_secure_storage</code>;</li>
+<li>☐ проверены операции записи, а не только чтение.</li>
+</ul>
+<hr />
+<h1 id="15-проверенные-практики-мобильных-проектов">15. Проверенные практики мобильных проектов</h1>
+<p>Практики из рабочих приложений <code>map-bapps</code>, <code>grc-mobile</code>, <code>dlv-mobile</code>, <code>contact-center-mobile</code>.</p>
+<h2 id="настройки-rest-сервисов">Настройки REST-сервисов</h2>
+<div class="tbl"><table>
+<thead>
+<tr>
+<th>Сервис</th>
+<th>is_public</th>
+<th>only_auth</th>
+<th>cut_status_info</th>
+<th>Метод</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>&lt;mod&gt;_mobile_oauth_authorize</code></td>
+<td>1</td>
+<td>0</td>
+<td>1</td>
+<td>GET, HTML</td>
+</tr>
+<tr>
+<td><code>&lt;mod&gt;_mobile_oauth_token</code></td>
+<td>1</td>
+<td>0</td>
+<td>1</td>
+<td>POST form</td>
+</tr>
+<tr>
+<td><code>&lt;mod&gt;_mobile_oauth_logout</code></td>
+<td>0</td>
+<td>1</td>
+<td>1</td>
+<td>POST</td>
+</tr>
+<tr>
+<td><code>&lt;mod&gt;_api</code> / <code>&lt;mod&gt;_m_api</code></td>
+<td>0</td>
+<td>1</td>
+<td>1</td>
+<td>POST JSON</td>
+</tr>
+<tr>
+<td><code>&lt;mod&gt;_bp</code></td>
+<td>0</td>
+<td>1</td>
+<td>1</td>
+<td>POST JSON</td>
+</tr>
+</tbody>
+</table></div>
+<p><code>cut_status_info = 1</code> убирает служебную обёртку платформы, и клиент получает ровно <code>output</code>.</p>
+<h2 id="единый-конверт-ответа">Единый конверт ответа</h2>
+<pre><code class="language-json">{&quot;success&quot;: true, &quot;data&quot;: {}}
+{&quot;success&quot;: false, &quot;error&quot;: {&quot;code&quot;: &quot;BP_ERROR&quot;, &quot;message&quot;: &quot;Текст для пользователя&quot;, &quot;field&quot;: &quot;phone&quot;}}
+</code></pre>
+<p>Исключение — OAuth <code>token</code>: стандартный ответ <code>{"access_token", "refresh_token", "token_type", "expires_in", "scope"}</code> и ошибки <code>{"error", "error_description"}</code>.</p>
+<p>Если сервис упал на уровне платформы, текст ошибки приходит в <code>resultText</code> — клиент должен показывать его, когда <code>error</code> пуст.</p>
+<h2 id="коды-http-которые-реально-используются">Коды HTTP, которые реально используются</h2>
+<div class="tbl"><table>
+<thead>
+<tr>
+<th style="text-align: right;">HTTP</th>
+<th>Когда</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: right;">400</td>
+<td>неверные параметры, неизвестный процесс (<code>UNKNOWN_PROCESS</code>), <code>invalid_grant</code></td>
+</tr>
+<tr>
+<td style="text-align: right;">401</td>
+<td>нет или истёк Bearer — клиент обновляет токен один раз</td>
+</tr>
+<tr>
+<td style="text-align: right;">403</td>
+<td>нет роли модуля — показать «попросите администратора выдать роль …»</td>
+</tr>
+<tr>
+<td style="text-align: right;">405</td>
+<td>неверный метод, заголовок <code>Allow</code></td>
+</tr>
+<tr>
+<td style="text-align: right;">422</td>
+<td>бизнес-ошибка процесса (<code>BP_ERROR</code>) — текст показать пользователю</td>
+</tr>
+<tr>
+<td style="text-align: right;">429</td>
+<td>лимит, заголовок <code>Retry-After</code></td>
+</tr>
+<tr>
+<td style="text-align: right;">500</td>
+<td>процесс не запустился, ошибка commit</td>
+</tr>
+<tr>
+<td style="text-align: right;">503</td>
+<td>временная недоступность хранилища OAuth</td>
+</tr>
+</tbody>
+</table></div>
+<h2 id="чтение-и-запись">Чтение и запись</h2>
+<ul>
+<li>Чтение — один диспетчер <code>POST {action, data}</code> в <code>&lt;mod&gt;_api</code>, логика в <code>pkg/&lt;mod&gt;_mobile</code>.</li>
+<li>Запись — <code>POST {process, data}</code> в <code>&lt;mod&gt;_bp</code> → <code>BPMSStartProcess(process, uid, {input = JsonToString(data)})</code>, белый список процессов, <code>last_error</code> → 422, <code>Commit()</code> только в REST и с проверкой кода. В скрипте БП <code>Commit()</code>/<code>Rollback()</code> не вызывать.</li>
+</ul>
+<h2 id="типовые-ошибки">Типовые ошибки</h2>
+<ul>
+<li>Кириллица «кракозябрами» → <code>response.body</code> вместо <code>utf8.decode(response.bodyBytes)</code>.</li>
+<li><code>type '_Map&lt;String, dynamic&gt;' is not a subtype of 'List'</code> → Lua-массив сериализован без <code>array()</code>, пустой список пришёл как <code>{}</code>.</li>
+<li><code>type 'String' is not a subtype of 'int'</code> → числа из SQL пришли строками; использовать <code>intv()</code> / <code>numv()</code>.</li>
+<li>Координаты округлены до 0,01° → атрибут типа <code>double</code> (<code>numeric(20,2)</code>); хранить <code>varchar(32)</code>.</li>
+<li>После входа на iOS возврат на экран входа → не зарегистрирована схема или не выключен <code>FlutterDeepLinkingEnabled</code>.</li>
+<li>Повторное списание/отправка после таймаута → нет <code>client_request_uuid</code> для идемпотентности.</li>
+</ul>
+<hr />
+<h2 id="быстрая-шпаргалка">Быстрая шпаргалка</h2>
+<pre><code class="language-text">Lua REST:
+GET/POST/PUT/OPTIONS
+/restapi/services/run/&lt;code&gt;
+
+BPM start:
+POST /restapi/bpms/start
+
+UserTask:
+POST /restapi/bpms/runUserTaskByTask/
+
+UserTask form:
+GET /restapi/bpms/ShowUserTaskForm/:task
+
+UserTask Angular form:
+GET /restapi/bpms/ShowUserTaskFormAngular/:task
+
+Instance form:
+GET /restapi/bpms/ShowInstanceForm/:instance
+
+Instance Angular class:
+GET /restapi/bpms/ShowInstanceAngularClass/:instance
+
+Instance Angular form:
+GET /restapi/bpms/ShowInstanceAngularForm/:instance
+
+CRUD:
+POST /update_v_1_1
+</code></pre>
+</article></main>
+<div class="foot"><a href="index.html">← Главная</a> · DamuBPM · Flutter · Mobile</div>
+</body>
+</html>

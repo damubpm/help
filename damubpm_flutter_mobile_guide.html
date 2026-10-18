@@ -1,0 +1,768 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DamuBPM: мобильные приложения Flutter (модуль flt)</title>
+<style>
+:root {
+  --bg: #f6f7f9; --card: #ffffff; --text: #1b2430; --muted: #5d6b79; --line: #e1e6ec;
+  --accent: #0e6e7e; --code-bg: #f1f4f7; --pre-bg: #1e2733; --pre-text: #e6edf3; --quote: #eef6f7;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #11161c; --card: #171e26; --text: #e2e8ee; --muted: #93a1af; --line: #2a3440;
+    --accent: #4fb8c7; --code-bg: #212a35; --pre-bg: #0c1117; --pre-text: #e6edf3; --quote: #1a2a30;
+  }
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--text);
+  font: 16px/1.6 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+.topbar { position: sticky; top: 0; z-index: 10; background: var(--card); border-bottom: 1px solid var(--line); }
+.topbar .in { max-width: 1040px; margin: 0 auto; padding: 10px 16px; display: flex; gap: 16px; align-items: center; }
+.topbar a { color: var(--accent); text-decoration: none; font-weight: 600; white-space: nowrap; }
+.topbar span { color: var(--muted); font-size: 14px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+main { max-width: 1040px; margin: 24px auto 48px; padding: 0 16px; }
+article { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 28px 32px; }
+@media (max-width: 640px) { article { padding: 18px 16px; } }
+h1 { font-size: 30px; line-height: 1.25; margin: 0 0 16px; }
+h2 { font-size: 23px; margin: 36px 0 12px; padding-top: 12px; border-top: 1px solid var(--line); }
+h3 { font-size: 18px; margin: 26px 0 8px; }
+h1, h2, h3, h4 { scroll-margin-top: 64px; }
+a { color: var(--accent); }
+p, ul, ol { margin: 10px 0; }
+li { margin: 3px 0; }
+code { font: 13.5px/1.5 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; background: var(--code-bg);
+  padding: 1px 5px; border-radius: 5px; overflow-wrap: anywhere; }
+pre { background: var(--pre-bg); color: var(--pre-text); padding: 14px 16px; border-radius: 10px; overflow-x: auto; }
+pre code { background: none; padding: 0; color: inherit; overflow-wrap: normal; }
+.tbl { overflow-x: auto; margin: 12px 0; }
+table { border-collapse: collapse; width: 100%; font-size: 14.5px; }
+th, td { border: 1px solid var(--line); padding: 7px 10px; text-align: left; vertical-align: top; }
+th { background: var(--code-bg); }
+blockquote { margin: 12px 0; padding: 10px 14px; background: var(--quote); border-left: 4px solid var(--accent);
+  border-radius: 0 8px 8px 0; }
+blockquote p { margin: 4px 0; }
+hr { border: 0; border-top: 1px solid var(--line); margin: 28px 0; }
+.foot { max-width: 1040px; margin: 0 auto 32px; padding: 0 16px; color: var(--muted); font-size: 14px; }
+.foot a { font-weight: 600; text-decoration: none; }
+</style>
+</head>
+<body>
+<div class="topbar"><div class="in"><a href="index.html">← Главная</a><span>DamuBPM: мобильные приложения Flutter (модуль flt)</span></div></div>
+<main><article>
+<h1 id="damubpm-мобильные-приложения-flutter-модуль-flt">DamuBPM: мобильные приложения Flutter (модуль flt)</h1>
+<p>Практическое руководство по созданию мобильных приложений Android/iOS из DamuBPM: структура проекта в модуле <code>flt</code>, серверная часть (OAuth2 PKCE, REST, бизнес-процессы), клиент Flutter, настройки платформ, выгрузка в GitLab и сборка iOS в App Store. Основано на рабочих проектах <code>map-bapps</code>, <code>grc-mobile</code>, <code>dlv-mobile</code>, <code>contact-center-mobile</code> и ошибках, найденных при их разработке.</p>
+<p>Связанный документ: <a href="rest_api_damubpm_flutter_mobile.html"><code>rest_api_damubpm_flutter_mobile.md</code></a> (общие REST-контракты DamuBPM).</p>
+<hr />
+<h2 id="1-модуль-flt-где-что-хранится">1. Модуль flt: где что хранится</h2>
+<div class="tbl"><table>
+<thead>
+<tr>
+<th>Таблица</th>
+<th>Назначение</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>flt_projects</code></td>
+<td>проект: <code>code</code>, <code>title</code>, <code>description</code>, <code>pubspec</code>, настройки платформ, настройки GitLab</td>
+</tr>
+<tr>
+<td><code>flt_pages</code></td>
+<td>Dart-файлы: <code>project_id</code>, <code>code</code>, <code>title</code>, <code>description</code>, <code>dart_code</code>, <code>nn</code> (порядок), <code>route</code></td>
+</tr>
+<tr>
+<td><code>flt_files</code></td>
+<td>любые другие файлы репозитория: <code>path</code>, <code>content</code>, <code>is_base64</code> (1 — бинарный, например PNG), <code>nn</code></td>
+</tr>
+<tr>
+<td><code>flt_assets</code></td>
+<td>ассеты из файлового хранилища: <code>asset_path</code>, <code>file_id</code></td>
+</tr>
+<tr>
+<td><code>flt_permissions</code></td>
+<td>разрешения: <code>platform</code> (<code>android</code> / <code>ios</code>), <code>perm_key</code>, <code>perm_value</code>, <code>title</code>, <code>nn</code></td>
+</tr>
+<tr>
+<td><code>flt_cicd</code></td>
+<td>настройки CI/CD iOS (см. раздел 9)</td>
+</tr>
+</tbody>
+</table></div>
+<p>Настройки платформ в <code>flt_projects</code>:</p>
+<div class="tbl"><table>
+<thead>
+<tr>
+<th>Поле</th>
+<th>Пример</th>
+<th>Назначение</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>app_name</code></td>
+<td><code>Map BApps</code></td>
+<td>имя под иконкой (Android label, iOS CFBundleDisplayName)</td>
+</tr>
+<tr>
+<td><code>org</code></td>
+<td><code>kz.bapps</code></td>
+<td><code>flutter create --org</code></td>
+</tr>
+<tr>
+<td><code>url_scheme</code></td>
+<td><code>damubpmmap</code></td>
+<td>схема OAuth-callback: iOS <code>CFBundleURLSchemes</code>, Android <code>appAuthRedirectScheme</code> (если в pubspec есть <code>flutter_appauth</code>)</td>
+</tr>
+<tr>
+<td><code>deep_linking_off</code></td>
+<td><code>1</code></td>
+<td><code>FlutterDeepLinkingEnabled = false</code> — обязательно для OAuth через <code>flutter_appauth</code></td>
+</tr>
+<tr>
+<td><code>android_min_sdk</code></td>
+<td><code>23</code></td>
+<td>minSdk</td>
+</tr>
+<tr>
+<td><code>ios_min_version</code></td>
+<td><code>15.0</code></td>
+<td><code>platform :ios</code> в Podfile</td>
+</tr>
+<tr>
+<td><code>android_generate</code></td>
+<td><code>1</code></td>
+<td>генерировать gradle/manifest/kotlin (иначе — только <code>flutter create</code>)</td>
+</tr>
+<tr>
+<td><code>android_application_id</code>, <code>android_target_sdk</code>, <code>android_compile_sdk</code>, <code>android_agp_version</code>, <code>android_kotlin_version</code>, <code>android_gradle_version</code>, <code>android_default_config</code>, <code>android_manifest_application</code></td>
+<td></td>
+<td>тонкая настройка Android; пусто — значения по умолчанию (AGP 8.11.1, Kotlin 2.2.20, Gradle 8.14)</td>
+</tr>
+<tr>
+<td><code>gitlab_host</code>, <code>gitlab_project</code>, <code>gitlab_project_token</code>, <code>gitlab_branch</code>, <code>gitlab_last_md5</code></td>
+<td></td>
+<td>выгрузка в GitLab</td>
+</tr>
+</tbody>
+</table></div>
+<p>Бизнес-процессы модуля: <code>flt_projects_import_zip</code>, <code>flt_projects_publish</code>, <code>flt_projects_export_zip</code>, <code>flt_projects_export_gitlab</code>, <code>flt_cicd_apply</code>, <code>flt_cicd_run</code>.</p>
+<p>MCP-методы: <code>flt_projects_list/get/create_update</code>, <code>flt_pages_list/get/create_update</code>, <code>flt_assets_list/get/create_update</code>, <code>flt_projects_publish_gitlab</code>, <code>flt_cicd_run</code>.</p>
+<h3 id="правила-для-страниц-flt_pages">Правила для страниц (<code>flt_pages</code>)</h3>
+<ul>
+<li>Путь файла берётся из <code>description</code> в формате <code>Файл: lib/core/api.dart</code>. Без него: <code>code = main</code> → <code>lib/main.dart</code>, <code>code</code> вида <code>lib/...dart</code> → как есть, иначе <code>lib/pages/&lt;code&gt;.dart</code>.</li>
+<li>Путь обязан соответствовать <code>^lib/.*\.dart$</code>. <code>lib/main.dart</code> обязателен.</li>
+<li>Пустой <code>dart_code</code> — ошибка выгрузки.</li>
+<li>Порядок — по <code>nn</code>, затем <code>id</code>.</li>
+<li>Путь любого файла (страница, <code>flt_files</code>, ассет): только <code>[A-Za-z0-9_.@/-]</code>, без <code>..</code>, <code>//</code>, ведущего <code>/</code>, до 240 символов. Кириллица и пробелы в путях недопустимы.</li>
+<li>Повтор пути (без учёта регистра) — ошибка. Нельзя положить в <code>flt_files</code> файл с тем же путём, что и сгенерированный.</li>
+<li>Лимиты: до 1000 Dart-файлов, до 20 МБ исходников.</li>
+</ul>
+<h3 id="известные-проблемы-инструментов">Известные проблемы инструментов</h3>
+<ul>
+<li>MCP <code>flt_projects_create_update</code> (2026-10-18) падал с ошибкой платформы <code>attempt to call a nil value</code> в ScriptTask. Обход: вставить проект SQL в <code>flt_projects</code>, а страницы загружать обычным <code>flt_pages_create_update</code>.</li>
+<li>Перед правкой страницы читать её через <code>flt_pages_get</code> и передавать полный <code>dart_code</code> — частичных правок нет.</li>
+<li>Бинарные файлы (иконки) класть в <code>flt_files</code> с <code>is_base64 = 1</code> (переводы строк в base64 допустимы — удаляются при выгрузке) или в <code>flt_assets</code>. Для <code>.png</code> в <code>flt_assets</code> проверяется сигнатура PNG.</li>
+</ul>
+<hr />
+<h2 id="2-что-генерирует-выгрузка-zip-gitlab">2. Что генерирует выгрузка (ZIP / GitLab)</h2>
+<p><code>flt_projects_export_gitlab</code> собирает:</p>
+<ol>
+<li><code>pubspec.yaml</code> из <code>flt_projects.pubspec</code>.</li>
+<li>Все <code>flt_pages</code> как <code>lib/...dart</code>.</li>
+<li>Все <code>flt_files</code> и <code>flt_assets</code>.</li>
+<li>Если заданы настройки платформ или разрешения:
+   - <code>tool/platform_config.json</code> — имя, org, схема, minSdk, iOS-версия, <code>deep_linking_off</code>, <code>appauth</code> (есть ли <code>flutter_appauth</code> в pubspec), разрешения;
+   - <code>tool/configure_platforms.py</code> — применяет конфиг к <code>android/</code> и <code>ios/</code> после <code>flutter create</code> (идемпотентно);
+   - <code>tool/setup.sh</code> — <code>flutter create . --org &lt;org&gt; --project-name &lt;name&gt; --platforms android,ios</code> → <code>configure_platforms.py</code> → <code>flutter pub get</code> → на macOS <code>pod install --repo-update</code>.</li>
+<li>При <code>android_generate = 1</code> — <code>android/settings.gradle.kts</code>, <code>build.gradle.kts</code>, <code>app/build.gradle.kts</code> (с <code>manifestPlaceholders["appAuthRedirectScheme"]</code>), <code>MainActivity.kt</code>, <code>AndroidManifest.xml</code> с разрешениями и блоком <code>&lt;queries&gt;</code> (https, CustomTabsService — нужен AppAuth и url_launcher), стили запуска. Файл генерируется, только если такого пути нет в <code>flt_files</code> — свой файл в <code>flt_files</code> имеет приоритет.</li>
+<li><code>README_EXPORT.md</code>.</li>
+</ol>
+<p>Особенности:</p>
+<ul>
+<li>iOS-значения <code>"true"</code> / <code>"false"</code> в <code>flt_permissions.perm_value</code> превращаются в булевы значения plist. Остальное пишется строкой.</li>
+<li>Выгрузка в GitLab инкрементальная: в <code>gitlab_last_md5</code> хранятся md5 файлов. Файл отправляется, только если его нет в ветке или md5 изменился. Ручные правки в GitLab не перетираются, пока не изменится содержимое в DamuBPM. Принудительная полная выгрузка — очистить <code>gitlab_last_md5</code>.</li>
+<li>Удаляются из GitLab только файлы, которые раньше выгружались из DamuBPM и пропали из проекта.</li>
+<li>Коммиты идут пачками до 200 действий / 8 МБ.</li>
+<li>Токену GitLab нужны роль Maintainer и scope <code>api</code>.</li>
+</ul>
+<hr />
+<h2 id="3-эталонная-структура-приложения">3. Эталонная структура приложения</h2>
+<pre><code class="language-text">lib/main.dart                     MaterialApp, тема, локализация ru/kk/en, переключение Splash / Login / Home по сессии
+lib/core/api.dart                 HTTP-клиент + Session (ChangeNotifier): токены, refresh, config
+lib/core/mobile_oauth.dart        export 'mobile_oauth_stub.dart' if (dart.library.io) 'mobile_oauth_native.dart';
+lib/core/mobile_oauth_native.dart flutter_appauth: signIn / renew
+lib/core/mobile_oauth_stub.dart   заглушка для Web (UnsupportedError)
+lib/core/ui.dart                  тема, палитра, форматирование, toast/confirm, общие виджеты
+lib/pages/login_page.dart
+lib/pages/&lt;экран&gt;.dart
+</code></pre>
+<p>Базовый <code>pubspec</code>:</p>
+<pre><code class="language-yaml">name: map_bapps
+publish_to: none
+version: 1.0.0+1
+environment:
+  sdk: '&gt;=3.7.0 &lt;4.0.0'
+  flutter: '&gt;=3.29.0'
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+  http: ^1.2.2
+  flutter_secure_storage: ^9.2.2
+  flutter_appauth: ^9.0.1
+  url_launcher: ^6.3.1
+flutter:
+  uses-material-design: true
+</code></pre>
+<p>Дополнительно по задаче: <code>maplibre_gl: ^0.27.1</code> (требует Flutter 3.29+, iOS 13+), <code>geolocator: ^14.0.2</code>, сканер/камера — с разрешениями в <code>flt_permissions</code>.</p>
+<p>Адрес сервера — только через <code>--dart-define</code>, не константой в коде по месту:</p>
+<pre><code class="language-dart">const serverUrl = String.fromEnvironment('MAP_BASE_URL', defaultValue: 'https://cc.cloud.damubpm.kz');
+</code></pre>
+<p>Значение для CI задаётся в <code>flt_cicd.dart_defines</code> (например <code>MAP_BASE_URL=https://cc.cloud.damubpm.kz</code>).</p>
+<hr />
+<h2 id="4-серверная-часть-вход-oauth2-authorization-code-pkce">4. Серверная часть: вход OAuth2 Authorization Code + PKCE</h2>
+<p>Мобильному приложению нельзя давать пароль, общий API-ключ, MCP-токен или client secret. Используется собственный публичный OAuth-клиент модуля и персональный Bearer-токен пользователя.</p>
+<h3 id="три-rest-сервиса-на-модуль">Три REST-сервиса на модуль</h3>
+<div class="tbl"><table>
+<thead>
+<tr>
+<th>Код</th>
+<th>is_public</th>
+<th>only_auth</th>
+<th>Метод</th>
+<th>Назначение</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>&lt;mod&gt;_mobile_oauth_authorize</code></td>
+<td>1</td>
+<td>0</td>
+<td>GET</td>
+<td>HTML-страница: при отсутствии сессии — редирект на <code>/login?returnUrl=…</code>, иначе проверка ролей, выдача кода и редирект в приложение</td>
+</tr>
+<tr>
+<td><code>&lt;mod&gt;_mobile_oauth_token</code></td>
+<td>1</td>
+<td>0</td>
+<td>POST form</td>
+<td>обмен кода на токены и refresh с ротацией</td>
+</tr>
+<tr>
+<td><code>&lt;mod&gt;_mobile_oauth_logout</code></td>
+<td>0</td>
+<td>1</td>
+<td>POST</td>
+<td>отзыв текущей сессии или всех (<code>{"all": true}</code>)</td>
+</tr>
+</tbody>
+</table></div>
+<p>Готовые образцы для копирования: <code>map_mobile_oauth_*</code>, <code>grc_mobile_oauth_*</code>, <code>dlv_mobile_oauth_*</code>, <code>c_omn_mobile_oauth_*</code>. Меняются только константы и список ролей:</p>
+<pre><code class="language-lua">local CLIENT, REDIRECT, SCOPE, SYSTEM = &quot;damubpm-map-mobile&quot;, &quot;damubpmmap://oauth/callback&quot;, &quot;map_mobile&quot;, &quot;map_mobile&quot;
+-- роли: r.code in ('admin','c_admin','map_manager')
+-- операции лимита: &quot;map_code&quot; / &quot;map_refresh&quot;
+</code></pre>
+<p>Общие таблицы (модуль c): <code>c_omn_mobile_oauth_code</code>, <code>c_omn_mobile_oauth_session</code>, <code>c_omn_mobile_auth_rate</code>. Access-токен — строка <code>auth_tokens</code> с профилем <code>Bearer</code> и <code>system = &lt;SYSTEM&gt;</code>.</p>
+<h3 id="authorize-ключевые-проверки">authorize — ключевые проверки</h3>
+<ul>
+<li>Только GET. <code>client_id</code>, <code>redirect_uri</code>, <code>scope</code>, <code>response_type=code</code>, <code>code_challenge_method=S256</code> сравниваются строго; <code>code_challenge</code> — <code>^[A-Za-z0-9_-]{43}$</code>; <code>state</code> 16–1024 символа.</li>
+<li>Адрес возврата на вход строится от <code>mcp_oauth_settings.issuer</code> (<code>where id = 1</code>), а не от <code>request.host</code>.</li>
+<li>Неавторизованный пользователь (<code>request.user_id &lt; 1</code>) → HTML-страница с <code>location.replace(...)</code> на <code>/login?returnUrl=&lt;authorize с теми же параметрами&gt;</code>.</li>
+<li>Роль проверяется до выдачи кода; нет роли → понятная HTML-ошибка 403.</li>
+<li>Не более 12 кодов в минуту на пользователя.</li>
+<li>Код <code>dmc_</code> + 32 случайных байта hex; в БД хранится только sha256-хэш, <code>code_challenge</code>, срок 5 минут.</li>
+<li>Ответ — HTML с заголовками <code>Cache-Control: no-store</code>, <code>Referrer-Policy: no-referrer</code>; все значения в HTML через <code>HTMLEscapeString</code>, в JS — через <code>JsonToString</code>.</li>
+</ul>
+<h3 id="token-ключевые-проверки">token — ключевые проверки</h3>
+<ul>
+<li>Только POST. Тело <code>application/x-www-form-urlencoded</code> разбирается вручную из <code>request.input_raw</code> (<code>Split</code> по <code>&amp;</code>, <code>QueryUnescape</code>), лимит 8 КБ, повтор ключа — ошибка. Если <code>input_raw</code> пустой, а <code>request.input</code> — таблица, используется она.</li>
+<li><code>client_secret</code>, <code>username</code>, <code>password</code> в запросе — отказ <code>invalid_client</code>.</li>
+<li>Лимит 60 запросов в минуту на IP+операцию через <code>insert … on conflict … where attempts &lt; 60 returning attempts</code> (пустой результат → 429 <code>slow_down</code>, <code>Retry-After: 60</code>). После вставки — <code>Commit()</code>, иначе счётчик откатится вместе с ошибкой.</li>
+<li>Код погашается одним <code>update … set used_at = now() … returning user_id</code> с проверкой PKCE в SQL:</li>
+</ul>
+<pre><code class="language-sql">code_challenge = translate(rtrim(encode(digest(?::text,'sha256'),'base64'),'='),'+/','-_')
+</code></pre>
+<ul>
+<li>Роль проверяется заново и при обмене кода, и при каждом refresh (снятие роли отзывает сессию).</li>
+<li>Refresh-токен <code>dmr_…</code> хранится хэшем; при ротации старый хэш переносится в <code>previous_refresh_hash</code>. Предъявление старого refresh → отзыв всей сессии и её access-токенов (защита от кражи).</li>
+<li>Access-токен живёт 15 минут, сессия — 30 дней.</li>
+<li>Ответ — стандартный OAuth, без обёртки <code>success/data</code>:</li>
+</ul>
+<pre><code class="language-json">{&quot;access_token&quot;:&quot;…&quot;,&quot;refresh_token&quot;:&quot;dmr_…&quot;,&quot;token_type&quot;:&quot;Bearer&quot;,&quot;expires_in&quot;:900,&quot;scope&quot;:&quot;map_mobile&quot;}
+</code></pre>
+<ul>
+<li>Ошибки — стандартные <code>{"error":"invalid_grant","error_description":"…"}</code> с HTTP 400/403/405/429/503.</li>
+</ul>
+<h3 id="ловушки-lua-в-этих-сервисах">Ловушки Lua в этих сервисах</h3>
+<ul>
+<li><code>string.match</code> в песочнице равен <code>nil</code> — шаблоны проверять через <code>RegexpCheck(value, "^…$")</code> или SQL <code>~</code>.</li>
+<li><code>SqlQueryRow2</code> при отсутствии строки возвращает ненулевой код («No data found»). Для «найдено / не найдено» использовать <code>SqlQueryRows</code> и проверять <code>#rows</code>.</li>
+<li>В <code>fail()</code> вызывать <code>Rollback()</code> до формирования ответа; при успехе проверять код <code>Commit()</code>.</li>
+<li><code>header</code> задавать таблицей в начале скрипта: <code>Content-Type</code>, <code>Cache-Control: no-store</code>, <code>Pragma: no-cache</code>, <code>X-Content-Type-Options: nosniff</code>.</li>
+<li>Токены, коды и PKCE-verifier не писать в журналы и <code>warning_text</code>.</li>
+</ul>
+<hr />
+<h2 id="5-серверная-часть-api-данных-и-изменения-через-бизнес-процессы">5. Серверная часть: API данных и изменения через бизнес-процессы</h2>
+<h3 id="чтение-один-rest-на-модуль">Чтение: один REST на модуль</h3>
+<p><code>&lt;mod&gt;_api</code> / <code>&lt;mod&gt;_m_api</code> / <code>&lt;mod&gt;_mobile_api</code>: <code>only_auth = 1</code>, <code>cut_status_info = 1</code>, <code>is_public = 0</code>, роли модуля. Контракт:</p>
+<pre><code class="language-text">POST {action, data}
+→ 200 {&quot;success&quot;: true, &quot;data&quot;: {...}}
+→ 4xx {&quot;success&quot;: false, &quot;error&quot;: {&quot;code&quot;: &quot;…&quot;, &quot;message&quot;: &quot;…&quot;, &quot;field&quot;: &quot;…&quot;}}
+</code></pre>
+<p>Логику держать в <code>pkg/&lt;mod&gt;_mobile</code> (luas), REST — тонкий диспетчер по <code>action</code>. Первое действие — <code>config</code>: справочники, параметры, права, которые клиент кэширует в сессии. Успешный <code>config</code> = пользователь авторизован и имеет доступ.</p>
+<h3 id="изменения-rest-mod_bp-бизнес-процесс">Изменения: REST <code>&lt;mod&gt;_bp</code> → бизнес-процесс</h3>
+<p>Все изменения данных (продажа, приёмка, этапы заказа) идут через бизнес-процессы — так сохраняются аудит, проверки и единая логика с веб-интерфейсом. Образец — <code>grc_bp</code>, <code>dlv_bp</code>:</p>
+<pre><code class="language-lua">header = {[&quot;Cache-Control&quot;] = &quot;no-store&quot;}
+local uid = tonumber(request.user_id)
+local input = request.input or {}
+local ALLOWED = {grc_sale_create = true, grc_sale_return = true}
+
+local function fail(status, code, message)
+  Rollback()
+  http_response_code = status
+  output = {success = false, error = {code = code, message = message}}
+end
+
+if request.method ~= &quot;POST&quot; then header.Allow = &quot;POST&quot;; fail(405, &quot;METHOD_NOT_ALLOWED&quot;, &quot;Требуется POST&quot;); return end
+if not uid or uid &lt; 1 then fail(401, &quot;UNAUTHORIZED&quot;, &quot;Требуется вход&quot;); return end
+local process = tostring(input.process or &quot;&quot;)
+if not ALLOWED[process] then fail(400, &quot;UNKNOWN_PROCESS&quot;, &quot;Неизвестный бизнес-процесс: &quot; .. process); return end
+local data = type(input.data) == &quot;table&quot; and input.data or {}
+
+local out, instance, task, errText, errNum = BPMSStartProcess(process, uid, {input = JsonToString(data)})
+if errNum ~= 0 or out == nil then fail(500, &quot;BP_START_FAILED&quot;, &quot;Не удалось запустить процесс: &quot; .. tostring(errText or &quot;&quot;)); return end
+
+local result = {}
+if type(out.result) == &quot;string&quot; and out.result ~= &quot;&quot; then
+  local ok, parsed = pcall(StringToJson, out.result)
+  if ok and type(parsed) == &quot;table&quot; then result = parsed end
+elseif type(out.result) == &quot;table&quot; then
+  result = out.result
+end
+if (out.last_error or &quot;&quot;) ~= &quot;&quot; then fail(422, &quot;BP_ERROR&quot;, tostring(out.last_error)); return end
+if result.ok == false then fail(422, &quot;BP_ERROR&quot;, tostring(result.error or &quot;Ошибка обработки&quot;)); return end
+
+local _, ccode = Commit()
+if ccode ~= 0 then fail(500, &quot;COMMIT_FAILED&quot;, &quot;Не удалось сохранить изменения&quot;); return end
+result.instance = instance
+output = {success = true, data = result}
+</code></pre>
+<p>Правила:</p>
+<ul>
+<li>Белый список процессов обязателен — нельзя запускать произвольный процесс по имени из запроса.</li>
+<li>Процесс принимает одну переменную <code>input</code> (JSON-строка) и возвращает <code>result</code> (JSON) и <code>last_error</code>.</li>
+<li>В скрипте БП нельзя вызывать <code>Commit()</code> / <code>Rollback()</code> — транзакцией управляет движок («transaction not begin»). Commit делает REST после успешного процесса.</li>
+<li>Бизнес-ошибка → 422, клиент показывает <code>error.message</code> пользователю.</li>
+<li>Для идемпотентных операций (оплата, отправка) клиент передаёт <code>client_request_uuid</code> (UUIDv4) и при повторе после таймаута использует тот же ключ. Таймаут не означает, что операция не выполнилась.</li>
+</ul>
+<h3 id="ловушки-данных">Ловушки данных</h3>
+<ul>
+<li><code>JsonToString</code> превращает Lua-массив в объект <code>{"1":…}</code>. Списки в ответе — только через <code>array({})</code>. Пустой список без <code>array()</code> придёт как <code>{}</code>, и <code>List</code> на клиенте не распарсится.</li>
+<li>Значения из <code>SqlQueryRows</code> могут приходить строками (<code>"12"</code>, <code>"1"</code>, <code>"43.25"</code>). Клиент обязан разбирать числа и флаги терпимо (раздел 6).</li>
+<li>Тип атрибута <code>double</code> создаёт <code>numeric(20,2)</code>. Координаты, курсы и другие точные дроби хранить <code>varchar(32)</code> (и приводить SQL-функцией) — иначе точность обрежется до 2 знаков.</li>
+<li>Исполнитель SQL заменяет <code>?</code> на параметры даже внутри строковых литералов и регулярных выражений — вместо <code>?</code> в регулярке писать <code>{0,1}</code>.</li>
+<li>Поиск без учёта регистра и «ё/е» делать в SQL (<code>lower</code>, <code>translate</code>), не на клиенте по всей выборке.</li>
+</ul>
+<hr />
+<h2 id="6-клиент-flutter-http-и-сессия">6. Клиент Flutter: HTTP и сессия</h2>
+<h3 id="обязательные-свойства-клиента">Обязательные свойства клиента</h3>
+<ol>
+<li>Только HTTPS: если схема не <code>https</code> — ошибка до запроса.</li>
+<li>Тело ответа декодировать из байтов: <code>jsonDecode(utf8.decode(response.bodyBytes))</code>. <code>response.body</code> берёт кодировку из <code>Content-Type</code>; без <code>charset=utf-8</code> кириллица превращается в «кракозябры».</li>
+<li>Таймаут на каждый запрос (25 с) и отдельная ошибка «нет связи» (<code>code = NETWORK</code>).</li>
+<li>Заголовки: <code>Authorization: Bearer &lt;access&gt;</code>, <code>Accept: application/json</code>, <code>Content-Type: application/json</code>.</li>
+<li>Ошибки читать по порядку: <code>error.message</code> (объект) → <code>error</code> (строка) → <code>resultText</code> (ошибка платформы) → «Ошибка сервера (HTTP N)». 403 — понятный текст «нет роли …».</li>
+<li>401 → один раз обновить токен и повторить запрос; второй 401 — выход из сессии.</li>
+<li>Параллельные запросы не должны запускать несколько refresh одновременно — общий <code>Future</code> «в полёте».</li>
+<li>Обновлять access-токен заранее — за 45 секунд до <code>expiresAt</code>.</li>
+<li><code>invalid_grant</code> / <code>access_denied</code> при refresh — очистить хранилище и показать «Сессия завершена. Войдите снова.»</li>
+<li>Токены хранить только в <code>flutter_secure_storage</code>, ключи с версией (<code>&lt;app&gt;_access_v1</code>). Не логировать токены, коды, verifier.</li>
+</ol>
+<pre><code class="language-dart">class ApiError implements Exception {
+  const ApiError(this.status, this.message, [this.code = 'API_ERROR', this.field]);
+  final int status;
+  final String message;
+  final String code;
+  final String? field;
+  @override
+  String toString() =&gt; message;
+}
+
+Future&lt;Map&lt;String, dynamic&gt;&gt; call(String code, Map&lt;String, dynamic&gt; body, {bool retried = false}) async {
+  final bearer = await token();
+  if (bearer == null || bearer.isEmpty) throw const ApiError(401, 'Необходимо войти', 'UNAUTHORIZED');
+  final base = Uri.parse(server);
+  if (base.scheme != 'https') throw const ApiError(0, 'Требуется HTTPS', 'TLS_REQUIRED');
+  final url = base.replace(path: '/restapi/services/run/$code');
+  http.Response response;
+  try {
+    response = await _http
+        .post(url,
+            headers: {'Authorization': 'Bearer $bearer', 'Accept': 'application/json', 'Content-Type': 'application/json'},
+            body: jsonEncode(body))
+        .timeout(const Duration(seconds: 25));
+  } catch (_) {
+    throw const ApiError(0, 'Нет связи с сервером. Проверьте интернет и повторите.', 'NETWORK');
+  }
+  if (response.statusCode == 401 &amp;&amp; !retried &amp;&amp; onUnauthorized != null) {
+    if (await onUnauthorized!()) return call(code, body, retried: true);
+  }
+  dynamic data;
+  try {
+    data = jsonDecode(utf8.decode(response.bodyBytes));
+  } catch (_) {
+    throw ApiError(response.statusCode, 'Сервер вернул непонятный ответ (HTTP ${response.statusCode})');
+  }
+  final object = data is Map ? Map&lt;String, dynamic&gt;.from(data) : &lt;String, dynamic&gt;{};
+  if (response.statusCode &gt;= 400 || object['success'] == false) {
+    final raw = object['error'];
+    if (raw is Map &amp;&amp; raw['message'] != null) {
+      throw ApiError(response.statusCode, raw['message'].toString(), (raw['code'] ?? 'API_ERROR').toString(), raw['field']?.toString());
+    }
+    final platform = text(object['resultText']);
+    throw ApiError(response.statusCode,
+        raw is String &amp;&amp; raw.isNotEmpty ? raw : (platform.isNotEmpty ? platform : 'Ошибка сервера (HTTP ${response.statusCode})'));
+  }
+  final result = object['data'];
+  return result is Map ? Map&lt;String, dynamic&gt;.from(result) : &lt;String, dynamic&gt;{};
+}
+</code></pre>
+<p>Обновление токена без гонок:</p>
+<pre><code class="language-dart">Future&lt;bool&gt;? _refreshInFlight;
+
+Future&lt;bool&gt; _renew() async {
+  if (_refreshToken == null || kIsWeb) return false;
+  final pending = _refreshInFlight ?? _renewDirect();
+  _refreshInFlight = pending;
+  try {
+    return await pending;
+  } finally {
+    if (identical(_refreshInFlight, pending)) _refreshInFlight = null;
+  }
+}
+
+Future&lt;String?&gt; _activeToken() async {
+  if (_refreshToken != null &amp;&amp;
+      (_token == null || _expiresAt == null || DateTime.now().isAfter(_expiresAt!.subtract(const Duration(seconds: 45))))) {
+    await _renew();
+  }
+  return _token;
+}
+</code></pre>
+<h3 id="терпимый-разбор-ответов">Терпимый разбор ответов</h3>
+<p>DamuBPM может вернуть число строкой, флаг как <code>1</code>/<code>"1"</code>/<code>true</code>, пустой список как <code>{}</code> или <code>null</code>. Все страницы используют общие помощники вместо прямых приведений <code>as int</code> / <code>as List</code>:</p>
+<pre><code class="language-dart">Map&lt;String, dynamic&gt; asMap(dynamic v) =&gt; v is Map ? Map&lt;String, dynamic&gt;.from(v) : &lt;String, dynamic&gt;{};
+List&lt;Map&lt;String, dynamic&gt;&gt; rows(dynamic v) =&gt;
+    v is List ? v.whereType&lt;Map&gt;().map((e) =&gt; Map&lt;String, dynamic&gt;.from(e)).toList() : &lt;Map&lt;String, dynamic&gt;&gt;[];
+String text(dynamic v) =&gt; v == null ? '' : v.toString();
+double numv(dynamic v) =&gt; v is num ? v.toDouble() : double.tryParse('$v'.replaceAll(',', '.')) ?? 0;
+int intv(dynamic v) =&gt; v is num ? v.toInt() : int.tryParse('$v') ?? 0;
+bool flag(dynamic v) =&gt; v == true || v == 1 || v == '1' || v == 'true';
+</code></pre>
+<h3 id="вход-oauth-на-клиенте">Вход OAuth на клиенте</h3>
+<pre><code class="language-dart">export 'mobile_oauth_stub.dart' if (dart.library.io) 'mobile_oauth_native.dart';
+</code></pre>
+<pre><code class="language-dart">AuthorizationServiceConfiguration get _configuration {
+  final base = Uri.parse(server);
+  if (base.scheme != 'https' || base.userInfo.isNotEmpty) throw const FormatException('Untrusted OAuth issuer');
+  final issuer = base.origin;
+  return AuthorizationServiceConfiguration(
+    authorizationEndpoint: '$issuer/restapi/services/run/map_mobile_oauth_authorize',
+    tokenEndpoint: '$issuer/restapi/services/run/map_mobile_oauth_token',
+  );
+}
+
+final result = await _appAuth.authorizeAndExchangeCode(AuthorizationTokenRequest(
+  clientId, redirectUrl, serviceConfiguration: _configuration, scopes: scopes));
+</code></pre>
+<ul>
+<li><code>clientId</code>, <code>redirectUrl</code>, <code>scopes</code> должны совпадать с константами сервера символ в символ.</li>
+<li>Схема из <code>redirectUrl</code> должна быть зарегистрирована: Android <code>manifestPlaceholders["appAuthRedirectScheme"]</code>, iOS <code>CFBundleURLTypes</code>. В DamuBPM это делается полем <code>flt_projects.url_scheme</code> + <code>deep_linking_off = 1</code> — вручную ничего править не нужно.</li>
+<li>Без <code>FlutterDeepLinkingEnabled = false</code> на iOS навигатор Flutter перехватывает callback, и пользователь возвращается на экран входа без токенов.</li>
+<li>После изменения Info.plist нужна пересборка и переустановка; hot reload не применяет его.</li>
+<li>Отмену входа распознавать по <code>PlatformException.code == 'authorize_and_exchange_code_failed'</code> или коду, содержащему <code>cancel</code> → «Вход отменён», без красной ошибки.</li>
+<li>Если токен не пришёл полностью (нет access или refresh) — ошибка, а не «полувход».</li>
+<li>Отладочный вход по личному токену допустим только при <code>!kReleaseMode</code>.</li>
+<li>Выход: сначала REST <code>&lt;mod&gt;_mobile_oauth_logout</code> (таймаут 5 с, ошибки игнорировать), затем очистка хранилища. Отдельный пункт «Выйти на всех устройствах» → <code>{'all': true}</code>.</li>
+</ul>
+<h3 id="устаревшие-ответы-и-состояние">Устаревшие ответы и состояние</h3>
+<ul>
+<li>Для запросов, которые могут обгонять друг друга (видимая область карты, поиск по вводу, маршрут), — счётчик последовательности: <code>final seq = ++_seq; … if (seq != _seq || !mounted) return;</code>.</li>
+<li>Ввод в поиске и движение камеры — с задержкой (debounce) 250–350 мс через <code>Timer</code>.</li>
+<li>После каждого <code>await</code> в <code>State</code> проверять <code>mounted</code> перед <code>setState</code>, <code>Navigator</code>, <code>ScaffoldMessenger</code>.</li>
+<li>Таймеры и <code>http.Client</code> закрывать в <code>dispose()</code>.</li>
+</ul>
+<hr />
+<h2 id="7-карта-maplibre-во-flutter-maplibre_gl">7. Карта MapLibre во Flutter (maplibre_gl)</h2>
+<ul>
+<li><code>maplibre_gl ^0.27.1</code> требует Flutter 3.29+ и iOS 13+ (в проектах задан iOS 15.0).</li>
+<li>URL стиля не зашивать в код: сервер отдаёт его в <code>config</code> (<code>mobile_style_url</code>, запасной <code>style_url</code>). Источник <code>pmtiles://</code> поддерживается MapLibre Native, но при проблемах указывать стиль с векторными тайлами по HTTP.</li>
+<li>Источники и слои добавлять только в <code>onStyleLoadedCallback</code>. До этого <code>setGeoJsonSource</code> падает. Держать флаг <code>_styleReady</code> и проверять его во всех методах отрисовки.</li>
+<li>Каждый <code>setGeoJsonSource</code>, <code>setLayerVisibility</code>, <code>queryRenderedFeatures</code> оборачивать в <code>try</code> — при пересоздании стиля они бросают исключения.</li>
+<li><code>queryRenderedFeatures</code> на разных платформах возвращает <code>Map</code> или JSON-строку — нормализовать:</li>
+</ul>
+<pre><code class="language-dart">Map&lt;String, dynamic&gt; featureMap(dynamic f) {
+  if (f is Map) return Map&lt;String, dynamic&gt;.from(f);
+  if (f is String) {
+    try { return Map&lt;String, dynamic&gt;.from(jsonDecode(f) as Map); } catch (_) {}
+  }
+  return {};
+}
+</code></pre>
+<ul>
+<li>Для своих слоёв <code>enableInteraction: false</code>, а клики обрабатывать в <code>onMapClick</code> с <code>featureTapsTriggersMapClick: true</code> и <code>queryRenderedFeatures(point, layerIds, null)</code>.</li>
+<li><code>textFont</code> должен существовать в glyphs стиля (<code>['Noto Sans Regular']</code> для Liberty/OpenFreeMap), иначе подписи не появятся.</li>
+<li>Координаты в GeoJSON — <code>[lon, lat]</code>, в <code>LatLng</code> — <code>(lat, lon)</code>.</li>
+<li>Загрузка точек — по <code>onCameraIdle</code> + <code>getVisibleRegion()</code> с запасом 15% и серверной кластеризацией (<code>bbox</code> → <code>points</code> / <code>grid</code>). Тысячи точек без кластеров тормозят телефон.</li>
+<li><code>trackCameraPosition: true</code>, если нужен <code>controller.cameraPosition</code>.</li>
+<li><code>resizeToAvoidBottomInset: false</code> у <code>Scaffold</code> с картой — иначе клавиатура перерисовывает карту.</li>
+<li>Отступы контролов учитывать с <code>MediaQuery.of(context).padding.top/bottom</code> (вырез, жесты).</li>
+<li>Атрибуция OSM/OpenMapTiles должна оставаться видимой (<code>attributionButtonPosition</code>).</li>
+</ul>
+<h3 id="геолокация-geolocator">Геолокация (geolocator)</h3>
+<p>Порядок: <code>isLocationServiceEnabled()</code> → <code>checkPermission()</code> → при <code>denied</code> <code>requestPermission()</code> → при <code>denied</code>/<code>deniedForever</code> понятное сообщение → <code>getCurrentPosition(locationSettings: LocationSettings(accuracy: high, timeLimit: 15 s))</code>. Включать <code>myLocationEnabled</code> на карте только после выданного разрешения.</p>
+<h3 id="внешние-приложения">Внешние приложения</h3>
+<p><code>launchUrl(uri, mode: LaunchMode.externalApplication)</code> и проверка результата. Для Android 11+ нужен блок <code>&lt;queries&gt;</code> — генерируемый манифест его уже содержит.</p>
+<hr />
+<h2 id="8-разрешения-иконки-идентификаторы">8. Разрешения, иконки, идентификаторы</h2>
+<h3 id="flt_permissions">flt_permissions</h3>
+<div class="tbl"><table>
+<thead>
+<tr>
+<th>platform</th>
+<th>perm_key</th>
+<th>perm_value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>android</td>
+<td><code>android.permission.INTERNET</code></td>
+<td></td>
+</tr>
+<tr>
+<td>android</td>
+<td><code>android.permission.ACCESS_FINE_LOCATION</code></td>
+<td></td>
+</tr>
+<tr>
+<td>android</td>
+<td><code>android.permission.ACCESS_COARSE_LOCATION</code></td>
+<td></td>
+</tr>
+<tr>
+<td>android</td>
+<td><code>android.permission.CAMERA</code></td>
+<td></td>
+</tr>
+<tr>
+<td>ios</td>
+<td><code>NSLocationWhenInUseUsageDescription</code></td>
+<td>Геолокация нужна, чтобы показать вас на карте и строить маршрут</td>
+</tr>
+<tr>
+<td>ios</td>
+<td><code>NSCameraUsageDescription</code></td>
+<td>Камера нужна для сканирования штрихкодов и фото накладных</td>
+</tr>
+<tr>
+<td>ios</td>
+<td><code>NSPhotoLibraryUsageDescription</code></td>
+<td>Выбор фото из галереи</td>
+</tr>
+<tr>
+<td>ios</td>
+<td><code>ITSAppUsesNonExemptEncryption</code></td>
+<td><code>false</code></td>
+</tr>
+</tbody>
+</table></div>
+<ul>
+<li>Для каждого iOS-разрешения, которое запрашивает код или плагин, нужен ключ <code>NS…UsageDescription</code> с понятным текстом на языке пользователя. Без него приложение падает при запросе, а App Store отклоняет сборку.</li>
+<li><code>ITSAppUsesNonExemptEncryption = false</code> (HTTPS не считается собственным шифрованием) убирает ручной вопрос об экспортном контроле при каждой загрузке.</li>
+<li><code>android.permission.INTERNET</code> добавлять явно — в release-манифесте Flutter его нет.</li>
+<li><code>android_min_sdk = 23</code> — минимум для <code>flutter_secure_storage</code> 9.x и AppAuth.</li>
+</ul>
+<h3 id="идентификаторы">Идентификаторы</h3>
+<ul>
+<li>Android <code>applicationId</code> = <code>android_application_id</code> или <code>&lt;org&gt;.&lt;name из pubspec&gt;</code> (подчёркивания допустимы: <code>kz.bapps.map_bapps</code>).</li>
+<li>iOS Bundle ID задаётся в <code>flt_cicd.ios_bundle_id</code> и применяется скриптом подписи. В Bundle ID подчёркивания недопустимы — использовать camelCase (<code>kz.bapps.mapBapps</code>). Bundle ID должен совпадать с приложением, созданным в App Store Connect.</li>
+<li>Код проекта (<code>flt_projects.code</code>) — с дефисами, <code>name</code> в pubspec — snake_case.</li>
+</ul>
+<h3 id="иконки">Иконки</h3>
+<ul>
+<li>Android: <code>android/app/src/main/res/mipmap-{m,h,xh,xxh,xxxh}dpi/ic_launcher.png</code> в <code>flt_files</code> (<code>is_base64 = 1</code>); при наличии <code>mipmap-hdpi</code> манифест получает <code>android:icon</code>.</li>
+<li>iOS: <code>ios/Runner/Assets.xcassets/AppIcon.appiconset/AppIcon-1024.png</code> + <code>Contents.json</code>. Иконка 1024×1024 для App Store должна быть без прозрачности (альфа-канала).</li>
+<li>Свои файлы в <code>flt_files</code> не перезаписываются <code>flutter create</code> из <code>tool/setup.sh</code> (существующие файлы сохраняются).</li>
+</ul>
+<hr />
+<h2 id="9-cicd-сборка-ios-и-публикация-в-app-store">9. CI/CD: сборка iOS и публикация в App Store</h2>
+<p>Схема: DamuBPM → GitLab (<code>flt_projects_export_gitlab</code>) → GitLab Runner на собственном MacBook (executor <code>shell</code>, тег <code>macos</code>) → <code>xcodebuild</code> → App Store Connect / TestFlight.</p>
+<h3 id="запись-flt_cicd-вкладка-flutter-cicd-ios-app-store-в-карточке-проекта">Запись flt_cicd (вкладка «Flutter: CI/CD (iOS, App Store)» в карточке проекта)</h3>
+<div class="tbl"><table>
+<thead>
+<tr>
+<th>Поле</th>
+<th>Назначение</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>runner_tag</code></td>
+<td>тег раннера, по умолчанию <code>macos</code></td>
+</tr>
+<tr>
+<td><code>trigger_mode</code></td>
+<td><code>manual</code> / <code>tag</code> / <code>push</code></td>
+</tr>
+<tr>
+<td><code>auto_publish</code></td>
+<td>загружать IPA в App Store Connect автоматически</td>
+</tr>
+<tr>
+<td><code>ios_bundle_id</code>, <code>apple_team_id</code></td>
+<td>Bundle ID и Team ID (10 символов <code>[A-Z0-9]</code>)</td>
+</tr>
+<tr>
+<td><code>asc_key_id</code>, <code>asc_issuer_id</code>, <code>asc_key_p8</code></td>
+<td>ключ App Store Connect API; <code>.p8</code> после отправки в GitLab очищается, <code>asc_key_sent = 1</code></td>
+</tr>
+<tr>
+<td><code>keychain_password</code></td>
+<td>пароль связки ключей login на маке</td>
+</tr>
+<tr>
+<td><code>app_version</code>, <code>build_number_offset</code></td>
+<td>версия (пусто — из pubspec) и сдвиг номера сборки</td>
+</tr>
+<tr>
+<td><code>flutter_bin_dir</code></td>
+<td>путь к <code>flutter/bin</code>, если его нет в PATH раннера</td>
+</tr>
+<tr>
+<td><code>dart_defines</code></td>
+<td>строки <code>KEY=value</code> для <code>--dart-define</code></td>
+</tr>
+<tr>
+<td><code>last_pipeline_url</code>, <code>last_result</code>, <code>last_apply_at</code></td>
+<td>результат последнего действия</td>
+</tr>
+</tbody>
+</table></div>
+<p>БП <code>flt_cicd_apply</code> («Применить CI/CD») пишет в <code>flt_files</code> <code>.gitlab-ci.yml</code>, <code>tool/ci/ios.env</code>, <code>dart_defines.txt</code>, <code>ios_build.sh</code>, <code>ios_publish.sh</code>, <code>ios_signing.py</code>, <code>README.md</code>, записывает переменные GitLab (<code>ASC_KEY_ID</code>, <code>ASC_ISSUER_ID</code>, <code>ASC_KEY_P8_B64</code> masked, <code>KEYCHAIN_PASSWORD</code>) и запускает выгрузку. БП <code>flt_cicd_run</code> («Собрать iOS») запускает pipeline с <code>IOS_RELEASE=1</code>.</p>
+<p>Эти файлы CI не правят вручную ни в <code>flt_files</code>, ни в GitLab — они перезаписываются при следующем «Применить CI/CD». Меняются поля <code>flt_cicd</code>.</p>
+<h3 id="pipeline">Pipeline</h3>
+<p><code>ios_build</code>: проверка macOS и инструментов → ключ <code>.p8</code> в <code>~/.appstoreconnect/private_keys/AuthKey_&lt;id&gt;.p8</code> → разблокировка keychain → <code>tool/setup.sh</code> → <code>ios_signing.py</code> (Bundle ID, Team, <code>CODE_SIGN_STYLE = Automatic</code> для Runner и RunnerTests) → <code>flutter build ios --release --config-only --build-name --build-number --dart-define…</code> → <code>xcodebuild archive</code> и <code>-exportArchive</code> с <code>-allowProvisioningUpdates</code> и API-ключом → IPA в артефактах (14 дней).
+<code>ios_publish</code>: <code>xcrun altool --upload-app --apiKey --apiIssuer</code>. Сборка появляется в TestFlight через 5–30 минут.</p>
+<h3 id="ошибки-и-правила">Ошибки и правила</h3>
+<ul>
+<li>Раннер запускать в сессии пользователя: <code>brew services start gitlab-runner</code>. Как системный демон через <code>sudo</code> он не видит связку ключей — подпись падает.</li>
+<li>Xcode: <code>sudo xcode-select -s /Applications/Xcode.app</code>, <code>sudo xcodebuild -license accept</code>, <code>xcodebuild -runFirstLaunch</code>. Нужны <code>cocoapods</code>, Flutter 3.29+, <code>python3</code>.</li>
+<li>Ключ App Store Connect API — с ролью Admin: автоматическая облачная подпись (<code>-allowProvisioningUpdates</code>) создаёт сертификаты и профили.</li>
+<li>Метод экспорта зависит от Xcode: с 15.3 — <code>app-store-connect</code>, раньше — <code>app-store</code>. Скрипт выбирает его сам.</li>
+<li>Номер сборки = <code>CI_PIPELINE_IID + build_number_offset</code> и должен расти. Если репозиторий пересоздан или номер уже был загружен — увеличить <code>build_number_offset</code>, иначе App Store Connect отклонит загрузку как дубликат.</li>
+<li>В режиме <code>push</code> каждая выгрузка в ветку <code>main</code> (в том числе «Выгрузить в GitLab» из DamuBPM) запускает сборку на маке. Для частых правок использовать <code>manual</code> и запускать «Собрать iOS» осознанно.</li>
+<li>Токену проекта GitLab нужны Maintainer и scope <code>api</code> — для записи переменных и запуска pipeline.</li>
+<li>Для <code>LANG</code>/<code>LC_ALL</code> задан <code>en_US.UTF-8</code> — без этого CocoaPods падает на кириллице в путях и выводе.</li>
+<li>Приложение в App Store Connect с тем же Bundle ID создаётся вручную до первой загрузки.</li>
+</ul>
+<hr />
+<h2 id="10-ловушки-damubpm-встреченные-при-мобильной-разработке">10. Ловушки DamuBPM, встреченные при мобильной разработке</h2>
+<div class="tbl"><table>
+<thead>
+<tr>
+<th>Проблема</th>
+<th>Решение</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>string.match</code> = nil в Lua</td>
+<td><code>RegexpCheck</code>, <code>RegexpFindStringSubmatch</code> или SQL <code>~</code></td>
+</tr>
+<tr>
+<td><code>SqlQueryRow2</code> без строки возвращает ошибку</td>
+<td>проверка существования через <code>SqlQueryRows</code></td>
+</tr>
+<tr>
+<td><code>unpack</code> = nil в REST</td>
+<td><code>local unpack = unpack or table.unpack</code></td>
+</tr>
+<tr>
+<td><code>JsonToString</code> делает из массива объект</td>
+<td><code>array({})</code>, рекурсивный <code>arr()</code> для внешних данных</td>
+</tr>
+<tr>
+<td><code>?</code> внутри литерала SQL заменяется параметром</td>
+<td>в регулярках <code>{0,1}</code>, в <code>db_execute_sql</code> — <code>chr(63)</code></td>
+</tr>
+<tr>
+<td><code>Commit()</code> → <code>unexpected transaction status idle</code></td>
+<td>транзакцию уже закрыла платформа, данные записаны</td>
+</tr>
+<tr>
+<td><code>Commit()</code>/<code>Rollback()</code> в скрипте БП → «transaction not begin»</td>
+<td>в БП не вызывать, коммит делает REST</td>
+</tr>
+<tr>
+<td><code>Rollback()</code> после <code>Commit()</code> ничего не откатывает</td>
+<td>временные записи удалять явно</td>
+</tr>
+<tr>
+<td>тип <code>double</code> → <code>numeric(20,2)</code></td>
+<td>точные дроби и координаты — <code>varchar(32)</code></td>
+</tr>
+<tr>
+<td>logic-элемент страницы с одним HTML падает <code>SyntaxError: Unexpected token '.'</code></td>
+<td>поле <code>logic</code> оставлять <code>NULL</code></td>
+</tr>
+<tr>
+<td><code>create_page</code> перезаписывает автостраницы сущностей</td>
+<td>не называть свои страницы кодами сущностей</td>
+</tr>
+<tr>
+<td>правка <code>crontab</code> через SQL не подхватывается</td>
+<td>только через <code>create_crontab</code></td>
+</tr>
+<tr>
+<td>MCP <code>flt_projects_create_update</code> падает</td>
+<td>вставка SQL в <code>flt_projects</code>, страницы — <code>flt_pages_create_update</code></td>
+</tr>
+</tbody>
+</table></div>
+<hr />
+<h2 id="11-порядок-создания-нового-мобильного-приложения">11. Порядок создания нового мобильного приложения</h2>
+<ol>
+<li>Сервер: модуль, роли, <code>pkg/&lt;mod&gt;_mobile</code>, REST <code>&lt;mod&gt;_api</code> (<code>config</code> + чтение), REST <code>&lt;mod&gt;_bp</code> с белым списком, бизнес-процессы с <code>input</code>/<code>result</code>/<code>last_error</code>.</li>
+<li>OAuth: скопировать <code>map_mobile_oauth_*</code> → <code>&lt;mod&gt;_mobile_oauth_*</code>, заменить <code>CLIENT</code>, <code>REDIRECT</code>, <code>SCOPE</code>, <code>SYSTEM</code>, роли, имена операций лимита. <code>authorize</code> и <code>token</code> — <code>is_public = 1</code>, <code>only_auth = 0</code>; <code>logout</code> — <code>only_auth = 1</code>.</li>
+<li>Проверить сервер без телефона: <code>authorize</code> без сессии отдаёт редирект на <code>/login</code>; <code>token</code> с неверным PKCE — <code>invalid_grant</code>; повтор refresh — отзыв сессии; <code>api</code> без Bearer — 401; <code>config</code> с ролью — 200; операции записи через <code>&lt;mod&gt;_bp</code> действительно меняют данные.</li>
+<li>Проект <code>flt_projects</code>: <code>code</code>, <code>pubspec</code>, <code>app_name</code>, <code>org</code>, <code>url_scheme</code>, <code>deep_linking_off = 1</code>, <code>android_min_sdk = 23</code>, <code>ios_min_version = 15.0</code>, <code>android_generate = 1</code>, GitLab.</li>
+<li><code>flt_permissions</code>: INTERNET, нужные разрешения, iOS-тексты, <code>ITSAppUsesNonExemptEncryption = false</code>.</li>
+<li><code>flt_pages</code> по эталонной структуре (раздел 3), у каждой страницы <code>description = "Файл: lib/…"</code>.</li>
+<li>Иконки в <code>flt_files</code> (<code>is_base64 = 1</code>).</li>
+<li>Выгрузить в GitLab, локально <code>bash tool/setup.sh &amp;&amp; flutter analyze &amp;&amp; flutter run</code>.</li>
+<li><code>flt_cicd</code>: Bundle ID, Team ID, ключ ASC, <code>dart_defines</code>, режим → «Применить CI/CD» → «Собрать iOS».</li>
+<li>Обновить описание проекта (<code>flt_projects.description</code>): REST-сервисы, схема, разрешения, параметры сервера — это документация для следующих правок.</li>
+</ol>
+<h2 id="12-чек-лист-перед-релизом">12. Чек-лист перед релизом</h2>
+<ul>
+<li>☐ <code>flutter analyze</code> без ошибок.</li>
+<li>☐ Вход, отмена входа, повторный запуск с сохранённой сессией, истечение access-токена (15 мин), refresh, выход, выход на всех устройствах.</li>
+<li>☐ Снятие роли у пользователя → следующий refresh даёт «Сессия завершена».</li>
+<li>☐ Нет сети / таймаут / 500 — понятные сообщения, приложение не падает.</li>
+<li>☐ Кириллица в ответах отображается корректно (utf8 из байтов).</li>
+<li>☐ Пустые списки и числа-строки не ломают экраны.</li>
+<li>☐ Все операции записи проверены на сервере, а не только чтение.</li>
+<li>☐ iOS: URL-схема в Info.plist, <code>FlutterDeepLinkingEnabled = false</code>, тексты разрешений.</li>
+<li>☐ Android: <code>appAuthRedirectScheme</code>, INTERNET, <code>&lt;queries&gt;</code>.</li>
+<li>☐ Иконки на обеих платформах, AppIcon 1024 без прозрачности.</li>
+<li>☐ В исходниках нет токенов, паролей, ключей; адрес сервера — через <code>--dart-define</code>.</li>
+<li>☐ Номер сборки больше уже загруженного в App Store Connect.</li>
+</ul>
+</article></main>
+<div class="foot"><a href="index.html">← Главная</a> · DamuBPM · Flutter · Mobile</div>
+</body>
+</html>
