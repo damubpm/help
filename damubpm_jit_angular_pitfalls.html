@@ -1,0 +1,120 @@
+<!doctype html><html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>DamuBPM JIT (Angular): неочевидное</title><style>
+:root{--bg:#f4f5f9;--card:#fff;--ink:#171a2b;--muted:#5d6377;--line:#e1e4ec;--accent:#5b4ee6;--accent-soft:#eeecfd;--code:#151726;--code-ink:#e3e6f5;--mark:#ffe58a}
+@media (prefers-color-scheme:dark){:root{--bg:#0d0f19;--card:#151826;--ink:#e8eaf4;--muted:#a0a6bd;--line:#282d42;--accent:#9a90ff;--accent-soft:rgba(154,144,255,.15);--code:#0a0c15;--mark:#7a5d00}}
+*{box-sizing:border-box}html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.6 Inter,system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+a{color:var(--accent)}
+.top{position:sticky;top:0;z-index:10;background:var(--card);border-bottom:1px solid var(--line);padding:10px 20px;display:flex;gap:14px;align-items:center;flex-wrap:wrap}
+.top .home{font-weight:700;text-decoration:none;color:var(--ink);display:flex;gap:8px;align-items:center}
+.top .home i{width:28px;height:28px;border-radius:8px;background:var(--accent);color:#fff;display:grid;place-items:center;font-style:normal;font-size:14px}
+.top nav{display:flex;gap:4px;flex-wrap:wrap}.top nav a{padding:5px 10px;border-radius:8px;text-decoration:none;color:var(--muted);font-size:13.5px}
+.top nav a.on,.top nav a:hover{background:var(--accent-soft);color:var(--accent)}
+.search{margin-left:auto;position:relative;min-width:260px;flex:0 1 380px}
+.search input{width:100%;padding:8px 12px 8px 34px;border:1px solid var(--line);border-radius:10px;background:var(--bg);color:var(--ink);font:inherit;outline:none}
+.search input:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+.search::before{content:"⌕";position:absolute;left:11px;top:50%;transform:translateY(-52%);color:var(--muted);font-size:17px}
+.results{position:absolute;right:0;left:0;top:calc(100% + 6px);background:var(--card);border:1px solid var(--line);border-radius:12px;box-shadow:0 16px 40px rgba(0,0,0,.15);max-height:70vh;overflow:auto;display:none}
+.results.open{display:block}.results a{display:block;padding:10px 14px;text-decoration:none;color:var(--ink);border-bottom:1px solid var(--line)}
+.results a:hover,.results a.sel{background:var(--accent-soft)}.results small{display:block;color:var(--muted);font-size:12.5px}.results b{color:var(--accent);font-weight:600}
+.results .none{padding:14px;color:var(--muted)}
+.wrap{max-width:1180px;margin:0 auto;padding:24px 20px 60px;display:grid;grid-template-columns:240px minmax(0,1fr);gap:28px}
+.toc{position:sticky;top:70px;align-self:start;max-height:calc(100vh - 90px);overflow:auto;font-size:13.5px}
+.toc b{display:block;color:var(--muted);font-size:11.5px;text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px}
+.toc a{display:block;padding:4px 8px;border-left:2px solid var(--line);color:var(--muted);text-decoration:none}.toc a:hover{color:var(--ink);border-color:var(--accent)}
+article{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:28px 34px;min-width:0}
+article [id]{scroll-margin-top:76px}article h1{font-size:26px;margin:0 0 16px;letter-spacing:-.02em}article h2{font-size:19px;margin:30px 0 10px;padding-top:6px;border-top:1px solid var(--line)}
+article h2:first-of-type{border-top:0}
+code{font:12.5px/1.5 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;background:var(--accent-soft);padding:1px 5px;border-radius:5px}
+pre{background:var(--code);color:var(--code-ink);padding:14px 16px;border-radius:10px;overflow:auto}pre code{background:none;padding:0;color:inherit}
+table{border-collapse:collapse;width:100%;font-size:14px;margin:10px 0;display:block;overflow:auto}th,td{border:1px solid var(--line);padding:7px 10px;text-align:left;vertical-align:top}th{background:var(--bg)}
+mark{background:var(--mark);color:inherit;border-radius:3px;padding:0 1px}
+.hit{outline:2px solid var(--accent);outline-offset:4px;border-radius:4px}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;margin-top:18px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px;text-decoration:none;color:var(--ink);display:block}
+.card:hover{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}.card h3{margin:0 0 6px}.card p{margin:0;color:var(--muted);font-size:14px}.card span{display:inline-block;margin-top:10px;font-size:12.5px;color:var(--accent)}
+.hero{max-width:1180px;margin:0 auto;padding:28px 20px 60px}.hero h1{margin:0 0 6px;font-size:28px}.hero p{color:var(--muted);margin:0}
+.pagehits{font-size:13px;color:var(--muted);margin:-6px 0 14px}
+@media(max-width:860px){.wrap{grid-template-columns:1fr}.toc{display:none}article{padding:20px}.search{flex:1 1 100%}}
+</style></head><body><header class="top"><a class="home" href="index.html"><i>D</i>DamuBPM: подводные камни</a><nav><a href="damubpm_lua_runtime_pitfalls.html">Lua: рантайм</a><a href="damubpm_mcp_tooling_pitfalls.html">MCP: инструменты и деплой</a><a href="damubpm_jit_angular_pitfalls.html" class=on>JIT Angular</a></nav><div class="search"><input id="q" type="search" placeholder="Поиск по всем разделам ( / )" autocomplete="off"><div class="results" id="res"></div></div></header><div class="wrap"><aside class="toc"><b>Содержание</b><a href="#1-шаблоны">1. Шаблоны</a><a href="#2-iframe-превью">2. iframe-превью</a><a href="#3-жизненный-цикл-и-навигация">3. Жизненный цикл и навигация</a><a href="#4-работа-с-api">4. Работа с API</a><a href="#5-оформление">5. Оформление</a></aside><article><div class="pagehits" id="pagehits"></div><h1 id="damubpm-jit-angular-неочевидное">DamuBPM JIT (Angular): неочевидное</h1>
+<h2 id="1-шаблоны">1. Шаблоны</h2>
+<ul>
+<li><code>[innerHTML]</code> прогоняется через санитайзер Angular: <strong>вырезаются <code>style="…"</code> и <code>&lt;svg&gt;</code></strong>. Мини-превью строить обычной разметкой с <code>[style.background]</code>, <code>[style.font-family]</code> и т. п.; SVG показывать через <code>&lt;img [src]="dataUri"&gt;</code>:
+  <div class="highlight"><pre><span></span><code><span class="nx">svgData</span><span class="p">(</span><span class="nx">svg</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="kd">let</span><span class="w"> </span><span class="nx">x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">String</span><span class="p">(</span><span class="nx">svg</span><span class="p">).</span><span class="nx">replace</span><span class="p">(</span><span class="sr">/currentColor/g</span><span class="p">,</span><span class="w"> </span><span class="s1">'#5b4ee6'</span><span class="p">);</span>
+<span class="w">  </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nx">x</span><span class="p">.</span><span class="nx">indexOf</span><span class="p">(</span><span class="s1">'xmlns='</span><span class="p">)</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="mf">0</span><span class="p">)</span><span class="w"> </span><span class="nx">x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">x</span><span class="p">.</span><span class="nx">replace</span><span class="p">(</span><span class="s1">'&lt;svg'</span><span class="p">,</span><span class="w"> </span><span class="s1">'&lt;svg xmlns="http://www.w3.org/2000/svg"'</span><span class="p">);</span>
+<span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="s1">'data:image/svg+xml;charset=utf-8,'</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="nb">encodeURIComponent</span><span class="p">(</span><span class="nx">x</span><span class="p">);</span>
+<span class="p">}</span>
+</code></pre></div></li>
+<li>Одиночная <code>{</code> в тексте шаблона воспринимается как ICU-выражение → писать <code>{{ '{' }}</code> / <code>{{ '}' }}</code>.</li>
+<li>Текст с <code>{{ … }}</code> (примеры Go-шаблонов, Handlebars) — только внутри элемента с <code>ngNonBindable</code>.</li>
+<li>CSS-переменные биндятся как <code>[style.--v]="value"</code>.</li>
+<li>Рекурсивные формы (вложенные списки) — <code>&lt;ng-template #tpl let-fields="fields" let-obj="obj"&gt;</code> + <code>*ngTemplateOutlet="tpl; context: {...}"</code>.</li>
+</ul>
+<h2 id="2-iframe-превью">2. iframe-превью</h2>
+<ul>
+<li><code>[srcdoc]</code> требует bypass санитайзера — проще присвоить через DOM после рендера:
+  <div class="highlight"><pre><span></span><code><span class="nx">setFrame</span><span class="p">(</span><span class="nx">id</span><span class="p">,</span><span class="w"> </span><span class="nx">html</span><span class="p">,</span><span class="w"> </span><span class="nx">n</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">0</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="nx">setTimeout</span><span class="p">(()</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="kd">const</span><span class="w"> </span><span class="nx">el</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">document</span><span class="p">.</span><span class="nx">getElementById</span><span class="p">(</span><span class="nx">id</span><span class="p">);</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nx">el</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">el</span><span class="p">.</span><span class="nx">srcdoc</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">html</span><span class="p">;</span><span class="w"> </span><span class="k">return</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nx">n</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="mf">20</span><span class="p">)</span><span class="w"> </span><span class="k">this</span><span class="p">.</span><span class="nx">setFrame</span><span class="p">(</span><span class="nx">id</span><span class="p">,</span><span class="w"> </span><span class="nx">html</span><span class="p">,</span><span class="w"> </span><span class="nx">n</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mf">1</span><span class="p">);</span>
+<span class="w">  </span><span class="p">},</span><span class="w"> </span><span class="nx">n</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="mf">60</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="mf">0</span><span class="p">);</span>
+<span class="p">}</span>
+</code></pre></div></li>
+<li>Связь превью ↔ редактор — <code>postMessage</code> в обе стороны; слушатель <code>message</code> вешать в <code>ngOnInit</code>, снимать в <code>ngOnDestroy</code>.</li>
+<li>Корневые ссылки (<code>/restapi/getfile?code=…</code>) внутри srcdoc работают (базовый URL наследуется от родителя).</li>
+</ul>
+<h2 id="3-жизненный-цикл-и-навигация">3. Жизненный цикл и навигация</h2>
+<ul>
+<li>Хуки (<code>ngOnDestroy</code> и др.) берутся из класса при компиляции: <strong>переопределять их на экземпляре в рантайме бесполезно</strong> — вся очистка внутри метода класса.</li>
+<li>Параметры URL: <code>new URLSearchParams(location.search)</code> (плюс запасной разбор <code>location.hash</code>).</li>
+<li>Переход на тот же маршрут с другим <code>?id=</code> не пересоздаёт компонент — после возврата из БП обновлять данные явно (колбэк <code>bpRun</code>).</li>
+<li>Каждая страница самостоятельна: общий хелпер (<code>api</code>, <code>notify</code>, загрузка CSS) копируется в каждую.</li>
+</ul>
+<h2 id="4-работа-с-api">4. Работа с API</h2>
+<ul>
+<li><code>this.dbQueryService.restapiPost(service, body, true).pipe(first())</code>; при <code>cut_status_info = 1</code> ответ <code>{success, data}</code> или <code>{success:false, error:{message}}</code>. Обрабатывать оба варианта плюс HTTP-ошибку:
+  <div class="highlight"><pre><span></span><code><span class="nx">api</span><span class="p">(</span><span class="nx">action</span><span class="p">,</span><span class="w"> </span><span class="nx">data</span><span class="p">,</span><span class="w"> </span><span class="nx">ok</span><span class="p">,</span><span class="w"> </span><span class="nx">fail</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="k">this</span><span class="p">.</span><span class="nx">dbQueryService</span><span class="p">.</span><span class="nx">restapiPost</span><span class="p">(</span><span class="s1">'my_api'</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">action</span><span class="p">,</span><span class="w"> </span><span class="nx">data</span><span class="o">:</span><span class="w"> </span><span class="nx">data</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="p">{}</span><span class="w"> </span><span class="p">},</span><span class="w"> </span><span class="kc">true</span><span class="p">).</span><span class="nx">pipe</span><span class="p">(</span><span class="nx">first</span><span class="p">()).</span><span class="nx">subscribe</span><span class="p">({</span>
+<span class="w">    </span><span class="nx">next</span><span class="o">:</span><span class="w"> </span><span class="nx">r</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nx">r</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="nx">r</span><span class="p">.</span><span class="nx">success</span><span class="w"> </span><span class="o">===</span><span class="w"> </span><span class="kc">false</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="kd">const</span><span class="w"> </span><span class="nx">m</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="nx">r</span><span class="p">.</span><span class="nx">error</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="nx">r</span><span class="p">.</span><span class="nx">error</span><span class="p">.</span><span class="nx">message</span><span class="p">)</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="s1">'Ошибка'</span><span class="p">;</span><span class="w"> </span><span class="k">this</span><span class="p">.</span><span class="nx">error</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">m</span><span class="p">;</span><span class="w"> </span><span class="nx">fail</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="nx">fail</span><span class="p">(</span><span class="nx">m</span><span class="p">);</span><span class="w"> </span><span class="k">return</span><span class="p">;</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="nx">ok</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="nx">ok</span><span class="p">(</span><span class="nx">r</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="nx">r</span><span class="p">.</span><span class="nx">data</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="nx">r</span><span class="p">.</span><span class="nx">data</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="p">(</span><span class="nx">r</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="p">{}));</span><span class="w"> </span><span class="p">},</span>
+<span class="w">    </span><span class="nx">error</span><span class="o">:</span><span class="w"> </span><span class="nx">e</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="kd">const</span><span class="w"> </span><span class="nx">x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">e</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="p">(</span><span class="nx">e</span><span class="p">.</span><span class="nx">error</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="nx">e</span><span class="p">);</span><span class="w"> </span><span class="kd">const</span><span class="w"> </span><span class="nx">m</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="nx">x</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="nx">x</span><span class="p">.</span><span class="nx">error</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="nx">x</span><span class="p">.</span><span class="nx">error</span><span class="p">.</span><span class="nx">message</span><span class="p">)</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="p">(</span><span class="nx">x</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="nx">x</span><span class="p">.</span><span class="nx">message</span><span class="p">)</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="s1">'Ошибка'</span><span class="p">;</span><span class="w"> </span><span class="k">this</span><span class="p">.</span><span class="nx">error</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">m</span><span class="p">;</span><span class="w"> </span><span class="nx">fail</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="nx">fail</span><span class="p">(</span><span class="nx">m</span><span class="p">);</span><span class="w"> </span><span class="p">}</span>
+<span class="w">  </span><span class="p">});</span>
+<span class="p">}</span>
+</code></pre></div></li>
+<li>jsonb-поля из <code>SqlQueryRows</code> могут прийти строкой — на фронте <code>parse(v, def)</code>: объект вернуть как есть, строку <code>JSON.parse</code> в <code>try</code>.</li>
+<li>Загрузка файлов без возни с multipart и авторизацией: <code>FileReader.readAsDataURL</code> → base64 в REST → <code>UploadRawData</code>. Ограничивать размер (~10 МБ).</li>
+</ul>
+<h2 id="5-оформление">5. Оформление</h2>
+<ul>
+<li>Свой CSS-префикс модуля (<code>be-</code>, <code>mp-</code>) и обёртка <code>.&lt;prefix&gt;</code>; цвета через <code>var(--damu-v1-*)</code> с фолбэком и отдельный блок <code>.damu-theme-dark .&lt;prefix&gt;{…}</code> для тёмной темы.</li>
+<li>Не использовать префикс, совпадающий с классами генерируемого контента (например, сайтов в превью).</li>
+</ul></article></div><script src="search-index.js"></script><script>
+(function(){
+var INDEX = window.SEARCH_INDEX || [];
+var input = document.getElementById('q'), box = document.getElementById('res'), sel = -1;
+function norm(s){return (s||'').toLowerCase().replace(/ё/g,'е');}
+function esc(s){return s.replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
+function snippet(text, q){var t=norm(text),i=t.indexOf(q);if(i<0)return esc(text.slice(0,120));var a=Math.max(0,i-50),s=text.slice(a,i+q.length+70);var j=norm(s).indexOf(q);return (a?'…':'')+esc(s.slice(0,j))+'<b>'+esc(s.slice(j,j+q.length))+'</b>'+esc(s.slice(j+q.length))+'…';}
+function search(){
+  var q=norm(input.value.trim());sel=-1;
+  if(q.length<2){box.classList.remove('open');box.innerHTML='';return;}
+  var words=q.split(/\s+/),out=[];
+  INDEX.forEach(function(s){var hay=norm(s.doc+' '+s.title+' '+s.text);if(words.every(function(w){return hay.indexOf(w)>=0;})){var sc=norm(s.title).indexOf(words[0])>=0?2:1;out.push({s:s,sc:sc});}});
+  out.sort(function(a,b){return b.sc-a.sc;});
+  box.innerHTML=out.length?out.slice(0,40).map(function(o){return '<a href="'+o.s.url+'?q='+encodeURIComponent(input.value.trim())+'#'+o.s.id+'">'+esc(o.s.title)+'<small>'+esc(o.s.doc)+' · '+snippet(o.s.text,words[0])+'</small></a>';}).join(''):'<div class="none">Ничего не найдено</div>';
+  box.classList.add('open');
+}
+input.addEventListener('input',search);
+input.addEventListener('keydown',function(e){var items=box.querySelectorAll('a');if(e.key==='ArrowDown'||e.key==='ArrowUp'){e.preventDefault();sel=Math.max(0,Math.min(items.length-1,sel+(e.key==='ArrowDown'?1:-1)));items.forEach(function(a,i){a.classList.toggle('sel',i===sel);});if(items[sel])items[sel].scrollIntoView({block:'nearest'});}
+  if(e.key==='Enter'&&items.length){location.href=(items[sel>=0?sel:0]).href;}if(e.key==='Escape'){box.classList.remove('open');input.blur();}});
+document.addEventListener('click',function(e){if(!e.target.closest('.search'))box.classList.remove('open');});
+document.addEventListener('keydown',function(e){if(e.key==='/'&&document.activeElement!==input){e.preventDefault();input.focus();}});
+var art=document.querySelector('article');var pq=new URLSearchParams(location.search).get('q');
+if(art&&pq){input.value=pq;var w=norm(pq).split(/\s+/).filter(function(x){return x.length>1;});var walker=document.createTreeWalker(art,NodeFilter.SHOW_TEXT,null),nodes=[],n;while(n=walker.nextNode())nodes.push(n);var cnt=0,first=null;
+  nodes.forEach(function(node){var t=node.nodeValue,lt=norm(t),hits=[];w.forEach(function(x){var i=0;while((i=lt.indexOf(x,i))>=0){hits.push([i,i+x.length]);i+=x.length;}});if(!hits.length)return;hits.sort(function(a,b){return a[0]-b[0];});
+    var frag=document.createDocumentFragment(),pos=0;hits.forEach(function(h){if(h[0]<pos)return;frag.appendChild(document.createTextNode(t.slice(pos,h[0])));var m=document.createElement('mark');m.textContent=t.slice(h[0],h[1]);frag.appendChild(m);if(!first)first=m;cnt++;pos=h[1];});frag.appendChild(document.createTextNode(t.slice(pos)));node.parentNode.replaceChild(frag,node);});
+  var ph=document.getElementById('pagehits');if(ph)ph.textContent=cnt?('Совпадений на странице: '+cnt+' · «'+pq+'»'):'';
+  if(!location.hash&&first)first.scrollIntoView({block:'center'});}
+if(location.hash){var t=document.getElementById(decodeURIComponent(location.hash.slice(1)));if(t){t.classList.add('hit');setTimeout(function(){t.classList.remove('hit');},2500);}}
+})();
+</script></body></html>

@@ -1,0 +1,126 @@
+<!doctype html><html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>DamuBPM MCP (contact-center): ловушки инструментов и безопасный деплой</title><style>
+:root{--bg:#f4f5f9;--card:#fff;--ink:#171a2b;--muted:#5d6377;--line:#e1e4ec;--accent:#5b4ee6;--accent-soft:#eeecfd;--code:#151726;--code-ink:#e3e6f5;--mark:#ffe58a}
+@media (prefers-color-scheme:dark){:root{--bg:#0d0f19;--card:#151826;--ink:#e8eaf4;--muted:#a0a6bd;--line:#282d42;--accent:#9a90ff;--accent-soft:rgba(154,144,255,.15);--code:#0a0c15;--mark:#7a5d00}}
+*{box-sizing:border-box}html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.6 Inter,system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+a{color:var(--accent)}
+.top{position:sticky;top:0;z-index:10;background:var(--card);border-bottom:1px solid var(--line);padding:10px 20px;display:flex;gap:14px;align-items:center;flex-wrap:wrap}
+.top .home{font-weight:700;text-decoration:none;color:var(--ink);display:flex;gap:8px;align-items:center}
+.top .home i{width:28px;height:28px;border-radius:8px;background:var(--accent);color:#fff;display:grid;place-items:center;font-style:normal;font-size:14px}
+.top nav{display:flex;gap:4px;flex-wrap:wrap}.top nav a{padding:5px 10px;border-radius:8px;text-decoration:none;color:var(--muted);font-size:13.5px}
+.top nav a.on,.top nav a:hover{background:var(--accent-soft);color:var(--accent)}
+.search{margin-left:auto;position:relative;min-width:260px;flex:0 1 380px}
+.search input{width:100%;padding:8px 12px 8px 34px;border:1px solid var(--line);border-radius:10px;background:var(--bg);color:var(--ink);font:inherit;outline:none}
+.search input:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+.search::before{content:"⌕";position:absolute;left:11px;top:50%;transform:translateY(-52%);color:var(--muted);font-size:17px}
+.results{position:absolute;right:0;left:0;top:calc(100% + 6px);background:var(--card);border:1px solid var(--line);border-radius:12px;box-shadow:0 16px 40px rgba(0,0,0,.15);max-height:70vh;overflow:auto;display:none}
+.results.open{display:block}.results a{display:block;padding:10px 14px;text-decoration:none;color:var(--ink);border-bottom:1px solid var(--line)}
+.results a:hover,.results a.sel{background:var(--accent-soft)}.results small{display:block;color:var(--muted);font-size:12.5px}.results b{color:var(--accent);font-weight:600}
+.results .none{padding:14px;color:var(--muted)}
+.wrap{max-width:1180px;margin:0 auto;padding:24px 20px 60px;display:grid;grid-template-columns:240px minmax(0,1fr);gap:28px}
+.toc{position:sticky;top:70px;align-self:start;max-height:calc(100vh - 90px);overflow:auto;font-size:13.5px}
+.toc b{display:block;color:var(--muted);font-size:11.5px;text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px}
+.toc a{display:block;padding:4px 8px;border-left:2px solid var(--line);color:var(--muted);text-decoration:none}.toc a:hover{color:var(--ink);border-color:var(--accent)}
+article{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:28px 34px;min-width:0}
+article [id]{scroll-margin-top:76px}article h1{font-size:26px;margin:0 0 16px;letter-spacing:-.02em}article h2{font-size:19px;margin:30px 0 10px;padding-top:6px;border-top:1px solid var(--line)}
+article h2:first-of-type{border-top:0}
+code{font:12.5px/1.5 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;background:var(--accent-soft);padding:1px 5px;border-radius:5px}
+pre{background:var(--code);color:var(--code-ink);padding:14px 16px;border-radius:10px;overflow:auto}pre code{background:none;padding:0;color:inherit}
+table{border-collapse:collapse;width:100%;font-size:14px;margin:10px 0;display:block;overflow:auto}th,td{border:1px solid var(--line);padding:7px 10px;text-align:left;vertical-align:top}th{background:var(--bg)}
+mark{background:var(--mark);color:inherit;border-radius:3px;padding:0 1px}
+.hit{outline:2px solid var(--accent);outline-offset:4px;border-radius:4px}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;margin-top:18px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px;text-decoration:none;color:var(--ink);display:block}
+.card:hover{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}.card h3{margin:0 0 6px}.card p{margin:0;color:var(--muted);font-size:14px}.card span{display:inline-block;margin-top:10px;font-size:12.5px;color:var(--accent)}
+.hero{max-width:1180px;margin:0 auto;padding:28px 20px 60px}.hero h1{margin:0 0 6px;font-size:28px}.hero p{color:var(--muted);margin:0}
+.pagehits{font-size:13px;color:var(--muted);margin:-6px 0 14px}
+@media(max-width:860px){.wrap{grid-template-columns:1fr}.toc{display:none}article{padding:20px}.search{flex:1 1 100%}}
+</style></head><body><header class="top"><a class="home" href="index.html"><i>D</i>DamuBPM: подводные камни</a><nav><a href="damubpm_lua_runtime_pitfalls.html">Lua: рантайм</a><a href="damubpm_mcp_tooling_pitfalls.html" class=on>MCP: инструменты и деплой</a><a href="damubpm_jit_angular_pitfalls.html">JIT Angular</a></nav><div class="search"><input id="q" type="search" placeholder="Поиск по всем разделам ( / )" autocomplete="off"><div class="results" id="res"></div></div></header><div class="wrap"><aside class="toc"><b>Содержание</b><a href="#1-db-execute-sql">1. db_execute_sql</a><a href="#2-страницы">2. Страницы</a><a href="#3-сущности-и-бп">3. Сущности и БП</a><a href="#4-меню-css-каталоги">4. Меню, CSS, каталоги</a><a href="#5-крон-задачи-как-инструмент-деплоя-и-тестов">5. Крон-задачи как инструмент деплоя и тестов</a><a href="#6-тестирование-rest-без-браузера">6. Тестирование REST без браузера</a></aside><article><div class="pagehits" id="pagehits"></div><h1 id="damubpm-mcp-contact-center-ловушки-инструментов-и-безопасный-деплой">DamuBPM MCP (contact-center): ловушки инструментов и безопасный деплой</h1>
+<h2 id="1-db-execute-sql">1. db_execute_sql</h2>
+<ul>
+<li>Символ <code>?</code> внутри строковых литералов портится (трактуется как плейсхолдер). Писать <code>chr(63)</code> или избегать.</li>
+<li>Несколько операторов в одном вызове выполняются, но возвращается результат <strong>только первого</strong> SELECT; SELECT после UPDATE не покажет данные — проверять отдельным вызовом.</li>
+<li>Нельзя передавать BEGIN/COMMIT/ROLLBACK/SAVEPOINT.</li>
+<li>В <code>DO $$ … $$</code>/plpgsql давать уникальные алиасы (<code>generate_series(...) g(i)</code> конфликтует с колонкой <code>i</code> → «column i is ambiguous»).</li>
+<li>Временная функция для массовых замен: <code>create or replace function pg_temp.fn(...)</code> в том же вызове работает.</li>
+</ul>
+<h2 id="2-страницы">2. Страницы</h2>
+<ul>
+<li><code>create_page(uuid=&lt;code&gt;)</code> <strong>перезаписывает существующую страницу с этим кодом</strong>, включая автогенерированные страницы сущностей (<code>is_auto = 1</code>): список <code>&lt;entity_code&gt;</code> и карточку <code>&lt;entity_code&gt;details</code>. Перед созданием всегда проверять:
+  <div class="highlight"><pre><span></span><code><span class="k">select</span><span class="w"> </span><span class="n">id</span><span class="p">,</span><span class="w"> </span><span class="n">code</span><span class="p">,</span><span class="w"> </span><span class="n">is_auto</span><span class="p">,</span><span class="w"> </span><span class="n">entity_id</span><span class="w"> </span><span class="k">from</span><span class="w"> </span><span class="n">pages</span><span class="w"> </span><span class="k">where</span><span class="w"> </span><span class="n">code</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'&lt;code&gt;'</span><span class="p">;</span>
+</code></pre></div>
+  Свои страницы называть так, чтобы не совпадать с кодами сущностей (<code>beti</code>, <code>beti_tpl</code>, а не <code>beti_templates</code>).</li>
+<li>URL страницы = <code>/&lt;code&gt;</code>.</li>
+<li>Автостраницы списков сущностей отличаются только кодом сущности, <code>entity_id = '…'</code> и <code>page_id = '…'</code> в angular_json — испорченную можно восстановить копией соседней с заменой этих трёх значений.</li>
+<li>Большие страницы (50–100 КБ) дешевле ставить крон-установщиком (см. п. 5), чем base64 в create_page.</li>
+</ul>
+<h2 id="3-сущности-и-бп">3. Сущности и БП</h2>
+<ul>
+<li><code>create_entity</code> не добавляет <code>title</code>, <code>created_at</code>, <code>updated_at</code>, <code>created_by</code> — добавлять через <code>add_entity_attr</code>.</li>
+<li>Тип <code>double</code> создаёт <code>numeric(20,2)</code> — для координат и точных чисел использовать <code>varchar</code>/<code>numeric</code> нужной точности.</li>
+<li><code>create_bp_process</code> по шаблону <code>mcp_method_create_update_template</code> может вернуть «no row found», но процесс создаётся. Шаблон добавляет обязательную переменную <code>input</code> (jsonb) — удалить её, иначе БП не запустится без input.</li>
+<li>Тип БП (entityTool, entityActionByID), <code>action_entity_id</code>, иконку, <code>button_title</code> меняют SQL-апдейтом <code>bp_processes</code> (type_id из <code>bp_process_types</code>).</li>
+<li><code>update_bp_points_usertask</code> работает и для EndEvent (экран завершения).</li>
+<li>Условия на стрелках шлюза: <code>var.last_error == nil or var.last_error == ""</code> и обратное.</li>
+<li>Запуск из JIT: <code>this.appComponent.bpRun('&lt;код БП&gt;', {}, cb)</code>.</li>
+</ul>
+<h2 id="4-меню-css-каталоги">4. Меню, CSS, каталоги</h2>
+<ul>
+<li>Меню: <code>angular_menu</code> (parent New features, <code>place_id = 3</code>) + <code>angular_menu_role</code>. Новую роль модуля добавлять и в роли родительского пункта, иначе пункт не виден.</li>
+<li><code>create_css(code="mod/main.css")</code> → доступен по <code>../cms/css/mod/main.css</code>; подключать из JIT через <code>&lt;link&gt;</code> с <code>document.baseURI</code>.</li>
+<li>Для загрузки файлов из REST нужен каталог в <code>dirs</code> (code, unix_path внутри <code>/opt/cloud/dirs/...</code>, module_id).</li>
+</ul>
+<h2 id="5-крон-задачи-как-инструмент-деплоя-и-тестов">5. Крон-задачи как инструмент деплоя и тестов</h2>
+<ul>
+<li>Большой Lua/HTML/JS кладётся в БД скриптом крон-задачи с длинными строками <code>[=====[ … ]=====]</code> (проверить, что внутри нет <code>]=====]</code>).</li>
+<li><strong>Крон-задача выполняется повторно по расписанию.</strong> Установщик, оставленный включённым, откатит все последующие правки. После проверки результата сразу: <code>is_active=false</code>, скрипт <code>return</code>.</li>
+<li>Одноразовость: первой строкой проверять маркер в <code>crontab.warning_text</code> и выходить, если задача уже отработала.</li>
+<li>Результат писать в <code>crontab.warning_text</code> и читать через db_execute_sql.</li>
+<li>Патчи REST/пакетов делать не полной перезаписью, а заменой фрагмента (<code>StrContains</code> → <code>StrReplace</code> или вырезка между маркерами <code>string.find</code>), с проверкой «уже применено».</li>
+</ul>
+<h2 id="6-тестирование-rest-без-браузера">6. Тестирование REST без браузера</h2>
+<p>Крон-задача загружает тело сервиса и выполняет его с подставленным <code>request</code>:
+<div class="highlight"><pre><span></span><code><span class="kd">local</span><span class="w"> </span><span class="nv">src</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nf">SqlQueryRow2</span><span class="p">([[</span><span class="nb">select</span><span class="w"> </span><span class="nv">body</span><span class="w"> </span><span class="nv">from</span><span class="w"> </span><span class="nv">rest_services</span><span class="w"> </span><span class="nv">where</span><span class="w"> </span><span class="nv">code</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'my_api'</span><span class="p">]]).</span><span class="nv">body</span>
+<span class="kd">local</span><span class="w"> </span><span class="kr">function</span><span class="w"> </span><span class="nf">run</span><span class="p">(</span><span class="nv">action</span><span class="p">,</span><span class="w"> </span><span class="nv">data</span><span class="p">)</span>
+<span class="w">  </span><span class="kd">local</span><span class="w"> </span><span class="nv">done</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">false</span>
+<span class="w">  </span><span class="kd">local</span><span class="w"> </span><span class="nv">chunk</span><span class="p">,</span><span class="w"> </span><span class="nv">err</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">load</span><span class="p">(</span><span class="kr">function</span><span class="p">()</span><span class="w"> </span><span class="kr">if</span><span class="w"> </span><span class="nv">done</span><span class="w"> </span><span class="kr">then</span><span class="w"> </span><span class="kr">return</span><span class="w"> </span><span class="kc">nil</span><span class="w"> </span><span class="kr">end</span><span class="w"> </span><span class="nv">done</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span><span class="w"> </span><span class="kr">return</span><span class="w"> </span><span class="nv">src</span><span class="w"> </span><span class="kr">end</span><span class="p">)</span>
+<span class="w">  </span><span class="kr">if</span><span class="w"> </span><span class="ow">not</span><span class="w"> </span><span class="nv">chunk</span><span class="w"> </span><span class="kr">then</span><span class="w"> </span><span class="kr">return</span><span class="w"> </span><span class="p">{</span><span class="nv">success</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span><span class="w"> </span><span class="nb">error</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="nv">message</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">tostring</span><span class="p">(</span><span class="nv">err</span><span class="p">)}}</span><span class="w"> </span><span class="kr">end</span>
+<span class="w">  </span><span class="nv">request</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="nv">user_id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="nv">input</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="nv">action</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">action</span><span class="p">,</span><span class="w"> </span><span class="nv">data</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">data</span><span class="w"> </span><span class="ow">or</span><span class="w"> </span><span class="p">{}},</span><span class="w"> </span><span class="nv">method</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"POST"</span><span class="p">,</span><span class="w"> </span><span class="nv">header</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{},</span><span class="w"> </span><span class="nv">get</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{}}</span>
+<span class="w">  </span><span class="nv">output</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">nil</span>
+<span class="w">  </span><span class="kd">local</span><span class="w"> </span><span class="nv">ok</span><span class="p">,</span><span class="w"> </span><span class="nv">e</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">pcall</span><span class="p">(</span><span class="nv">chunk</span><span class="p">)</span>
+<span class="w">  </span><span class="kr">if</span><span class="w"> </span><span class="ow">not</span><span class="w"> </span><span class="nv">ok</span><span class="w"> </span><span class="kr">then</span><span class="w"> </span><span class="kr">return</span><span class="w"> </span><span class="p">{</span><span class="nv">success</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span><span class="w"> </span><span class="nb">error</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="nv">message</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">tostring</span><span class="p">(</span><span class="nv">e</span><span class="p">)}}</span><span class="w"> </span><span class="kr">end</span>
+<span class="w">  </span><span class="kr">return</span><span class="w"> </span><span class="nv">output</span>
+<span class="kr">end</span>
+</code></pre></div>
+- Покрывать тестом <strong>операции записи</strong> (save/insert/update), а не только чтение — ошибки вроде <code>unpack == nil</code> проявляются только там.
+- Синтаксис Lua до деплоя проверять локально (LuaJIT/<code>lupa</code>: <code>loadstring(src)</code>).
+- Синтаксис JIT-класса проверять <code>node -e "new Function('rxjs','forms','data', src)"</code>.</p></article></div><script src="search-index.js"></script><script>
+(function(){
+var INDEX = window.SEARCH_INDEX || [];
+var input = document.getElementById('q'), box = document.getElementById('res'), sel = -1;
+function norm(s){return (s||'').toLowerCase().replace(/ё/g,'е');}
+function esc(s){return s.replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
+function snippet(text, q){var t=norm(text),i=t.indexOf(q);if(i<0)return esc(text.slice(0,120));var a=Math.max(0,i-50),s=text.slice(a,i+q.length+70);var j=norm(s).indexOf(q);return (a?'…':'')+esc(s.slice(0,j))+'<b>'+esc(s.slice(j,j+q.length))+'</b>'+esc(s.slice(j+q.length))+'…';}
+function search(){
+  var q=norm(input.value.trim());sel=-1;
+  if(q.length<2){box.classList.remove('open');box.innerHTML='';return;}
+  var words=q.split(/\s+/),out=[];
+  INDEX.forEach(function(s){var hay=norm(s.doc+' '+s.title+' '+s.text);if(words.every(function(w){return hay.indexOf(w)>=0;})){var sc=norm(s.title).indexOf(words[0])>=0?2:1;out.push({s:s,sc:sc});}});
+  out.sort(function(a,b){return b.sc-a.sc;});
+  box.innerHTML=out.length?out.slice(0,40).map(function(o){return '<a href="'+o.s.url+'?q='+encodeURIComponent(input.value.trim())+'#'+o.s.id+'">'+esc(o.s.title)+'<small>'+esc(o.s.doc)+' · '+snippet(o.s.text,words[0])+'</small></a>';}).join(''):'<div class="none">Ничего не найдено</div>';
+  box.classList.add('open');
+}
+input.addEventListener('input',search);
+input.addEventListener('keydown',function(e){var items=box.querySelectorAll('a');if(e.key==='ArrowDown'||e.key==='ArrowUp'){e.preventDefault();sel=Math.max(0,Math.min(items.length-1,sel+(e.key==='ArrowDown'?1:-1)));items.forEach(function(a,i){a.classList.toggle('sel',i===sel);});if(items[sel])items[sel].scrollIntoView({block:'nearest'});}
+  if(e.key==='Enter'&&items.length){location.href=(items[sel>=0?sel:0]).href;}if(e.key==='Escape'){box.classList.remove('open');input.blur();}});
+document.addEventListener('click',function(e){if(!e.target.closest('.search'))box.classList.remove('open');});
+document.addEventListener('keydown',function(e){if(e.key==='/'&&document.activeElement!==input){e.preventDefault();input.focus();}});
+var art=document.querySelector('article');var pq=new URLSearchParams(location.search).get('q');
+if(art&&pq){input.value=pq;var w=norm(pq).split(/\s+/).filter(function(x){return x.length>1;});var walker=document.createTreeWalker(art,NodeFilter.SHOW_TEXT,null),nodes=[],n;while(n=walker.nextNode())nodes.push(n);var cnt=0,first=null;
+  nodes.forEach(function(node){var t=node.nodeValue,lt=norm(t),hits=[];w.forEach(function(x){var i=0;while((i=lt.indexOf(x,i))>=0){hits.push([i,i+x.length]);i+=x.length;}});if(!hits.length)return;hits.sort(function(a,b){return a[0]-b[0];});
+    var frag=document.createDocumentFragment(),pos=0;hits.forEach(function(h){if(h[0]<pos)return;frag.appendChild(document.createTextNode(t.slice(pos,h[0])));var m=document.createElement('mark');m.textContent=t.slice(h[0],h[1]);frag.appendChild(m);if(!first)first=m;cnt++;pos=h[1];});frag.appendChild(document.createTextNode(t.slice(pos)));node.parentNode.replaceChild(frag,node);});
+  var ph=document.getElementById('pagehits');if(ph)ph.textContent=cnt?('Совпадений на странице: '+cnt+' · «'+pq+'»'):'';
+  if(!location.hash&&first)first.scrollIntoView({block:'center'});}
+if(location.hash){var t=document.getElementById(decodeURIComponent(location.hash.slice(1)));if(t){t.classList.add('hit');setTimeout(function(){t.classList.remove('hit');},2500);}}
+})();
+</script></body></html>
