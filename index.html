@@ -1,5 +1,3 @@
-
-
 <!DOCTYPE html>
 <html lang="ru">
 <head>
@@ -444,7 +442,7 @@
         <div>
           <div class="eyebrow">DamuBPM Help</div>
           <h1>Документация для разработчиков</h1>
-          <p>API, Lua-модули, REST-сервисы, Mobile REST API, WebSocket, бизнес-процессы, JIT-интерфейсы и системные настройки DamuBPM — в одном месте.</p>
+          <p>API, Lua-модули, REST-сервисы, Mobile REST API, WebSocket, бизнес-процессы, JIT-интерфейсы, системные настройки и разбор неочевидных ошибок DamuBPM — в одном месте.</p>
         </div>
 
         <div class="search-wrap">
@@ -455,13 +453,14 @@
             <span class="key-hint">/</span>
           </div>
           <div class="summary-row">
-            <span>18 материалов</span>
+            <span>21 материал</span>
             <span>Lua</span>
             <span>REST</span>
             <span>WebSocket</span>
             <span>Mobile</span>
             <span>BPM</span>
             <span>JIT</span>
+            <span>Ошибки</span>
           </div>
         </div>
       </section>
@@ -652,6 +651,45 @@
             <div class="doc-content">
               <div class="doc-title">Детализированные страницы по блокам <span class="tag">Guide</span></div>
               <p class="doc-description">Структура и автогенерация детализированных страниц DamuBPM: блоки, элементы блоков и правила построения pagesdetails.</p>
+            </div>
+            <div class="doc-arrow">→</div>
+          </a>
+        </div>
+      </section>
+
+      <section class="section docs-section" data-section="pitfalls">
+        <div class="section-head">
+          <div>
+            <h2 class="section-title">Подводные камни</h2>
+            <p class="section-description">Неочевидное поведение платформы, найденное на практике: что ломается и как писать сразу правильно.</p>
+          </div>
+          <div class="section-count">3 материала</div>
+        </div>
+
+        <div class="docs-grid">
+          <a class="doc-card" href="damubpm_lua_runtime_pitfalls.html" data-search="ошибки подводные камни pitfalls lua runtime рантайм unpack loadstring load json jsontostring array массив filecontent uploadrawdata regexp commit rollback транзакции transaction idle parsetemplate freeswitch права папки rest pkg бп крон">
+            <div class="doc-icon">ERR</div>
+            <div class="doc-content">
+              <div class="doc-title">Lua: неочевидное поведение рантайма <span class="tag">Pitfalls</span></div>
+              <p class="doc-description">Урезанная стандартная библиотека, массивы в JsonToString, сигнатуры функций, транзакции, файлы сервера, ParseTemplate.</p>
+            </div>
+            <div class="doc-arrow">→</div>
+          </a>
+
+          <a class="doc-card" href="damubpm_mcp_tooling_pitfalls.html" data-search="ошибки подводные камни pitfalls mcp db_execute_sql create_page create_entity create_bp_process автостраницы сущности is_auto меню angular_menu крон crontab деплой установщик тесты rest harness">
+            <div class="doc-icon">MCP</div>
+            <div class="doc-content">
+              <div class="doc-title">MCP: инструменты и безопасный деплой <span class="tag">Pitfalls</span></div>
+              <p class="doc-description">Ловушки db_execute_sql и create_page, сущности и БП, меню, крон-установщики, тестирование REST без браузера.</p>
+            </div>
+            <div class="doc-arrow">→</div>
+          </a>
+
+          <a class="doc-card" href="damubpm_jit_angular_pitfalls.html" data-search="ошибки подводные камни pitfalls jit angular innerhtml санитайзер style svg ngnonbindable icu фигурные скобки iframe srcdoc postmessage ngondestroy жизненный цикл restapipost загрузка файлов base64 css тёмная тема">
+            <div class="doc-icon">JIT</div>
+            <div class="doc-content">
+              <div class="doc-title">JIT Angular: неочевидное <span class="tag">Pitfalls</span></div>
+              <p class="doc-description">Санитайзер шаблонов, фигурные скобки, iframe-превью, хуки жизненного цикла, вызовы API, оформление.</p>
             </div>
             <div class="doc-arrow">→</div>
           </a>
