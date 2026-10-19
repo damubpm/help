@@ -1,56 +1,31 @@
 <!doctype html>
-<html lang="ru">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>REST API DamuBPM для Flutter и Mobile</title>
 <style>
-:root {
-  --bg: #f6f7f9; --card: #ffffff; --text: #1b2430; --muted: #5d6b79; --line: #e1e6ec;
-  --accent: #0e6e7e; --code-bg: #f1f4f7; --pre-bg: #1e2733; --pre-text: #e6edf3; --quote: #eef6f7;
-}
-@media (prefers-color-scheme: dark) {
-  :root {
-    --bg: #11161c; --card: #171e26; --text: #e2e8ee; --muted: #93a1af; --line: #2a3440;
-    --accent: #4fb8c7; --code-bg: #212a35; --pre-bg: #0c1117; --pre-text: #e6edf3; --quote: #1a2a30;
-  }
-}
-* { box-sizing: border-box; }
-body { margin: 0; background: var(--bg); color: var(--text);
-  font: 16px/1.6 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
-.topbar { position: sticky; top: 0; z-index: 10; background: var(--card); border-bottom: 1px solid var(--line); }
-.topbar .in { max-width: 1040px; margin: 0 auto; padding: 10px 16px; display: flex; gap: 16px; align-items: center; }
-.topbar a { color: var(--accent); text-decoration: none; font-weight: 600; white-space: nowrap; }
-.topbar span { color: var(--muted); font-size: 14px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-main { max-width: 1040px; margin: 24px auto 48px; padding: 0 16px; }
-article { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 28px 32px; }
-@media (max-width: 640px) { article { padding: 18px 16px; } }
-h1 { font-size: 30px; line-height: 1.25; margin: 0 0 16px; }
-h2 { font-size: 23px; margin: 36px 0 12px; padding-top: 12px; border-top: 1px solid var(--line); }
-h3 { font-size: 18px; margin: 26px 0 8px; }
-h1, h2, h3, h4 { scroll-margin-top: 64px; }
-a { color: var(--accent); }
-p, ul, ol { margin: 10px 0; }
-li { margin: 3px 0; }
-code { font: 13.5px/1.5 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; background: var(--code-bg);
-  padding: 1px 5px; border-radius: 5px; overflow-wrap: anywhere; }
-pre { background: var(--pre-bg); color: var(--pre-text); padding: 14px 16px; border-radius: 10px; overflow-x: auto; }
-pre code { background: none; padding: 0; color: inherit; overflow-wrap: normal; }
-.tbl { overflow-x: auto; margin: 12px 0; }
-table { border-collapse: collapse; width: 100%; font-size: 14.5px; }
-th, td { border: 1px solid var(--line); padding: 7px 10px; text-align: left; vertical-align: top; }
-th { background: var(--code-bg); }
-blockquote { margin: 12px 0; padding: 10px 14px; background: var(--quote); border-left: 4px solid var(--accent);
-  border-radius: 0 8px 8px 0; }
-blockquote p { margin: 4px 0; }
-hr { border: 0; border-top: 1px solid var(--line); margin: 28px 0; }
-.foot { max-width: 1040px; margin: 0 auto 32px; padding: 0 16px; color: var(--muted); font-size: 14px; }
-.foot a { font-weight: 600; text-decoration: none; }
-</style>
-</head>
-<body>
-<div class="topbar"><div class="in"><a href="index.html">← Главная</a><span>REST API DamuBPM для Flutter и Mobile</span></div></div>
-<main><article>
+:root{--bg:#fff;--fg:#1f2328;--muted:#656d76;--line:#d0d7de;--code:#f6f8fa;--link:#0969da;--head:#f6f8fa}
+@media (prefers-color-scheme:dark){:root{--bg:#0d1117;--fg:#e6edf3;--muted:#8d96a0;--line:#30363d;--code:#161b22;--link:#4493f8;--head:#161b22}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif}
+.top{position:sticky;top:0;z-index:2;background:var(--head);border-bottom:1px solid var(--line);padding:10px 16px;display:flex;gap:16px;align-items:center}
+.top a{color:var(--link);text-decoration:none;font-weight:600}
+.top span{color:var(--muted);font-size:14px}
+main{max-width:960px;margin:0 auto;padding:24px 16px 64px}
+a{color:var(--link)}
+h1{font-size:2em;border-bottom:1px solid var(--line);padding-bottom:.3em}
+h1:not(:first-child){margin-top:2.2em}
+h2{font-size:1.4em;margin-top:1.8em}
+code{background:var(--code);padding:.15em .35em;border-radius:4px;font:.9em ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+pre{background:var(--code);border:1px solid var(--line);border-radius:6px;padding:12px 14px;overflow:auto}
+pre code{background:none;padding:0;font-size:.85em}
+table{border-collapse:collapse;width:100%;display:block;overflow:auto;margin:1em 0}
+th,td{border:1px solid var(--line);padding:6px 10px;text-align:left;vertical-align:top}
+th{background:var(--head)}
+blockquote{margin:1em 0;padding:.2em 1em;border-left:4px solid var(--line);color:var(--muted)}
+hr{border:0;border-top:1px solid var(--line);margin:2em 0}
+footer{max-width:960px;margin:0 auto;padding:16px;border-top:1px solid var(--line);color:var(--muted);font-size:14px;display:flex;justify-content:space-between}
+</style></head><body>
+<div class="top"><a href="index.html">← Главная</a><span>DamuBPM REST API · Flutter · Mobile</span></div>
+<main>
 <h1 id="rest-api-damubpm-для-flutter-и-mobile">REST API DamuBPM для Flutter и Mobile</h1>
 <p>Практическая документация по REST API DamuBPM для мобильных приложений, включая Flutter/Dart.</p>
 <p>Документ охватывает:</p>
@@ -59,7 +34,7 @@ hr { border: 0; border-top: 1px solid var(--line); margin: 28px 0; }
 <li>BPM REST API;</li>
 <li>UserTask;</li>
 <li>формы BPM-задач и экземпляров;</li>
-<li><code>/update_v_1_1</code>;</li>
+<li><code>/restapi/update_v_1_1</code>;</li>
 <li>JSON request/response;</li>
 <li>HTTP status codes;</li>
 <li>async;</li>
@@ -73,7 +48,8 @@ hr { border: 0; border-top: 1px solid var(--line); margin: 28px 0; }
 </blockquote>
 <hr />
 <h2 id="содержание">Содержание</h2>
-<ol>
+<ol start="0">
+<li><a href="#0-выбор-api-для-flutter">Выбор API для Flutter</a></li>
 <li><a href="#1-общая-схема-rest-api">Общая схема REST API</a></li>
 <li><a href="#2-lua-rest-services">Lua REST Services</a></li>
 <li><a href="#3-объект-request">Объект request</a></li>
@@ -88,11 +64,122 @@ hr { border: 0; border-top: 1px solid var(--line); margin: 28px 0; }
 <li><a href="#12-авторизация-и-headers">Авторизация и headers</a></li>
 <li><a href="#13-mobile-bpm-flow">Mobile BPM Flow</a></li>
 <li><a href="#14-checklist">Checklist</a></li>
-<li><a href="#15-проверенные-практики-мобильных-проектов">Проверенные практики мобильных проектов</a></li>
 </ol>
-<blockquote>
-<p>Полное руководство по модулю <code>flt</code> (проект, OAuth2 PKCE, MapLibre, разрешения, CI/CD iOS, известные ошибки): <a href="damubpm_flutter_mobile_guide.html"><code>damubpm_flutter_mobile_guide.md</code></a>.</p>
-</blockquote>
+<hr />
+<h1 id="0-выбор-api-для-flutter">0. Выбор API для Flutter</h1>
+<p>Перед тем как писать запрос из мобильного приложения, определить тип операции:</p>
+<table>
+<thead>
+<tr>
+<th>Операция</th>
+<th>API</th>
+<th>Когда</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Обычная DML: создать, изменить, удалить запись</td>
+<td><code>POST /restapi/update_v_1_1</code></td>
+<td>Запись одной сущности без бизнес-правил сверх тех, что уже есть в entityEvent-БП сущности</td>
+</tr>
+<tr>
+<td>Получение списков, справочников, карточки</td>
+<td><code>GET /restapi/query/get?code=&lt;код query&gt;</code></td>
+<td>Любое чтение: список, поиск, выбор из справочника, данные карточки</td>
+</tr>
+<tr>
+<td>Сложная логика изменения</td>
+<td>БП <code>entityActionByID</code> / <code>entityTool</code> через <code>POST /restapi/bpms/start</code></td>
+<td>Несколько сущностей, проверки, смена статуса, расчёты, интеграции, отправка уведомлений</td>
+</tr>
+</tbody>
+</table>
+<p>Свой Lua REST (<code>/restapi/services/run/&lt;code&gt;</code>) — только если этих трёх путей не хватает: агрегированный ответ из нескольких источников за один запрос, публичный сервис, OAuth.</p>
+<h2 id="01-dml-update_v_1_1">0.1 DML — update_v_1_1</h2>
+<p>Создание:</p>
+<pre><code class="language-json">{&quot;items&quot;:[{&quot;table_name&quot;:&quot;cln_orders&quot;,&quot;action&quot;:&quot;insert&quot;,
+  &quot;values&quot;:[{&quot;sys$uuid&quot;:&quot;&lt;uuid v4&gt;&quot;,&quot;id&quot;:0,&quot;title&quot;:&quot;Заказ&quot;,&quot;client_id&quot;:15}]}]}
+</code></pre>
+<p>Изменение — по <code>id</code>, передаются только меняемые поля:</p>
+<pre><code class="language-json">{&quot;items&quot;:[{&quot;table_name&quot;:&quot;cln_orders&quot;,&quot;action&quot;:&quot;update&quot;,
+  &quot;values&quot;:[{&quot;id&quot;:125,&quot;status_id&quot;:3,&quot;comment&quot;:&quot;Перезвонить&quot;}]}]}
+</code></pre>
+<p>Удаление:</p>
+<pre><code class="language-json">{&quot;items&quot;:[{&quot;table_name&quot;:&quot;cln_orders&quot;,&quot;action&quot;:&quot;delete&quot;,&quot;values&quot;:[{&quot;id&quot;:125}]}]}
+</code></pre>
+<p>Ответ: <code>error</code> (0 — успех), <code>error_text</code>, <code>items[]</code> с <code>table_name</code> и <code>last_insert_id</code>. При <code>error != 0</code> показывать <code>error_text</code> пользователю.</p>
+<ul>
+<li><code>table_name</code> — код сущности, поля — коды атрибутов.</li>
+<li>Права проверяет платформа по <code>entity_grants</code> (<code>is_insert</code> / <code>is_update</code> / <code>is_delete</code>); роли мобильного пользователя нужны соответствующие гранты.</li>
+<li>entityEvent-БП сущности (upsert/delete) срабатывают так же, как при сохранении формы на вебе.</li>
+<li>Для новой записи генерировать <code>sys$uuid</code> на клиенте (пакет <code>uuid</code>), <code>id: 0</code>.</li>
+</ul>
+<pre><code class="language-dart">Future&lt;int&gt; insertRow(String entity, Map&lt;String, dynamic&gt; values) async {
+  final r = await api.post('/restapi/update_v_1_1', {
+    'items': [
+      {'table_name': entity, 'action': 'insert',
+       'values': [{'sys\$uuid': const Uuid().v4(), 'id': 0, ...values}]}
+    ]
+  });
+  if ((r['error'] ?? 0) != 0) throw ApiException(r['error_text'] ?? 'Ошибка');
+  final it = (r['items'] as List? ?? [])
+      .firstWhere((e) =&gt; e['table_name'] == entity, orElse: () =&gt; null);
+  return int.tryParse('${it?['last_insert_id'] ?? r['last_insert_id'] ?? 0}') ?? 0;
+}
+
+Future&lt;void&gt; updateRow(String entity, int id, Map&lt;String, dynamic&gt; values) async {
+  final r = await api.post('/restapi/update_v_1_1', {
+    'items': [{'table_name': entity, 'action': 'update', 'values': [{'id': id, ...values}]}]
+  });
+  if ((r['error'] ?? 0) != 0) throw ApiException(r['error_text'] ?? 'Ошибка');
+}
+</code></pre>
+<h2 id="02-списки-queryget">0.2 Списки — query/get</h2>
+<pre><code class="language-http">GET /restapi/query/get?code=cln_orders_mobile&amp;page=1&amp;perpage=50
+</code></pre>
+<p>Ответ: <code>items[]</code>, <code>allCount</code>, <code>pageCount</code>.</p>
+<ul>
+<li>Для приложения создавать отдельный query (<code>&lt;entity&gt;_mobile</code>, <code>&lt;mod&gt;_&lt;что&gt;_m</code>) с нужными колонками, а не тянуть веб-query с лишними полями.</li>
+<li><code>perpage=0</code> — без пагинации (только для коротких справочников).</li>
+<li>Фильтры, сортировка и <code>param1</code>/<code>param2</code> — те же поля, что у <code>QueryOptions</code> (см. <code>damubpm_query_guide.md</code>); алиасы фильтров должны быть в метаданных query.</li>
+<li>Права строк применяются автоматически (<code>entity_grants.is_list_view</code> + <code>entity_view_limits</code>); без гранта список пустой, это не ошибка. <code>is_public = 1</code> для мобильных query не ставить.</li>
+<li><code>:user_id</code> и <code>:lang</code> в SQL query подставляет сервер — не передавать их с клиента.</li>
+</ul>
+<pre><code class="language-dart">Future&lt;List&lt;Map&lt;String, dynamic&gt;&gt;&gt; query(String code,
+    {int page = 1, int perpage = 50, Map&lt;String, String&gt; params = const {}}) async {
+  final r = await api.get('/restapi/query/get', {
+    'code': code, 'page': '$page', 'perpage': '$perpage', ...params,
+  });
+  return rows(r['items']);
+}
+</code></pre>
+<h2 id="03-сложная-логика-бп-entityactionbyid-entitytool">0.3 Сложная логика — БП entityActionByID / entityTool</h2>
+<ul>
+<li><code>entityActionByID</code> — действие над конкретной записью (кнопка в карточке): «Провести», «Отменить», «Оплатить», «Закрыть смену». Вход — <code>id</code> записи.</li>
+<li><code>entityTool</code> — инструмент сущности без конкретной записи: «Новый заказ по шаблону», «Импорт», «Пересчитать остатки».</li>
+<li>Процесс должен быть полностью автоматическим (без UserTask) или клиент обязан пройти его задачи через <code>runUserTaskByTask</code> (раздел 13).</li>
+<li>Выходные переменные: <code>result</code>, <code>last_error</code>; клиент проверяет <code>ok</code>, <code>errorText</code> и <code>output.last_error</code>.</li>
+<li>Роли: процессу нужна строка в <code>bp_process_roles</code> (<code>can_run = 1</code>) для ролей мобильного пользователя.</li>
+<li>Внутри скрипта проверять права на запись: <code>CheckGrantOfEntity(sys.user_id, entity, 'is_update', id)</code>.</li>
+</ul>
+<pre><code class="language-http">POST /restapi/bpms/start
+{&quot;processCode&quot;:&quot;cln_orders_close&quot;,&quot;input&quot;:{&quot;id&quot;:125}}
+</code></pre>
+<pre><code class="language-dart">Future&lt;Map&lt;String, dynamic&gt;&gt; runAction(String process, Map&lt;String, dynamic&gt; input) async {
+  final r = await api.post('/restapi/bpms/start', {'processCode': process, 'input': input});
+  final out = (r['output'] as Map?)?.cast&lt;String, dynamic&gt;() ?? {};
+  final err = '${r['errorText'] ?? ''}'.isNotEmpty ? '${r['errorText']}' : '${out['last_error'] ?? ''}';
+  if (r['ok'] != true || err.isNotEmpty) throw ApiException(err.isEmpty ? 'Ошибка процесса' : err);
+  return out;
+}
+</code></pre>
+<h2 id="04-как-выбрать">0.4 Как выбрать</h2>
+<ol>
+<li>Меняется одна запись, достаточно сохранить поля → <code>update_v_1_1</code>.</li>
+<li>Нужно прочитать → <code>query/get</code>.</li>
+<li>Изменение затрагивает несколько записей, должно пройти проверки, поменять статус или вызвать внешний сервис → БП. Ту же кнопку на вебе вешать на этот же БП, чтобы правила были в одном месте.</li>
+<li>Ничего из перечисленного не подходит → свой Lua REST.</li>
+</ol>
 <hr />
 <h1 id="1-общая-схема-rest-api">1. Общая схема REST API</h1>
 <p>Основное семейство пользовательских REST API DamuBPM:</p>
@@ -227,7 +314,7 @@ output = {
 <p>В Lua REST-сервисе доступен глобальный объект:</p>
 <pre><code class="language-lua">request
 </code></pre>
-<div class="tbl"><table>
+<table>
 <thead>
 <tr>
 <th>Поле</th>
@@ -292,7 +379,7 @@ output = {
 <td>NTLM host</td>
 </tr>
 </tbody>
-</table></div>
+</table>
 <p>Текущий пользователь:</p>
 <pre><code class="language-lua">local userId = tonumber(request.user_id)
 </code></pre>
@@ -362,7 +449,7 @@ Content-Type: application/json
 }
 </code></pre>
 <h3 id="поля">Поля</h3>
-<div class="tbl"><table>
+<table>
 <thead>
 <tr>
 <th>Поле</th>
@@ -395,7 +482,7 @@ Content-Type: application/json
 <td>завершён ли процесс</td>
 </tr>
 </tbody>
-</table></div>
+</table>
 <p>Если:</p>
 <pre><code class="language-json">{
   &quot;instanceIsFinished&quot;: true
@@ -503,10 +590,10 @@ Content-Type: application/json
 <h1 id="7-update_v_1_1">7. update_v_1_1</h1>
 <p>Это связанный data API DamuBPM.</p>
 <p>Endpoint:</p>
-<pre><code class="language-text">/update_v_1_1
+<pre><code class="language-text">/restapi/update_v_1_1
 </code></pre>
 <h2 id="insert">Insert</h2>
-<pre><code class="language-http">POST /update_v_1_1
+<pre><code class="language-http">POST /restapi/update_v_1_1
 Content-Type: application/json
 </code></pre>
 <p>Request:</p>
@@ -611,7 +698,7 @@ class DamuApiClient {
         ...defaultHeaders,
         ...?headers,
       },
-    ).timeout(const Duration(seconds: 25));
+    );
 
     return _decode(response);
   }
@@ -630,7 +717,7 @@ class DamuApiClient {
         ...?headers,
       },
       body: jsonEncode(body),
-    ).timeout(const Duration(seconds: 25));
+    );
 
     return _decode(response);
   }
@@ -649,7 +736,7 @@ class DamuApiClient {
         ...?headers,
       },
       body: jsonEncode(body),
-    ).timeout(const Duration(seconds: 25));
+    );
 
     return _decode(response);
   }
@@ -657,11 +744,10 @@ class DamuApiClient {
   Map&lt;String, dynamic&gt; _decode(
     http.Response response,
   ) {
-    // Не response.body: без charset в Content-Type кириллица ломается.
     final dynamic decoded =
-        response.bodyBytes.isEmpty
+        response.body.isEmpty
             ? &lt;String, dynamic&gt;{}
-            : jsonDecode(utf8.decode(response.bodyBytes));
+            : jsonDecode(response.body);
 
     if (response.statusCode &lt; 200 ||
         response.statusCode &gt;= 300) {
@@ -784,7 +870,7 @@ final finished =
 <hr />
 <h2 id="insert-через-update_v_1_1">Insert через update_v_1_1</h2>
 <pre><code class="language-dart">final result = await api.postJson(
-  '/update_v_1_1',
+  '/restapi/update_v_1_1',
   {
     'items': [
       {
@@ -808,7 +894,7 @@ final finished =
 <pre><code class="language-lua">http_response_code = 200
 </code></pre>
 <p>Поддерживаемые примеры:</p>
-<div class="tbl"><table>
+<table>
 <thead>
 <tr>
 <th style="text-align: right;">HTTP</th>
@@ -845,7 +931,7 @@ final finished =
 <td>Conflict</td>
 </tr>
 </tbody>
-</table></div>
+</table>
 <p>Рекомендуемый helper:</p>
 <pre><code class="language-lua">local function fail(status, code, message)
     http_response_code = status
@@ -948,16 +1034,7 @@ end
 </code></pre>
 <blockquote>
 <p>Не рекомендуется хранить привилегированный API Key прямо в исходниках мобильного приложения.</p>
-<p>Для приложений сотрудников API Key не используется: вход — OAuth2 Authorization Code + PKCE через REST <code>&lt;mod&gt;_mobile_oauth_authorize</code> / <code>_token</code>, далее каждый запрос с <code>Authorization: Bearer &lt;access_token&gt;</code>. Сервер видит пользователя в <code>request.user_id</code> и проверяет его роли. См. раздел 15 и <a href="damubpm_flutter_mobile_guide.html"><code>damubpm_flutter_mobile_guide.md</code></a>.</p>
 </blockquote>
-<h2 id="bearer-токен-мобильного-пользователя">Bearer-токен мобильного пользователя</h2>
-<pre><code class="language-dart">final result = await api.postJson(
-  '/restapi/services/run/map_api',
-  {'action': 'config', 'data': {}},
-  headers: {'Authorization': 'Bearer $accessToken'},
-);
-</code></pre>
-<p>Access-токен живёт 15 минут. На 401 клиент один раз обновляет его через <code>grant_type=refresh_token</code> и повторяет запрос.</p>
 <hr />
 <h2 id="response-headers">Response headers</h2>
 <p>Lua:</p>
@@ -1016,147 +1093,26 @@ POST runUserTaskByTask
 <h1 id="14-checklist">14. Checklist</h1>
 <p>Перед подключением Flutter к DamuBPM REST API:</p>
 <ul>
-<li>☐ используется HTTPS;</li>
-<li>☐ определён <code>baseUrl</code>;</li>
-<li>☐ используется <code>/restapi/services/run/&lt;code&gt;</code>;</li>
-<li>☐ JSON отправляется с <code>Content-Type: application/json</code>;</li>
-<li>☐ проверяется HTTP status;</li>
-<li>☐ ошибки сервера обрабатываются отдельно;</li>
-<li>☐ обязательные <code>request.input</code> поля валидируются;</li>
-<li>☐ GET параметры валидируются;</li>
-<li>☐ <code>request.user_id</code> преобразуется через <code>tonumber</code>;</li>
-<li>☐ секреты не хранятся открыто в Flutter;</li>
-<li>☐ для BPM сохраняется <code>task</code>;</li>
-<li>☐ проверяется <code>instanceIsFinished</code>;</li>
-<li>☐ UserTask завершается через <code>runUserTaskByTask</code>;</li>
-<li>☐ async используется только при необходимости;</li>
-<li>☐ <code>no_parallel</code> включается для тяжёлых процедур;</li>
-<li>☐ response JSON имеет единый формат;</li>
-<li>☐ обработаны 400/401/404/409;</li>
-<li>☐ Flutter client имеет timeout/retry стратегию проекта;</li>
-<li>☐ проверены ошибочные сценарии;</li>
-<li>☐ ответ декодируется через <code>utf8.decode(response.bodyBytes)</code>;</li>
-<li>☐ списки в Lua-ответах собраны через <code>array({})</code>;</li>
-<li>☐ числа и флаги разбираются терпимо (могут прийти строками);</li>
-<li>☐ изменения данных идут через <code>&lt;mod&gt;_bp</code> → бизнес-процесс с белым списком;</li>
-<li>☐ вход — OAuth2 PKCE, токены в <code>flutter_secure_storage</code>;</li>
-<li>☐ проверены операции записи, а не только чтение.</li>
-</ul>
-<hr />
-<h1 id="15-проверенные-практики-мобильных-проектов">15. Проверенные практики мобильных проектов</h1>
-<p>Практики из рабочих приложений <code>map-bapps</code>, <code>grc-mobile</code>, <code>dlv-mobile</code>, <code>contact-center-mobile</code>.</p>
-<h2 id="настройки-rest-сервисов">Настройки REST-сервисов</h2>
-<div class="tbl"><table>
-<thead>
-<tr>
-<th>Сервис</th>
-<th>is_public</th>
-<th>only_auth</th>
-<th>cut_status_info</th>
-<th>Метод</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>&lt;mod&gt;_mobile_oauth_authorize</code></td>
-<td>1</td>
-<td>0</td>
-<td>1</td>
-<td>GET, HTML</td>
-</tr>
-<tr>
-<td><code>&lt;mod&gt;_mobile_oauth_token</code></td>
-<td>1</td>
-<td>0</td>
-<td>1</td>
-<td>POST form</td>
-</tr>
-<tr>
-<td><code>&lt;mod&gt;_mobile_oauth_logout</code></td>
-<td>0</td>
-<td>1</td>
-<td>1</td>
-<td>POST</td>
-</tr>
-<tr>
-<td><code>&lt;mod&gt;_api</code> / <code>&lt;mod&gt;_m_api</code></td>
-<td>0</td>
-<td>1</td>
-<td>1</td>
-<td>POST JSON</td>
-</tr>
-<tr>
-<td><code>&lt;mod&gt;_bp</code></td>
-<td>0</td>
-<td>1</td>
-<td>1</td>
-<td>POST JSON</td>
-</tr>
-</tbody>
-</table></div>
-<p><code>cut_status_info = 1</code> убирает служебную обёртку платформы, и клиент получает ровно <code>output</code>.</p>
-<h2 id="единый-конверт-ответа">Единый конверт ответа</h2>
-<pre><code class="language-json">{&quot;success&quot;: true, &quot;data&quot;: {}}
-{&quot;success&quot;: false, &quot;error&quot;: {&quot;code&quot;: &quot;BP_ERROR&quot;, &quot;message&quot;: &quot;Текст для пользователя&quot;, &quot;field&quot;: &quot;phone&quot;}}
-</code></pre>
-<p>Исключение — OAuth <code>token</code>: стандартный ответ <code>{"access_token", "refresh_token", "token_type", "expires_in", "scope"}</code> и ошибки <code>{"error", "error_description"}</code>.</p>
-<p>Если сервис упал на уровне платформы, текст ошибки приходит в <code>resultText</code> — клиент должен показывать его, когда <code>error</code> пуст.</p>
-<h2 id="коды-http-которые-реально-используются">Коды HTTP, которые реально используются</h2>
-<div class="tbl"><table>
-<thead>
-<tr>
-<th style="text-align: right;">HTTP</th>
-<th>Когда</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td style="text-align: right;">400</td>
-<td>неверные параметры, неизвестный процесс (<code>UNKNOWN_PROCESS</code>), <code>invalid_grant</code></td>
-</tr>
-<tr>
-<td style="text-align: right;">401</td>
-<td>нет или истёк Bearer — клиент обновляет токен один раз</td>
-</tr>
-<tr>
-<td style="text-align: right;">403</td>
-<td>нет роли модуля — показать «попросите администратора выдать роль …»</td>
-</tr>
-<tr>
-<td style="text-align: right;">405</td>
-<td>неверный метод, заголовок <code>Allow</code></td>
-</tr>
-<tr>
-<td style="text-align: right;">422</td>
-<td>бизнес-ошибка процесса (<code>BP_ERROR</code>) — текст показать пользователю</td>
-</tr>
-<tr>
-<td style="text-align: right;">429</td>
-<td>лимит, заголовок <code>Retry-After</code></td>
-</tr>
-<tr>
-<td style="text-align: right;">500</td>
-<td>процесс не запустился, ошибка commit</td>
-</tr>
-<tr>
-<td style="text-align: right;">503</td>
-<td>временная недоступность хранилища OAuth</td>
-</tr>
-</tbody>
-</table></div>
-<h2 id="чтение-и-запись">Чтение и запись</h2>
-<ul>
-<li>Чтение — один диспетчер <code>POST {action, data}</code> в <code>&lt;mod&gt;_api</code>, логика в <code>pkg/&lt;mod&gt;_mobile</code>.</li>
-<li>Запись — <code>POST {process, data}</code> в <code>&lt;mod&gt;_bp</code> → <code>BPMSStartProcess(process, uid, {input = JsonToString(data)})</code>, белый список процессов, <code>last_error</code> → 422, <code>Commit()</code> только в REST и с проверкой кода. В скрипте БП <code>Commit()</code>/<code>Rollback()</code> не вызывать.</li>
-</ul>
-<h2 id="типовые-ошибки">Типовые ошибки</h2>
-<ul>
-<li>Кириллица «кракозябрами» → <code>response.body</code> вместо <code>utf8.decode(response.bodyBytes)</code>.</li>
-<li><code>type '_Map&lt;String, dynamic&gt;' is not a subtype of 'List'</code> → Lua-массив сериализован без <code>array()</code>, пустой список пришёл как <code>{}</code>.</li>
-<li><code>type 'String' is not a subtype of 'int'</code> → числа из SQL пришли строками; использовать <code>intv()</code> / <code>numv()</code>.</li>
-<li>Координаты округлены до 0,01° → атрибут типа <code>double</code> (<code>numeric(20,2)</code>); хранить <code>varchar(32)</code>.</li>
-<li>После входа на iOS возврат на экран входа → не зарегистрирована схема или не выключен <code>FlutterDeepLinkingEnabled</code>.</li>
-<li>Повторное списание/отправка после таймаута → нет <code>client_request_uuid</code> для идемпотентности.</li>
+<li>[ ] используется HTTPS;</li>
+<li>[ ] определён <code>baseUrl</code>;</li>
+<li>[ ] DML — <code>update_v_1_1</code>, списки — <code>query/get</code>, сложная логика — БП <code>entityActionByID</code>/<code>entityTool</code>;</li>
+<li>[ ] свой <code>/restapi/services/run/&lt;code&gt;</code> — только когда стандартных путей не хватает;</li>
+<li>[ ] JSON отправляется с <code>Content-Type: application/json</code>;</li>
+<li>[ ] проверяется HTTP status;</li>
+<li>[ ] ошибки сервера обрабатываются отдельно;</li>
+<li>[ ] обязательные <code>request.input</code> поля валидируются;</li>
+<li>[ ] GET параметры валидируются;</li>
+<li>[ ] <code>request.user_id</code> преобразуется через <code>tonumber</code>;</li>
+<li>[ ] секреты не хранятся открыто в Flutter;</li>
+<li>[ ] для BPM сохраняется <code>task</code>;</li>
+<li>[ ] проверяется <code>instanceIsFinished</code>;</li>
+<li>[ ] UserTask завершается через <code>runUserTaskByTask</code>;</li>
+<li>[ ] async используется только при необходимости;</li>
+<li>[ ] <code>no_parallel</code> включается для тяжёлых процедур;</li>
+<li>[ ] response JSON имеет единый формат;</li>
+<li>[ ] обработаны 400/401/404/409;</li>
+<li>[ ] Flutter client имеет timeout/retry стратегию проекта;</li>
+<li>[ ] проверены ошибочные сценарии.</li>
 </ul>
 <hr />
 <h2 id="быстрая-шпаргалка">Быстрая шпаргалка</h2>
@@ -1186,9 +1142,15 @@ Instance Angular form:
 GET /restapi/bpms/ShowInstanceAngularForm/:instance
 
 CRUD:
-POST /update_v_1_1
+POST /restapi/update_v_1_1
+
+Списки:
+GET /restapi/query/get?code=&lt;код query&gt;&amp;page=1&amp;perpage=50
+
+Сложная логика:
+POST /restapi/bpms/start  (entityActionByID / entityTool)
 </code></pre>
-</article></main>
-<div class="foot"><a href="index.html">← Главная</a> · DamuBPM · Flutter · Mobile</div>
-</body>
-</html>
+<hr />
+</main>
+<footer><a href="index.html">← Главная</a><span>DamuBPM REST API · Flutter · Mobile</span></footer>
+</body></html>
