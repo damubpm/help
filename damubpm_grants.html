@@ -1,0 +1,212 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Полномочия в DamuBPM</title>
+<style>
+:root{--bg:#f6f7f9;--card:#fff;--text:#1b1b1d;--muted:#5d6168;--line:#e3e5e8;--accent:#1f6feb;--accent-soft:#e8f0fe;--code:#f1f3f5;--ok:#1a7f37;--warn:#b35900;--bad:#c62828}
+@media (prefers-color-scheme:dark){:root{--bg:#121315;--card:#1b1c1f;--text:#e8e9eb;--muted:#a0a4ab;--line:#2c2e33;--accent:#6ea8fe;--accent-soft:#1d2a40;--code:#24262b;--ok:#4cc26b;--warn:#f0a050;--bad:#ef6b6b}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:15px/1.6 -apple-system,"Segoe UI",Roboto,Arial,sans-serif}
+header{position:sticky;top:0;z-index:5;background:var(--card);border-bottom:1px solid var(--line)}
+.bar{max-width:1080px;margin:0 auto;padding:12px 16px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.home{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:8px;background:var(--accent-soft);color:var(--accent);text-decoration:none;font-weight:600}
+.home:hover{filter:brightness(.95)}
+.crumb{color:var(--muted)}
+.layout{max-width:1080px;margin:0 auto;padding:24px 16px 64px;display:grid;grid-template-columns:220px 1fr;gap:32px}
+nav.toc{position:sticky;top:72px;align-self:start;font-size:14px}
+nav.toc a{display:block;padding:4px 0;color:var(--muted);text-decoration:none}
+nav.toc a:hover{color:var(--accent)}
+main{min-width:0}
+h1{font-size:28px;line-height:1.25;margin:0 0 8px}
+.lead{color:var(--muted);margin:0 0 24px}
+h2{font-size:20px;margin:40px 0 12px;padding-top:8px;border-top:1px solid var(--line)}
+h3{font-size:16px;margin:24px 0 8px}
+code{font:13px/1.5 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;background:var(--code);padding:1px 5px;border-radius:4px}
+pre{background:var(--code);padding:12px 14px;border-radius:8px;overflow-x:auto;margin:8px 0 16px}
+pre code{background:none;padding:0}
+table{width:100%;border-collapse:collapse;margin:8px 0 16px;font-size:14px;display:block;overflow-x:auto}
+th,td{text-align:left;padding:7px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+th{color:var(--muted);font-weight:600;white-space:nowrap}
+.steps{counter-reset:s;list-style:none;padding:0;margin:8px 0 16px}
+.steps>li{counter-increment:s;position:relative;padding:10px 12px 10px 48px;margin-bottom:8px;background:var(--card);border:1px solid var(--line);border-radius:8px}
+.steps>li::before{content:counter(s);position:absolute;left:12px;top:10px;width:24px;height:24px;border-radius:50%;background:var(--accent);color:#fff;font-weight:700;font-size:13px;display:flex;align-items:center;justify-content:center}
+.note{border-left:3px solid var(--warn);background:var(--card);padding:10px 14px;border-radius:0 8px 8px 0;margin:12px 0}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin:12px 0 8px}
+.stat{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:10px 12px}
+.stat b{display:block;font-size:22px}
+.stat span{color:var(--muted);font-size:13px}
+.diagram{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:12px;overflow-x:auto}
+.diagram svg{display:block;min-width:640px;width:100%;height:auto}
+.diagram text{fill:var(--text);font:13px sans-serif}
+.diagram .sub{fill:var(--muted);font-size:11px}
+.diagram rect{fill:var(--bg);stroke:var(--line)}
+.diagram .hl{fill:var(--accent-soft);stroke:var(--accent)}
+.diagram line,.diagram path{stroke:var(--muted);fill:none}
+ul.err li{margin-bottom:6px}
+footer{color:var(--muted);font-size:13px;margin-top:48px}
+@media (max-width:820px){.layout{grid-template-columns:1fr}nav.toc{display:none}h1{font-size:23px}}
+</style>
+</head>
+<body>
+<header>
+  <div class="bar">
+    <a class="home" href="index.html">← Главная</a>
+    <span class="crumb">DamuBPM / Полномочия на сущности</span>
+  </div>
+</header>
+
+<div class="layout">
+<nav class="toc">
+  <a href="#model">1. Модель данных</a>
+  <a href="#check">2. Проверка записи</a>
+  <a href="#full">CheckFullGrantOfEntity</a>
+  <a href="#list">3. Ограничение списков</a>
+  <a href="#lua">4. Использование в Lua</a>
+  <a href="#recipes">5. Как выдать доступ</a>
+  <a href="#errors">6. Частые ошибки</a>
+</nav>
+
+<main>
+<h1>Как устроены проверки полномочий в DamuBPM</h1>
+<p class="lead">Кто может видеть список, открыть карточку, создать, изменить или удалить запись сущности. По Go-коду <code>CheckGrantOfEntity</code>, <code>CheckFullGrantOfEntity</code>, <code>QueryGetViewQueryLimit</code> и данным стенда contact-center на 19.10.2026.</p>
+
+<div class="stats">
+  <div class="stat"><b>1 801</b><span>грант в entity_grants</span></div>
+  <div class="stat"><b>3 457</b><span>ограничений в entity_view_limits</span></div>
+  <div class="stat"><b>2 159</b><span>автоматических «1 = 1»</span></div>
+  <div class="stat"><b>1 246</b><span>ограничений с :user_id</span></div>
+</div>
+
+<h2 id="model">1. Модель данных</h2>
+<div class="diagram">
+<svg viewBox="0 0 760 230" role="img" aria-label="Связи таблиц полномочий">
+  <rect x="10" y="20" width="110" height="44" rx="6"/><text x="65" y="47" text-anchor="middle">users</text>
+  <rect x="170" y="20" width="120" height="44" rx="6"/><text x="230" y="47" text-anchor="middle">user_roles</text>
+  <rect x="340" y="20" width="100" height="44" rx="6"/><text x="390" y="47" text-anchor="middle">roles</text>
+  <rect x="490" y="20" width="140" height="44" rx="6" class="hl"/><text x="560" y="40" text-anchor="middle">entity_grants</text><text x="560" y="56" text-anchor="middle" class="sub">флаги действий</text>
+  <rect x="490" y="150" width="160" height="56" rx="6" class="hl"/><text x="570" y="172" text-anchor="middle">entity_view_limits</text><text x="570" y="190" text-anchor="middle" class="sub">subquery на main</text>
+  <rect x="660" y="20" width="90" height="44" rx="6"/><text x="705" y="47" text-anchor="middle">entities</text>
+  <rect x="300" y="150" width="160" height="56" rx="6"/><text x="380" y="172" text-anchor="middle">entity_grants_</text><text x="380" y="190" text-anchor="middle">edit_attr</text>
+  <rect x="10" y="150" width="130" height="56" rx="6"/><text x="75" y="172" text-anchor="middle">user_params</text><text x="75" y="190" text-anchor="middle" class="sub">readonly_mode</text>
+  <rect x="160" y="150" width="120" height="56" rx="6"/><text x="220" y="172" text-anchor="middle">role_params</text><text x="220" y="190" text-anchor="middle" class="sub">is_admin</text>
+  <line x1="120" y1="42" x2="170" y2="42"/><line x1="290" y1="42" x2="340" y2="42"/><line x1="440" y1="42" x2="490" y2="42"/><line x1="630" y1="42" x2="660" y2="42"/>
+  <line x1="560" y1="64" x2="570" y2="150"/><line x1="530" y1="64" x2="420" y2="150"/>
+  <line x1="65" y1="64" x2="75" y2="150"/><line x1="390" y1="64" x2="220" y2="150"/>
+</svg>
+</div>
+
+<h3>entity_grants — роль × сущность × ограничение × действия</h3>
+<table>
+<tr><th>Колонка</th><th>Смысл</th></tr>
+<tr><td><code>role_id</code></td><td>кому выдано</td></tr>
+<tr><td><code>entity_id</code></td><td>на какую сущность</td></tr>
+<tr><td><code>view_limit_id</code></td><td>на какие строки; обязательно — без него грант не участвует в JOIN</td></tr>
+<tr><td><code>is_list_view</code></td><td>видеть в списках</td></tr>
+<tr><td><code>is_detail_view</code></td><td>открывать карточку</td></tr>
+<tr><td><code>is_insert</code> / <code>is_update</code> / <code>is_delete</code></td><td>создавать / изменять / удалять</td></tr>
+<tr><td><code>edit_only_attr</code></td><td>менять только атрибуты из <code>entity_grants_edit_attr</code></td></tr>
+</table>
+<p>Ключ на практике — <code>(view_limit_id, entity_id, role_id)</code>. У одной роли на сущность может быть несколько грантов с разными ограничениями.</p>
+
+<h3>entity_view_limits — какие строки</h3>
+<table>
+<tr><th>Колонка</th><th>Смысл</th></tr>
+<tr><td><code>subquery</code></td><td>SQL-условие в <code>WHERE</code>, таблица сущности под алиасом <code>main</code></td></tr>
+<tr><td><code>is_auto</code></td><td>1 — создано платформой вместе с сущностью: <code>code</code> = код сущности, <code>subquery = '1 = 1'</code></td></tr>
+<tr><td><code>for_filter</code></td><td>используется как фильтр списка</td></tr>
+<tr><td><code>warning_text</code></td><td>ошибка SQL, пишет БП <code>entity_view_limits_upsert</code></td></tr>
+</table>
+<p>Плейсхолдеры: <code>:user_id</code> — везде; <code>:lang</code> — только в списках (<code>QueryGetViewQueryLimit</code>), в проверке записи не заменяется; <code>:detail_id</code>, <code>:detail_query_id</code> — только в валидаторе (подставляет 0).</p>
+<p>Параметр роли <code>is_admin = 1</code> (на стенде — роль <code>admin</code>) обходит ограничения. Параметр пользователя <code>readonly_mode = 1</code> запрещает запись.</p>
+
+<h2 id="check">2. Проверка одной записи — CheckGrantOfEntity</h2>
+<ol class="steps">
+  <li><b>Белый список прав.</b> <code>grant</code> ∈ is_list_view, is_detail_view, is_update, is_delete, is_insert (+ edit_only_attr при FeatureGrantEditAttr). Имя права вставляется в SQL как колонка — список закрыт от инъекций.</li>
+  <li><b>Администратор.</b> При <code>skipAdmin</code> и <code>is_admin = 1</code> — доступ сразу.</li>
+  <li><b>Только чтение.</b> Для insert/update/delete при <code>readonly_mode = 1</code> — <code>E-BPM-00030. Readonly Mode</code>.</li>
+  <li><b>Сбор ограничений</b> всех ролей пользователя, где <code>eg.&lt;grant&gt; = 1</code>. Пусто — <code>Access Denied</code>.</li>
+  <li><b>Объединение через OR</b>: <code>(sq1 or sq2 …)</code>, <code>:user_id</code> → число. Права ролей складываются.</li>
+  <li><b>Проверка строки</b>: <code>select 1 from &lt;entity&gt; main where main.id = ? and (…)</code>. Нет строки или ошибка SQL — отказ.</li>
+</ol>
+<pre><code>select evl.subquery
+from entity_grants eg, entities e, entity_view_limits evl, user_roles ur
+where eg.&lt;grant&gt; = 1 and e.code = ? and e.id = eg.entity_id
+  and eg.view_limit_id = evl.id and ur.role_id = eg.role_id and ur.user_id = ?</code></pre>
+<div class="note">Проверка идёт по числовому <code>main.id</code>. Для <code>is_insert</code> проверяется уже существующая строка — до вставки этой функции недостаточно. Ошибка SQL в любом ограничении ломает проверку для всех ролей пользователя.</div>
+
+<h3 id="full">CheckFullGrantOfEntity</h3>
+<p>То же, но учитываются только гранты с <code>coalesce(edit_only_attr,0) = 0</code>. Нужна для полной правки формы и удаления. <code>CheckGrantOfEntity(…, "is_update", …)</code> пропустит и пользователя с грантом «только отдельные атрибуты».</p>
+
+<h2 id="list">3. Ограничение списков — QueryGetViewQueryLimit</h2>
+<table>
+<tr><th>Условие</th><th>Результат</th></tr>
+<tr><td><code>is_admin = 1</code></td><td><code>""</code> — без ограничений</td></tr>
+<tr><td><code>queries.is_public = 1</code></td><td><code>""</code> — ограничения сущности не применяются</td></tr>
+<tr><td>есть гранты с <code>is_list_view = 1</code></td><td><code>and ( (sq1) or (sq2) … )</code>, заменены <code>:user_id</code> и <code>:lang</code></td></tr>
+<tr><td>грантов нет</td><td><code> and 1 = 0</code> — пустой список без ошибки</td></tr>
+</table>
+
+<h2 id="lua">4. Использование в Lua</h2>
+<pre><code>local errText, errNum = CheckGrantOfEntity(request.user_id, "map_orgs", "is_detail_view", id)
+if errNum ~= 0 then
+  output.error_code = 403
+  output.error_text = "Нет доступа"
+  return
+end
+
+local errText, errNum = CheckFullGrantOfEntity(sys.user_id, "map_orgs", "is_update", id)</code></pre>
+<ul>
+  <li>Порядок результатов — текст, код; <code>errNum ~= 0</code> — отказ. Примеры на стенде: REST <code>auditinfo</code>, <code>its_req_reassign</code>.</li>
+  <li>Роли REST, <code>only_auth</code> и <code>bp_process_roles</code> решают, кто может вызвать сервис или процесс, но не проверяют строки. REST, работающий с записью по id из запроса, проверяет грант сам.</li>
+  <li><code>SqlQueryRows</code>/<code>SqlExec2</code> ограничения не применяют.</li>
+  <li>Пропускает ли Lua-обёртка администратора — на стенде не проверено.</li>
+</ul>
+
+<h2 id="recipes">5. Как выдать доступ</h2>
+<h3>Список и карточка по автоограничению «все строки»</h3>
+<pre><code>insert into entity_grants (role_id, entity_id, view_limit_id, is_list_view, is_detail_view, is_insert, is_update, is_delete, title)
+select r.id, e.id, v.id, 1, 1, 0, 0, 0, e.code
+from roles r, entities e
+join entity_view_limits v on v.entity_id = e.id and v.is_auto = 1
+where r.code = 'map_manager' and e.code = 'map_orgs'
+  and not exists (select 1 from entity_grants g
+                  where g.role_id = r.id and g.entity_id = e.id and g.view_limit_id = v.id);</code></pre>
+<h3>Своё ограничение «мои записи»</h3>
+<pre><code>insert into entity_view_limits (entity_id, code, title, subquery, is_auto)
+select id, 'cln_orders_my', 'Мои заказы', 'main.created_by = :user_id', 0
+from entities where code = 'cln_orders';</code></pre>
+<h3>Типовые subquery</h3>
+<table>
+<tr><th>Назначение</th><th>subquery</th></tr>
+<tr><td>все строки</td><td><code>1 = 1</code></td></tr>
+<tr><td>созданные мной</td><td><code>main.created_by = :user_id</code></td></tr>
+<tr><td>моего подразделения</td><td><code>main.dep_id = (select dep_id from users where id=:user_id)</code></td></tr>
+<tr><td>моей организации</td><td><code>main.company_id = (select company_id from users where id=:user_id)</code></td></tr>
+<tr><td>я исполнитель задачи (с замещением)</td><td><code>exists (select 1 from tasks where entity_pk = main.sys$uuid and (manager_id=:user_id or manager_id in (select ua.users_id from users_alternate ua where ua.user_id = :user_id)))</code></td></tr>
+<tr><td>я участвовал в ходе исполнения</td><td><code>exists (select 1 from task_hst where entity_pk = main.sys$uuid and created_by=:user_id)</code></td></tr>
+</table>
+<h3>Служебные БП (модуль core)</h3>
+<ul>
+  <li><code>role_grant_all_view_access_mod</code> — даёт роли список и карточку на все справочники её модуля.</li>
+  <li><code>entity_view_limits_upsert</code> — проверяет SQL ограничения, ошибку пишет в <code>warning_text</code>.</li>
+  <li><code>roles_copy_grants</code> — несмотря на название, копирует только пункты меню (<code>role_menus</code>), не гранты.</li>
+</ul>
+
+<h2 id="errors">6. Частые ошибки</h2>
+<ul class="err">
+  <li>Сущность, страницы и меню созданы, а грантов нет — у admin всё работает, у остальных пустые списки и «Access Denied». Проверять под обычным пользователем.</li>
+  <li>Грант без <code>view_limit_id</code> не работает. У 45 сущностей стенда нет автоограничения — сначала создать <code>1 = 1</code>.</li>
+  <li>В <code>subquery</code> обращаться к колонкам через <code>main.</code>.</li>
+  <li>Ограничения ролей объединяются через OR — сузить доступ другой ролью нельзя.</li>
+  <li><code>is_list_view</code> и <code>is_detail_view</code> — разные флаги: нужны оба.</li>
+  <li><code>queries.is_public = 1</code> снимает ограничения сущности в списке.</li>
+  <li><code>readonly_mode</code> действует только на запись.</li>
+</ul>
+
+<footer>Источник: Go-функции платформы и таблицы entity_grants, entity_view_limits стенда contact-center, 19.10.2026.</footer>
+</main>
+</div>
+</body>
+</html>
