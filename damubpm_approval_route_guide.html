@@ -64,6 +64,7 @@ footer{max-width:1240px;margin:0 auto;padding:0 16px 32px;color:var(--muted);fon
 <li><a href="#шаг-3-создание-записи-с-маршрутом-entitytool-визард">Шаг 3. Создание записи с маршрутом (entityTool-визард)</a></li>
 <li><a href="#шаг-4-события-сущности">Шаг 4. События сущности</a></li>
 <li><a href="#шаг-5-workflow">Шаг 5. Workflow</a></li>
+<li><a href="#шаг-5а-доступ-к-процессам-роль-its_user">Шаг 5а. Доступ к процессам — роль its_user</a></li>
 <li><a href="#шаг-6-кнопки-согласования">Шаг 6. Кнопки согласования</a></li>
 <li><a href="#шаг-7-страница">Шаг 7. Страница</a></li>
 <li><a href="#шаг-8-проверка">Шаг 8. Проверка</a></li>
@@ -76,12 +77,21 @@ footer{max-width:1240px;margin:0 auto;padding:0 16px 32px;color:var(--muted);fon
 <li><a href="#4-4-частые-ошибки">4.4 Частые ошибки</a></li>
 </ul>
 </li>
+<li><a href="#5-вкладки-details-страницы-маршрут-и-ход-исполнения">5. Вкладки details-страницы: «Маршрут» и «Ход исполнения»</a><ul>
+<li><a href="#5-1-как-устроена-вкладка">5.1 Как устроена вкладка</a></li>
+<li><a href="#5-2-вкладки-its_d_statementsdetails">5.2 Вкладки its_d_statementsdetails</a></li>
+<li><a href="#5-3-маршрут-ui_block_tpl-task_approve_task">5.3 «Маршрут» — ui_block_tpl task_approve_task</a></li>
+<li><a href="#5-4-ход-исполнения-ui_block_tpl-task_approve_hst">5.4 «Ход исполнения» — ui_block_tpl task_approve_hst</a></li>
+<li><a href="#5-5-добавить-вкладки-на-новую-details-страницу">5.5 Добавить вкладки на новую details-страницу</a></li>
+<li><a href="#5-6-условия-и-частые-ошибки">5.6 Условия и частые ошибки</a></li>
+</ul>
+</li>
 </ul>
 </div>
 </nav>
 <main>
 <h1>Заявки с согласованием и маршруты</h1>
-<p class="lead">Создание новой заявки (сущности) с маршрутом согласования и редактирование этапов. На примере <code>its_d_statements</code>, среда onedoc.</p>
+<p class="lead">Создание новой заявки (сущности) с маршрутом согласования, редактирование этапов и вкладки «Маршрут» / «Ход исполнения» на details-странице. На примере <code>its_d_statements</code>, среда onedoc.</p>
 <p>Инструкция по созданию новой заявки (сущности) с маршрутом согласования и по редактированию этапов. Основана на разборе рабочей реализации <code>its_d_statements</code> (Заявления работника) в среде onedoc.</p>
 <hr />
 <h2 id="1-модель-данных">1. Модель данных</h2>
@@ -309,6 +319,7 @@ local arr = SqlQueryRows([[select s.approve_type_id, s.use_users_comps, coalesce
 -- insert into tasks (created_by,title,entity_id,autoadd=0,step_nn,nn,entity_pk,approve_t_s_id,type_id,
 --                    managers,manager_id,approve_type_id,use_ng_if,ng_if,due_at)
 </code></pre>
+<p>Сущностям без визарда маршрут предлагает сама detail-страница: REST <code>tasks_approves</code> при <code>isNew</code> или пустом <code>tasks</code> вызывает <code>pkg/edms_lua_tasks.loadApproveNew</code>, который строит черновик маршрута из <code>entities.task_approve_t_id</code> (строки с <code>id=0</code>, <code>_inserted=1</code>). Пользователь видит его на вкладке «Маршрут», а в <code>tasks</code> строки попадают при сохранении документа. Подробно — раздел 5.</p>
 <p>Ключевые поля <code>tasks</code> для маршрута: <code>entity_id</code>, <code>entity_pk</code> (= <code>sys$uuid</code> записи), <code>approve_t_s_id</code>, <code>step_nn</code>, <code>nn</code>, <code>type_id</code>, <code>approve_type_id</code>, <code>managers</code> (JSON-массив пользователей из <code>Query("?code=users...")</code>), <code>is_rq</code>, <code>autoadd</code> (0 — строка маршрута, 1 — развернутая задача на исполнителя).</p>
 <h3 id="2-2-pkg-tasks">2.2 pkg/tasks</h3>
 <table>
@@ -494,6 +505,75 @@ end
 </ol>
 <p>Нумерацию отдельной точкой (как «Нумерация документа» в its_d_statements) делать не нужно, если работает <code>set_status</code> + <code>docnum_prefix</code>; собственная точка нужна только при особом формате номера.</p>
 <p>В скриптах БП не вызывать <code>Commit()/Rollback()</code>.</p>
+<h3 id="шаг-5а-доступ-к-процессам-роль-its_user">Шаг 5а. Доступ к процессам — роль its_user</h3>
+<p>Каждому созданному процессу, который запускает пользователь, дать роль <code>its_user</code> с правом запуска (<code>bp_process_roles.can_run = 1</code>). Без этой записи у пользователя нет кнопки/инструмента, а запуск workflow завершается отказом в доступе.</p>
+<table>
+<thead>
+<tr>
+<th>Тип процесса</th>
+<th>Пример</th>
+<th>Роль its_user</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>workFlow</code></td>
+<td><code>its_d_company_check</code>, <code>its_d_statements</code></td>
+<td>нужна</td>
+</tr>
+<tr>
+<td><code>entityTool</code> (визард создания)</td>
+<td><code>its_d_statements_wizard</code></td>
+<td>нужна</td>
+</tr>
+<tr>
+<td><code>entityActionByID</code> (кнопка на записи)</td>
+<td><code>its_bp_statements_link</code></td>
+<td>нужна, если кнопка для пользователей</td>
+</tr>
+<tr>
+<td><code>businessprocess</code>, вызываемый пользователем</td>
+<td><code>its_bp_statements_prikaz</code></td>
+<td>нужна</td>
+</tr>
+<tr>
+<td><code>entityEvent</code> (insert/upsert)</td>
+<td><code>its_d_company_check_insert</code></td>
+<td>не нужна — запускается платформой при сохранении</td>
+</tr>
+</tbody>
+</table>
+<p>Так настроено в onedoc: <code>its_d_company_check</code>, <code>its_d_statements</code>, <code>its_d_statements_wizard</code> имеют <code>its_user:1</code> (у последних двух ещё <code>admin:1</code>), события <code>*_insert</code>/<code>*_upsert</code> — без ролей.</p>
+<p>Выдать доступ (повторный запуск не создаёт дубль):</p>
+<pre><code class="language-sql">insert into bp_process_roles (process_id, role_id, can_run)
+select p.id, r.id, 1
+from bp_processes p, roles r
+where p.code = 'its_d_company_check' and r.code = 'its_user'
+  and not exists (select 1 from bp_process_roles x where x.process_id = p.id and x.role_id = r.id);
+</code></pre>
+<p>Сразу для всех пользовательских процессов сущности:</p>
+<pre><code class="language-sql">insert into bp_process_roles (process_id, role_id, can_run)
+select p.id, r.id, 1
+from bp_processes p
+join bp_process_types pt on pt.id = p.type_id
+join entities e on e.id = p.action_entity_id
+cross join roles r
+where e.code = 'its_d_company_check' and r.code = 'its_user'
+  and pt.code in ('workFlow','entityTool','entityActionByID','businessprocess')
+  and not exists (select 1 from bp_process_roles x where x.process_id = p.id and x.role_id = r.id);
+</code></pre>
+<p>Проверка:</p>
+<pre><code class="language-sql">select p.code, pt.code ptype,
+       (select string_agg(r.code||':'||coalesce(pr.can_run::text,''), ',')
+          from bp_process_roles pr join roles r on r.id = pr.role_id where pr.process_id = p.id) roles
+from bp_processes p
+left join bp_process_types pt on pt.id = p.type_id
+join entities e on e.id = p.action_entity_id
+where e.code = 'its_d_company_check'
+order by 1;
+</code></pre>
+<p><code>can_run</code> — smallint: в конкатенации приводить к тексту (<code>can_run::text</code>), иначе запрос падает, а <code>db_execute_sql</code> после ошибки отвечает «текущая транзакция прервана» и на следующие запросы.</p>
+<p>Права на саму сущность (чтение/изменение записей и <code>is_detail_view</code>, который проверяет <code>task_approve_or_reject</code>) настраиваются отдельно — в правах роли на сущность.</p>
 <h3 id="шаг-6-кнопки-согласования">Шаг 6. Кнопки согласования</h3>
 <p>Ничего создавать не нужно: задачи обрабатываются общим <code>task_approve_or_reject</code> (входы: <code>entity_code</code>, <code>pk_uuid</code>, <code>step_nn</code>, <code>approve_res_id</code>, <code>approve_t_s_c_id</code>, <code>reason</code>). Он:</p>
 <ul>
@@ -508,7 +588,7 @@ end
 <p>Автостраница <code>&lt;entity&gt;details</code> уже показывает «Маршрут» по <code>tasks.entity_pk</code>. Свои страницы не называть кодами сущностей (<code>create_page</code> перезапишет автостраницу).</p>
 <h3 id="шаг-8-проверка">Шаг 8. Проверка</h3>
 <ol>
-<li>Создать запись через визард → проверить <code>tasks</code> (<code>where entity_pk = &lt;uuid&gt; order by step_nn, nn</code>).</li>
+<li>Под пользователем с ролью <code>its_user</code> (не admin) создать запись через визард → проверить <code>tasks</code> (<code>where entity_pk = &lt;uuid&gt; order by step_nn, nn</code>).</li>
 <li>Запустить workflow → <code>stat_id=1</code>, создан <code>its_req</code>, присвоен <code>docnum</code>.</li>
 <li>Пройти согласование всеми ролями, включая «На доработке» и «Отказать».</li>
 <li>Проверить итоговые <code>stat_id</code> / <code>its_req.stat_id</code> и историю.</li>
@@ -592,11 +672,292 @@ select id, title, step_nn, nn, approve_t_s_id, managers from tasks where entity_
 <p>Точечно — обновить <code>tasks.managers</code> / <code>step_nn</code> вручную, либо удалить строки маршрута записи и пересоздать их логикой визарда (шаг 2.1) для этого <code>entity_pk</code>. Для записей на согласовании правка маршрута меняет текущий процесс — делать только через доработку.</p>
 <h3 id="4-4-частые-ошибки">4.4 Частые ошибки</h3>
 <ul>
+<li>Пользователь не видит визард/кнопку или получает отказ при запуске — у процесса нет <code>bp_process_roles</code> для <code>its_user</code> с <code>can_run=1</code> (шаг 5а).</li>
 <li>«Не указан ответственный в разделе Маршрут» — обязательный этап без <code>managers</code>: пустая формула, у пользователя нет руководителя, или <code>rt_id</code>/<code>staff_id</code> не заданы.</li>
 <li>Задачи не появились — у вида документа / сущности пустой <code>task_approve_t_id</code> (визард выдаст «Ошибка при поиске вида документа»).</li>
 <li>Нет its_req и номера — сущность не типа <code>its_req</code>, не задан <code>wf_status_attr_id</code> / <code>wf_id_var_id</code> у процесса, или на точке нет <code>wf_status_attr_value</code>.</li>
 <li>Номер не присваивается — включен параметр <code>its_disable_docnum_auto</code> или <code>docnum_after_approve=1</code> (номер появится после согласования).</li>
 <li>Массивы в <code>managers</code> — только через <code>JsonToString(array(...))</code>, иначе получится объект <code>{"1":…}</code>.</li>
+</ul>
+<hr />
+<h2 id="5-вкладки-details-страницы-маршрут-и-ход-исполнения">5. Вкладки details-страницы: «Маршрут» и «Ход исполнения»</h2>
+<p>Общая модель блоков (<code>pages_ui_blocks</code>, <code>pages_ui_blocks_n</code>, корневой блок, <code>genPages</code>) описана в <code>damubpm_detail_page_blocks_guide.md</code>. Здесь — только то, что касается вкладок согласования, на примере <code>its_d_statementsdetails</code> (pages.id=12265).</p>
+<h3 id="5-1-как-устроена-вкладка">5.1 Как устроена вкладка</h3>
+<p>Вкладка — это всегда два блока и две связи:</p>
+<pre><code>TabView (tabview)                              pages_ui_blocks 2710  «tabs»
+└─[block nn=300]→ Вкладка (tabview_tab)         pages_ui_blocks 2717  header_title «Маршрут»
+                  └─[block nn=310]→ Содержимое  pages_ui_blocks 2718  ui_block_tpl = task_approve_task
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>Уровень</th>
+<th>Таблица</th>
+<th>Ключевые поля</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Контейнер вкладок</td>
+<td><code>pages_ui_blocks</code>, tpl <code>tabview</code></td>
+<td>один на страницу</td>
+</tr>
+<tr>
+<td>Вкладка</td>
+<td><code>pages_ui_blocks</code>, tpl <code>tabview_tab</code></td>
+<td><code>header_title</code> — текст ярлыка, <code>ng_if</code> — показ вкладки, <code>nn</code></td>
+</tr>
+<tr>
+<td>Ссылка TabView → вкладка</td>
+<td><code>pages_ui_blocks_n</code>, тип <code>block</code></td>
+<td><code>pages_ui_blocks_id</code> = TabView, <code>block_id</code> = вкладка, <code>nn</code> — порядок ярлыков</td>
+</tr>
+<tr>
+<td>Содержимое</td>
+<td><code>pages_ui_blocks</code>, tpl содержимого</td>
+<td><code>task_approve_task</code>, <code>task_approve_hst</code>, <code>panel_block</code>, <code>default_page</code> …</td>
+</tr>
+<tr>
+<td>Ссылка вкладка → содержимое</td>
+<td><code>pages_ui_blocks_n</code>, тип <code>block</code></td>
+<td><code>block_id</code> = блок содержимого</td>
+</tr>
+</tbody>
+</table>
+<p>Порядок ярлыков задаёт <code>pages_ui_blocks_n.nn</code> в TabView (в its_d_statements: 10 Главная, 200 Связанные документы, 300 Маршрут, 500 Ход исполнения, 600 Предпросмотр).</p>
+<p>Шаблон <code>tabview_tab</code> рендерит <code>&lt;p-tabPanel header="{{header_title}}" *ngIf="{{ng_if}}"&gt;</code>, внутри — поля (<code>attr</code>), табличные части и дочерние блоки (<code>block</code>) этой вкладки.</p>
+<p>Коды блоков в onedoc — <code>&lt;page_code&gt;_&lt;6 hex&gt;</code>, элементов — <code>&lt;код блока&gt;_&lt;число&gt;</code>.</p>
+<h3 id="5-2-вкладки-its_d_statementsdetails">5.2 Вкладки its_d_statementsdetails</h3>
+<table>
+<thead>
+<tr>
+<th>nn</th>
+<th>Вкладка (tabview_tab)</th>
+<th>Содержимое (ui_block_tpl)</th>
+<th>Примечание</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>10</td>
+<td>Главная</td>
+<td><code>panel_block</code> / <code>default_page</code></td>
+<td>панели по видам с <code>ng_if</code> вида <code>detail['type_id$code'] == 'leave'</code></td>
+</tr>
+<tr>
+<td>200</td>
+<td>Связанные документы</td>
+<td><code>default_page</code> → <code>its_link</code></td>
+<td><code>details.its_link</code></td>
+</tr>
+<tr>
+<td>300</td>
+<td>Маршрут</td>
+<td><code>task_approve_task</code></td>
+<td>см. 5.3</td>
+</tr>
+<tr>
+<td>500</td>
+<td>Ход исполнения</td>
+<td><code>task_approve_hst</code></td>
+<td>см. 5.4</td>
+</tr>
+<tr>
+<td>600</td>
+<td>Предпросмотр</td>
+<td><code>default_page</code> + html</td>
+<td>скрыта: <code>ng_if = 1==0</code></td>
+</tr>
+<tr>
+<td>700</td>
+<td>—</td>
+<td>—</td>
+<td>элемент 18834 с пустым <code>block_id</code></td>
+</tr>
+</tbody>
+</table>
+<p>Найденная проблема: вкладка «Подписанные файлы» (блок 3034, tpl <code>tabview_tab</code>, внутри 3033 <code>task_eds_files</code>) ни к чему не привязана — элемент TabView с nn=700 (id 18834) имеет пустой <code>block_id</code>, так же как элемент 18835 во вкладке «Главная». Непривязанный блок генератор считает корневым и выводит вне TabView. Исправление:</p>
+<pre><code class="language-sql">update pages_ui_blocks_n set block_id = 3034 where id = 18834;
+</code></pre>
+<p>После правки перегенерировать страницу.</p>
+<h3 id="5-3-маршрут-ui_block_tpl-task_approve_task">5.3 «Маршрут» — ui_block_tpl <code>task_approve_task</code></h3>
+<p>Что показывает: маршрут согласования документа — шаги, вид задачи, исполнители, сроки; до запуска workflow позволяет его редактировать.</p>
+<p>Источник данных — REST <code>tasks_approves</code> (метод <code>bindTasks()</code> шаблона страницы <code>detail</code>), параметры <code>{ isNew, entity_code, sys$uuid }</code>, результат в <code>this.infos</code>:</p>
+<table>
+<thead>
+<tr>
+<th>Ключ</th>
+<th>Что это</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>infos.tasks</code></td>
+<td>строки маршрута. Нет задач → <code>loadApproveNew</code>: черновик из <code>entities.task_approve_t_id</code> → <code>task_approve_t_s</code> (id=0, <code>_inserted=1</code>, исполнители по формулам, сроки по <code>set_due</code>/<code>due_d</code>/<code>use_365</code>, этапы с ложным <code>ng_if</code> отброшены). Есть задачи → <code>loadApproveOld</code>: строки из <code>tasks</code></td>
+</tr>
+<tr>
+<td><code>infos.task_approve_res</code></td>
+<td>кнопки результата для текущего пользователя</td>
+</tr>
+<tr>
+<td><code>infos.myTasks</code>, <code>myRoleTasks</code></td>
+<td>открытые задачи пользователя / его ролей</td>
+</tr>
+<tr>
+<td><code>infos.autostart_task(_approve_res)</code></td>
+<td>задача, которая запускается сразу после старта workflow</td>
+</tr>
+<tr>
+<td><code>infos.fyi_task_cnt</code>, <code>fyi_tasks</code></td>
+<td>задачи на ознакомление (в маршруте скрыты)</td>
+</tr>
+<tr>
+<td><code>details.route_map_tasks_all$</code></td>
+<td>краткая таблица «Статус / Вид / Инициатор / Даты / Исполнитель»</td>
+</tr>
+</tbody>
+</table>
+<p>Строки маршрута лежат в <code>form_task.values</code> (FormArray). Добавление/удаление/правка пишутся в <code>form_changes</code> с <code>table_name: 'tasks'</code> и сохраняются вместе с документом.</p>
+<p>Что можно делать на вкладке и что это разрешает:</p>
+<table>
+<thead>
+<tr>
+<th>Действие</th>
+<th>Где в UI</th>
+<th>Разрешено, если</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Изменить исполнителя (<code>manager_id</code>)</td>
+<td>поле исполнителя</td>
+<td><code>task_approve_t_s.can_change_user = 1</code> и <code>detail.readonly$ != 1</code></td>
+</tr>
+<tr>
+<td>Изменить срок (<code>due_at</code>)</td>
+<td>дата</td>
+<td><code>noedit_due != 1</code> и <code>readonly$ != 1</code></td>
+</tr>
+<tr>
+<td>Изменить параллельно/последовательно</td>
+<td><code>approve_type_id</code></td>
+<td><code>can_change_nn = 1</code></td>
+</tr>
+<tr>
+<td>Добавить согласующего на шаг</td>
+<td><code>addTask()</code></td>
+<td><code>can_add = 1</code> и <code>readonly$ != 1</code>; новая строка — шаг +1, <code>is_rq=0</code>, без исполнителя</td>
+</tr>
+<tr>
+<td>Удалить строку</td>
+<td><code>delTask()</code></td>
+<td><code>is_rq != 1</code> и <code>readonly$ != 1</code></td>
+</tr>
+<tr>
+<td>Выполнить задачу (Согласовать/Отказать…)</td>
+<td><code>doTask()</code> → <code>bpRun(approve_res.process_code, …)</code></td>
+<td>текущий пользователь = <code>manager_id</code>, статус <code>opened</code></td>
+</tr>
+<tr>
+<td>Переназначить / Восстановить</td>
+<td><code>bpRun('task_reassign_manual' / 'task_restore_manual')</code></td>
+<td>роль процесса в <code>bp_process_roles_list</code></td>
+</tr>
+<tr>
+<td>Войти как исполнитель</td>
+<td><code>loginAs()</code> → <code>users_sign</code></td>
+<td>роль <code>users_sign</code></td>
+</tr>
+</tbody>
+</table>
+<p>Строка скрыта, если <code>ng_if</code> этапа ложен, вид <code>fyi</code> или <code>hide_from_initiator</code> (<code>_hide = 1</code>). Подсказка под строкой — <code>task_approve_t_s.recomm</code>.</p>
+<p><code>doTask()</code> передаёт в процесс результата: <code>approve_t_s_c_id</code>, <code>approve_res_id</code>, <code>step_nn</code>, <code>task_id</code>, <code>entity_code</code>, <code>pk_uuid</code>, <code>approve_t_s_id</code> — это ровно входы <code>task_approve_or_reject</code>.</p>
+<h3 id="5-4-ход-исполнения-ui_block_tpl-task_approve_hst">5.4 «Ход исполнения» — ui_block_tpl <code>task_approve_hst</code></h3>
+<p>Что показывает: фактическое исполнение — кто, когда и с каким результатом закрыл задачу, комментарии, файлы, замещения, версии документа. Только чтение (кроме админ-действий).</p>
+<p>Источник — тот же <code>tasks_approves</code>, ключ <code>infos.executionProgress</code>, дерево строит <code>initExecutionProgress()</code> → <code>executionProgressItems</code> → <code>p-treeTable</code>.</p>
+<table>
+<thead>
+<tr>
+<th>Колонка</th>
+<th>Откуда</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Исполнитель</td>
+<td><code>users.title</code> по <code>tasks.manager_id</code>, должность; «и.о.» из <code>users_alternate</code> на дату задачи</td>
+</tr>
+<tr>
+<td>Дата</td>
+<td><code>tasks.created_at</code>, прочитано — <code>read_at</code></td>
+</tr>
+<tr>
+<td>Тип задачи</td>
+<td><code>task_types.title</code></td>
+</tr>
+<tr>
+<td>Статус задачи</td>
+<td><code>task_approve_res.do_hst_title</code> (или <code>approve_res2_id</code> после доработки), иначе <code>task_statuses.title</code> + цвет</td>
+</tr>
+<tr>
+<td>Действия</td>
+<td><code>task_hst</code> по задаче: <code>action_txt</code>, <code>txt</code> (комментарий), <code>files</code>, <code>file_id</code></td>
+</tr>
+</tbody>
+</table>
+<p>Отбор: задачи записи (<code>entity_pk</code> или <code>version_entity_pk</code>), не групповые (<code>is_group=0</code>), с заданным <code>status_id</code> или <code>status2_id</code> — то есть только запущенные. До старта workflow вкладка пустая. Вложенность — по <code>parent_id</code>; версии документа (<code>its_new_version</code>) выводятся отдельными узлами «Версия N» и «Текущая версия».</p>
+<p>Админ-кнопки строки: <code>task_set_responsible</code>, <code>task_reassign_manual</code>, <code>task_restore_manual</code>, <code>task_delete_manual</code> (по ролям и <code>session_roles.admin</code>).</p>
+<p>Разница двух вкладок кратко: «Маршрут» — план (что будет и кто согласует, редактируется до запуска), «Ход исполнения» — факт (что уже сделано, история <code>task_hst</code>).</p>
+<h3 id="5-5-добавить-вкладки-на-новую-details-страницу">5.5 Добавить вкладки на новую details-страницу</h3>
+<p>Через MCP onedoc (<code>add_page_ui_blocks</code>, затем <code>add_pages_ui_blocks_n</code>). Предполагается, что TabView уже есть (код <code>&lt;page&gt;_tabs</code>), иначе создать и его (<code>ui_block_tpl_code: tabview</code>) и привязать к корневому блоку.</p>
+<ol>
+<li>Блоки:</li>
+</ol>
+<pre><code class="language-json">{
+  &quot;page_code&quot;: &quot;its_d_newreqdetails&quot;,
+  &quot;pages_ui_blocks&quot;: [
+    { &quot;code&quot;: &quot;its_d_newreqdetails_route_tab&quot;, &quot;title&quot;: &quot;Маршрут вкладка&quot;, &quot;header_title&quot;: &quot;Маршрут&quot;, &quot;ui_block_tpl_code&quot;: &quot;tabview_tab&quot;, &quot;nn&quot;: &quot;300&quot; },
+    { &quot;code&quot;: &quot;its_d_newreqdetails_route&quot;,     &quot;title&quot;: &quot;Маршрут&quot;,         &quot;header_title&quot;: &quot;Маршрут&quot;, &quot;ui_block_tpl_code&quot;: &quot;task_approve_task&quot;, &quot;nn&quot;: &quot;310&quot; },
+    { &quot;code&quot;: &quot;its_d_newreqdetails_hst_tab&quot;,   &quot;title&quot;: &quot;Ход исполнения вкладка&quot;, &quot;header_title&quot;: &quot;Ход исполнения&quot;, &quot;ui_block_tpl_code&quot;: &quot;tabview_tab&quot;, &quot;nn&quot;: &quot;500&quot; },
+    { &quot;code&quot;: &quot;its_d_newreqdetails_hst&quot;,       &quot;title&quot;: &quot;Ход исполнения&quot;, &quot;header_title&quot;: &quot;Ход исполнения&quot;, &quot;ui_block_tpl_code&quot;: &quot;task_approve_hst&quot;, &quot;nn&quot;: &quot;510&quot; }
+  ]
+}
+</code></pre>
+<ol start="2">
+<li>Связи (все типа <code>block</code>):</li>
+</ol>
+<pre><code class="language-json">{
+  &quot;page_code&quot;: &quot;its_d_newreqdetails&quot;,
+  &quot;pages_ui_blocks_n&quot;: [
+    { &quot;code&quot;: &quot;its_d_newreqdetails_tabs_route&quot;, &quot;pages_ui_blocks_code&quot;: &quot;its_d_newreqdetails_tabs&quot;,      &quot;pages_ui_blocks_n_t_code&quot;: &quot;block&quot;, &quot;block_code&quot;: &quot;its_d_newreqdetails_route_tab&quot;, &quot;nn&quot;: &quot;300&quot; },
+    { &quot;code&quot;: &quot;its_d_newreqdetails_route_in&quot;,   &quot;pages_ui_blocks_code&quot;: &quot;its_d_newreqdetails_route_tab&quot;, &quot;pages_ui_blocks_n_t_code&quot;: &quot;block&quot;, &quot;block_code&quot;: &quot;its_d_newreqdetails_route&quot;,     &quot;nn&quot;: &quot;310&quot; },
+    { &quot;code&quot;: &quot;its_d_newreqdetails_tabs_hst&quot;,   &quot;pages_ui_blocks_code&quot;: &quot;its_d_newreqdetails_tabs&quot;,      &quot;pages_ui_blocks_n_t_code&quot;: &quot;block&quot;, &quot;block_code&quot;: &quot;its_d_newreqdetails_hst_tab&quot;,   &quot;nn&quot;: &quot;500&quot; },
+    { &quot;code&quot;: &quot;its_d_newreqdetails_hst_in&quot;,     &quot;pages_ui_blocks_code&quot;: &quot;its_d_newreqdetails_hst_tab&quot;,   &quot;pages_ui_blocks_n_t_code&quot;: &quot;block&quot;, &quot;block_code&quot;: &quot;its_d_newreqdetails_hst&quot;,       &quot;nn&quot;: &quot;510&quot; }
+  ]
+}
+</code></pre>
+<ol start="3">
+<li>Перегенерировать страницу (<code>genPages(entity_id, user_id)</code>, см. guide по блокам) и проверить дерево запросом:</li>
+</ol>
+<pre><code class="language-sql">select b.id, ubt.code tpl, b.header_title, n.id nid, nt.code et, n.nn, n.block_id
+from pages p
+join pages_ui_blocks b on b.pages_id = p.id
+left join ui_block_tpl ubt on ubt.id = b.ui_block_tpl_id
+left join pages_ui_blocks_n n on n.pages_ui_blocks_id = b.id
+left join pages_ui_blocks_n_t nt on nt.id = n.t_id
+where p.code = 'its_d_newreqdetails' and coalesce(nt.code,'') &lt;&gt; 'attr'
+order by b.id, n.nn;
+</code></pre>
+<p>Проверки: у всех элементов <code>et='block'</code> заполнен <code>block_id</code>; каждый <code>tabview_tab</code> привязан к TabView; блоки содержимого <code>task_approve_*</code> привязаны к своей вкладке, а не к TabView напрямую.</p>
+<p>Другие готовые блоки для вкладок документа: <code>task_eds_files</code> (Подписанные файлы), <code>its_link</code> (Связанные документы), <code>log_rows</code> (История), <code>global_msg</code> (Обсуждение и файлы), <code>files_for_preview</code> (Предпросмотр), <code>changes</code> (Изменение документа).</p>
+<h3 id="5-6-условия-и-частые-ошибки">5.6 Условия и частые ошибки</h3>
+<ul>
+<li>Скрыть вкладку по полю записи — <code>ng_if</code> у блока <code>tabview_tab</code> (например <code>detail['type_id$code'] == 'leave'</code>); скрыть совсем — <code>1==0</code>, как у «Предпросмотр».</li>
+<li>Вкладка «Маршрут» пустая на новой записи — у сущности нет <code>entities.task_approve_t_id</code> и записи ещё не создан маршрут визардом.</li>
+<li>«Ход исполнения» пустой — workflow не запускался (у задач нет <code>status_id</code>), это нормально.</li>
+<li>Блок оказался над вкладками или внизу страницы — у связи <code>block</code> пустой <code>block_id</code>, блок стал корневым.</li>
+<li>Маршрут нельзя править — документ в <code>readonly$</code> (после старта workflow) или у этапа не включены <code>can_change_user</code> / <code>can_add</code>.</li>
+<li>Правку вносить в <code>pages_ui_blocks</code>/<code>pages_ui_blocks_n</code>, а не в <code>pages.angular_template</code>: при генерации он перезаписывается. Шаблоны <code>task_approve_task</code>/<code>task_approve_hst</code> общие для всех страниц — менять их только осознанно; для своей разметки — блок с <code>is_auto != 1</code> и собственным <code>angular_template</code>.</li>
 </ul>
 <p style="margin-top:32px"><a class="home" href="index.html">← На главную</a></p>
 </main>
