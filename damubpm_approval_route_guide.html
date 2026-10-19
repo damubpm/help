@@ -1,0 +1,605 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Согласование и маршруты — DamuBPM</title>
+<style>
+:root{--bg:#f7f8fa;--card:#fff;--text:#1f2933;--muted:#5f6b7a;--line:#e3e7ec;--accent:#2563eb;--code:#f1f3f6;--pre:#0f172a;--pre-text:#e2e8f0}
+@media (prefers-color-scheme:dark){:root{--bg:#0f1115;--card:#171a21;--text:#e6e9ef;--muted:#9aa4b2;--line:#2a2f3a;--accent:#6ea0ff;--code:#222733;--pre:#0b0d12;--pre-text:#dbe2ee}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:15px/1.6 -apple-system,"Segoe UI",Roboto,Arial,sans-serif}
+header{position:sticky;top:0;z-index:10;background:var(--card);border-bottom:1px solid var(--line)}
+.bar{max-width:1240px;margin:0 auto;padding:12px 16px;display:flex;align-items:center;gap:16px}
+.home{color:var(--accent);text-decoration:none;font-weight:600;white-space:nowrap}
+.home:hover{text-decoration:underline}
+.crumb{color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.wrap{max-width:1240px;margin:0 auto;padding:24px 16px;display:grid;grid-template-columns:260px minmax(0,1fr);gap:32px}
+nav.toc{position:sticky;top:64px;align-self:start;max-height:calc(100vh - 80px);overflow:auto;font-size:13.5px}
+nav.toc ul{list-style:none;margin:0;padding-left:12px}
+nav.toc>.toc>ul{padding-left:0}
+nav.toc a{color:var(--muted);text-decoration:none;display:block;padding:3px 0}
+nav.toc a:hover{color:var(--accent)}
+nav.toc .ttl{font-weight:600;margin-bottom:8px;color:var(--text)}
+main{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:28px 36px;min-width:0}
+h1{margin:0 0 8px;font-size:26px}
+.lead{color:var(--muted);margin:0 0 24px}
+h2{margin:36px 0 12px;padding-top:12px;border-top:1px solid var(--line);font-size:21px}
+h3{margin:24px 0 8px;font-size:17px}
+h2,h3{scroll-margin-top:72px}
+a{color:var(--accent)}
+code{background:var(--code);padding:1px 5px;border-radius:4px;font:13px/1.5 ui-monospace,Consolas,monospace}
+pre{background:var(--pre);color:var(--pre-text);padding:14px 16px;border-radius:8px;overflow:auto}
+pre code{background:none;padding:0;color:inherit}
+table{border-collapse:collapse;width:100%;margin:12px 0;font-size:14px;display:block;overflow-x:auto}
+th,td{border:1px solid var(--line);padding:6px 10px;text-align:left;vertical-align:top}
+th{background:var(--code)}
+hr{display:none}
+footer{max-width:1240px;margin:0 auto;padding:0 16px 32px;color:var(--muted);font-size:13px}
+@media (max-width:900px){.wrap{grid-template-columns:1fr}nav.toc{position:static;max-height:none}main{padding:20px 16px}}
+</style>
+</head>
+<body>
+<header><div class="bar"><a class="home" href="index.html">← Главная</a><span class="crumb">DamuBPM / Согласование и маршруты</span></div></header>
+<div class="wrap">
+<nav class="toc"><div class="ttl">Содержание</div><div class="toc">
+<ul>
+<li><a href="#1-модель-данных">1. Модель данных</a><ul>
+<li><a href="#1-1-справочники">1.1 Справочники</a></li>
+<li><a href="#1-2-task_approve_t-шаблон">1.2 task_approve_t (шаблон)</a></li>
+<li><a href="#1-3-task_approve_t_s-этап-ключевые-поля">1.3 task_approve_t_s (этап) — ключевые поля</a></li>
+<li><a href="#1-4-task_approve_t_s_roles">1.4 task_approve_t_s_roles</a></li>
+<li><a href="#1-5-атрибут-entities-task_approve_t_id">1.5 Атрибут entities.task_approve_t_id</a></li>
+</ul>
+</li>
+<li><a href="#2-жизненный-цикл-заявки-на-примере-its_d_statements">2. Жизненный цикл заявки (на примере its_d_statements)</a><ul>
+<li><a href="#2-1-создание-задач-маршрута-wizard-скрипт-создание-документа">2.1 Создание задач маршрута (wizard, скрипт «Создание документа»)</a></li>
+<li><a href="#2-2-pkg-tasks">2.2 pkg/tasks</a></li>
+<li><a href="#2-3-статусы-и-its_req-bp_task_start_events-id-2-set_status">2.3 Статусы и its_req — bp_task_start_events id=2 (set_status)</a></li>
+</ul>
+</li>
+<li><a href="#3-создание-новой-заявки-с-согласованием">3. Создание новой заявки с согласованием</a><ul>
+<li><a href="#шаг-1-сущность">Шаг 1. Сущность</a></li>
+<li><a href="#шаг-2-шаблон-согласования-и-этапы">Шаг 2. Шаблон согласования и этапы</a></li>
+<li><a href="#шаг-3-создание-записи-с-маршрутом-entitytool-визард">Шаг 3. Создание записи с маршрутом (entityTool-визард)</a></li>
+<li><a href="#шаг-4-события-сущности">Шаг 4. События сущности</a></li>
+<li><a href="#шаг-5-workflow">Шаг 5. Workflow</a></li>
+<li><a href="#шаг-6-кнопки-согласования">Шаг 6. Кнопки согласования</a></li>
+<li><a href="#шаг-7-страница">Шаг 7. Страница</a></li>
+<li><a href="#шаг-8-проверка">Шаг 8. Проверка</a></li>
+</ul>
+</li>
+<li><a href="#4-редактирование-этапов-согласования">4. Редактирование этапов согласования</a><ul>
+<li><a href="#4-1-где-менять">4.1 Где менять</a></li>
+<li><a href="#4-2-типовые-операции">4.2 Типовые операции</a></li>
+<li><a href="#4-3-перенос-изменений-в-существующие-записи">4.3 Перенос изменений в существующие записи</a></li>
+<li><a href="#4-4-частые-ошибки">4.4 Частые ошибки</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</nav>
+<main>
+<h1>Заявки с согласованием и маршруты</h1>
+<p class="lead">Создание новой заявки (сущности) с маршрутом согласования и редактирование этапов. На примере <code>its_d_statements</code>, среда onedoc.</p>
+<p>Инструкция по созданию новой заявки (сущности) с маршрутом согласования и по редактированию этапов. Основана на разборе рабочей реализации <code>its_d_statements</code> (Заявления работника) в среде onedoc.</p>
+<hr />
+<h2 id="1-модель-данных">1. Модель данных</h2>
+<pre><code>entities.task_approve_t_id ──┐                       (шаблон по умолчанию для сущности)
+&lt;тип документа&gt;.task_approve_t_id ──┐                (шаблон по виду документа, как its_d_statements_type)
+                                    ▼
+                         task_approve_t              Шаблон согласования
+                                    │ 1:N
+                                    ▼
+                         task_approve_t_s            Этап (шаг) шаблона
+                           ├── task_approve_t_s_roles   роли этапа (role_id, send_by_role)
+                           ├── task_approve_t_s_c       собственные процессы (кнопки результата)
+                           ├── task_approve_res_t       наименования кнопок
+                           ├── task_approve_t_s_term    интервалы оповещения
+                           └── task_approve_t_s_deps    руководители департаментов
+                                    │ копируется при создании записи
+                                    ▼
+                         tasks (entity_id, entity_pk = sys$uuid записи, approve_t_s_id)
+                                    │
+                                    ▼
+                         its_req (сквозная регистрационная карточка: stat_id, docnum)
+</code></pre>
+<h3 id="1-1-справочники">1.1 Справочники</h3>
+<p><strong>task_approve_type</strong> — тип согласования внутри шага (<code>tasks.approve_type_id</code>):</p>
+<table>
+<thead>
+<tr>
+<th>id</th>
+<th>code</th>
+<th>title</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>parallel</td>
+<td>Параллельно</td>
+</tr>
+<tr>
+<td>2</td>
+<td>serial</td>
+<td>Последовательно</td>
+</tr>
+</tbody>
+</table>
+<p><strong>task_approve_t_s_rt</strong> — вид ответственного этапа (<code>task_approve_t_s.rt_id</code>):</p>
+<table>
+<thead>
+<tr>
+<th>id</th>
+<th>code</th>
+<th>title</th>
+<th>Откуда берётся исполнитель</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>users_companies</td>
+<td>Сотрудник</td>
+<td>выбор карточки сотрудника</td>
+</tr>
+<tr>
+<td>2</td>
+<td>user</td>
+<td>Пользователь</td>
+<td><code>task_approve_t_s.user_id</code></td>
+</tr>
+<tr>
+<td>3</td>
+<td>task_staff</td>
+<td>Формула</td>
+<td>SQL из <code>task_staff.formula</code> (<code>:user_id</code>, <code>:entity_pk</code>)</td>
+</tr>
+<tr>
+<td>4</td>
+<td>role</td>
+<td>Роль</td>
+<td><code>task_approve_t_s.role_id</code> / <code>task_approve_t_s_roles</code></td>
+</tr>
+<tr>
+<td>5</td>
+<td>staff_position</td>
+<td>Штатная должность</td>
+<td>штатная должность</td>
+</tr>
+</tbody>
+</table>
+<p><strong>task_types</strong> (вид задачи этапа, <code>type_id</code>) — основные: <code>approve</code>(1) Согласование, <code>sign</code>(2) Подписано, <code>sign_eds</code>(3), <code>exec</code>(4) Исполнение, <code>fyi</code>(6) Ознакомление, <code>task_sign_eds</code>(8) Подписание, <code>register</code>(9) Регистрация, <code>approval</code>(27) Утверждение.</p>
+<p><strong>task_approve_res</strong> (результат задачи) — основные: <code>approved</code>(1), <code>rejected</code>(2), <code>sign</code>(4, set_docnum=1), <code>exec</code>(6), <code>fiy_ok</code>(8), <code>rework</code>(14) На доработке, <code>registered</code>(16), <code>affirm</code>(50). Флаг <code>set_docnum=1</code> присваивает номер документа при закрытии задачи.</p>
+<p><strong>task_approve_filluser</strong> (<code>filluser_id</code>, «Заполнить пользователем»): 1 Руководитель организации, 2 Адм. руководитель, 3 Функц. руководитель, 4 Я, 7 Руководитель отдела, 9 Директор департамента и т.д.</p>
+<h3 id="1-2-task_approve_t-шаблон">1.2 task_approve_t (шаблон)</h3>
+<table>
+<thead>
+<tr>
+<th>Поле</th>
+<th>Назначение</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>title, code</td>
+<td>Наименование / код шаблона</td>
+</tr>
+<tr>
+<td>user_id</td>
+<td>Владелец личного шаблона (пусто — общий)</td>
+</tr>
+<tr>
+<td>can_add_task</td>
+<td>Инициатор может добавлять согласующих</td>
+</tr>
+<tr>
+<td>can_block</td>
+<td>Может блокировать почту</td>
+</tr>
+</tbody>
+</table>
+<h3 id="1-3-task_approve_t_s-этап-ключевые-поля">1.3 task_approve_t_s (этап) — ключевые поля</h3>
+<table>
+<thead>
+<tr>
+<th>Группа</th>
+<th>Поля</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Порядок</td>
+<td><code>step_nn</code> — номер шага; <code>nn</code> — подпункт внутри шага; <code>approve_type_id</code> — параллельно/последовательно внутри шага</td>
+</tr>
+<tr>
+<td>Исполнитель</td>
+<td><code>rt_id</code> (вид ответственного), <code>user_id</code>, <code>role_id</code>, <code>staff_id</code> (формула), <code>filluser_id</code>, <code>dep_grp_type_id</code>, <code>query_code</code>, <code>use_users_comps</code></td>
+</tr>
+<tr>
+<td>Поведение</td>
+<td><code>type_id</code> (вид задачи), <code>is_rq</code> обязательный, <code>can_change_user</code>, <code>can_empty_user_id</code>, <code>only_one_user</code>, <code>max_users</code>, <code>can_add</code>, <code>can_change_nn</code>, <code>cant_refuse_after</code>, <code>hide_from_initiator</code>, <code>hide_type_res</code></td>
+</tr>
+<tr>
+<td>Условие этапа</td>
+<td><code>use_ng_if</code> + <code>ng_if</code> (JS-выражение по полям записи)</td>
+</tr>
+<tr>
+<td>Сроки</td>
+<td><code>set_due</code>, <code>due_d/due_h/due_m</code>, <code>is_date</code>, <code>noedit_due</code>, <code>use_365</code>, <code>is_planned</code> + <code>plan_d/plan_h/plan_m</code></td>
+</tr>
+<tr>
+<td>Уведомления</td>
+<td><code>disable_notify</code>, <code>is_cus_assign_text</code>, <code>cus_assign_subject</code>, <code>cus_assign_text</code></td>
+</tr>
+<tr>
+<td>Свои процессы</td>
+<td><code>has_custom</code> → строки в <code>task_approve_t_s_c</code></td>
+</tr>
+<tr>
+<td>Прочее</td>
+<td><code>title</code> (описание этапа), <code>recomm</code>, <code>responsible_txt</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="1-4-task_approve_t_s_roles">1.4 task_approve_t_s_roles</h3>
+<table>
+<thead>
+<tr>
+<th>Поле</th>
+<th>Назначение</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>task_approve_t_s_id</td>
+<td>Этап</td>
+</tr>
+<tr>
+<td>role_id</td>
+<td>Роль</td>
+</tr>
+<tr>
+<td>send_by_role</td>
+<td>1 — задача назначается на роль (группу), а не на конкретных пользователей</td>
+</tr>
+</tbody>
+</table>
+<h3 id="1-5-атрибут-entities-task_approve_t_id">1.5 Атрибут <code>entities.task_approve_t_id</code></h3>
+<p>Шаблон согласования по умолчанию для сущности. В onedoc заполнен для ~150 сущностей (например <code>its_d_statements</code> → 215 «Заявления», <code>its_memo</code> → 12, <code>its_in</code> → 17, <code>its_out</code> → 11). Один шаблон может использоваться несколькими сущностями (<code>its_prikaz</code> и <code>its_d_prikaz</code> → 16).</p>
+<p>Если маршрут зависит от вида документа, шаблон хранится в справочнике вида (<code>its_d_statements_type.task_approve_t_id</code>), а <code>entities.task_approve_t_id</code> служит запасным.</p>
+<hr />
+<h2 id="2-жизненный-цикл-заявки-на-примере-its_d_statements">2. Жизненный цикл заявки (на примере its_d_statements)</h2>
+<pre><code>[Создать заявление] its_d_statements_wizard (entityTool)
+   1. DMLI insert its_d_statements
+   2. шаблон = its_d_statements_type.task_approve_t_id
+   3. для каждого task_approve_t_s → insert tasks (managers по формуле)
+   4. redirect → its_d_statementsdetails/&lt;id&gt;
+        │
+[Сохранение] its_d_statements_insert / its_d_statements_upsert (entityEvent)
+   pkg/tasks.upsertEvent — пересчёт исполнителей этапов с rt=task_staff
+        │
+[Запуск] its_d_statements (workFlow, статус → stat_id)
+   Старт (stat 1 «Создан»): pkg/tasks.managersToStep — проверка «Маршрута»
+   Нумерация документа → doc_num, its_req.docnum
+   Согласование = subprocess tasks_start_approve
+        ├─ approved=1        → Создание замещения → E-mail → Успех (stat 3 «Закрыт»)
+        ├─ res=rework        → сохранить результаты в *2_id, очистить → E-mail → На доработке (stat 12)
+        └─ иначе             → E-mail об отказе → Отказано (stat 4 «Отклонен»)
+        │
+[Кнопки в задаче] task_approve_or_reject (по каждой задаче)
+   Default Need Reason → (комментарий) → Согласовать: BPMSRunManualTask
+   → task_hst_add (история)
+</code></pre>
+<h3 id="2-1-создание-задач-маршрута-wizard-скрипт-создание-документа">2.1 Создание задач маршрута (wizard, скрипт «Создание документа»)</h3>
+<p>Логика, которую нужно повторить для новой сущности:</p>
+<pre><code class="language-lua">local entity_pk = EntityValueById(&quot;&lt;entity&gt;&quot;,&quot;sys$uuid&quot;,i)
+-- шаблон
+local tpl,errText,errNum = SqlQueryRow2([[select task_approve_t_id from &lt;type_table&gt; where id=? and task_approve_t_id is not null]],var.type_id)
+-- этапы
+local arr = SqlQueryRows([[select s.approve_type_id, s.use_users_comps, coalesce(s.due_d,0) as &quot;_due_d&quot;, s.use_365,
+    case when rt.code='task_staff' then st.formula end formula, s.use_ng_if, s.ng_if,
+    s.title, s.step_nn, s.nn, s.id, s.type_id
+  from task_approve_t_s s
+  join task_approve_t_s_rt rt on rt.id=s.rt_id
+  left join task_staff st on st.id=s.staff_id
+  where s.task_approve_t_id = ?]], tpl.task_approve_t_id)
+-- формула: StrReplace(:user_id / :entity_pk) → SqlQueryRow2 → managers = JsonToString(array({...}))
+-- insert into tasks (created_by,title,entity_id,autoadd=0,step_nn,nn,entity_pk,approve_t_s_id,type_id,
+--                    managers,manager_id,approve_type_id,use_ng_if,ng_if,due_at)
+</code></pre>
+<p>Ключевые поля <code>tasks</code> для маршрута: <code>entity_id</code>, <code>entity_pk</code> (= <code>sys$uuid</code> записи), <code>approve_t_s_id</code>, <code>step_nn</code>, <code>nn</code>, <code>type_id</code>, <code>approve_type_id</code>, <code>managers</code> (JSON-массив пользователей из <code>Query("?code=users...")</code>), <code>is_rq</code>, <code>autoadd</code> (0 — строка маршрута, 1 — развернутая задача на исполнителя).</p>
+<h3 id="2-2-pkg-tasks">2.2 pkg/tasks</h3>
+<table>
+<thead>
+<tr>
+<th>Функция</th>
+<th>Что делает</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>upsertEvent(entity_code, id, user_id)</code></td>
+<td>Для этапов с <code>rt=task_staff</code> (с учётом <code>ng_if</code>) пересчитывает <code>tasks.managers</code> по формуле. Вызывается из события upsert</td>
+</tr>
+<tr>
+<td><code>managersToStep(entity_id, pk, user_id)</code></td>
+<td>Удаляет <code>autoadd=1</code>, перенумеровывает шаги, проверяет обязательные (<code>is_rq=1</code> без managers → «Не указан ответственный в разделе Маршрут»), удаляет необязательные пустые, раскладывает <code>managers</code> в отдельные задачи (<code>autoadd=1</code>); для роли без пользователей — одна задача на роль</td>
+</tr>
+</tbody>
+</table>
+<h3 id="2-3-статусы-и-its_req-bp_task_start_events-id-2-set_status">2.3 Статусы и its_req — bp_task_start_events id=2 (<code>set_status</code>)</h3>
+<p>Глобальное событие старта задачи БП (nn=200), срабатывает на каждой точке:</p>
+<ol>
+<li>Берёт <code>bp_points.wf_status_attr_value</code> текущей точки. Если пусто — выходит.</li>
+<li>По процессу получает <code>action_entity_id</code>, атрибут статуса (<code>wf_status_attr_id</code>) и переменную id записи (<code>wf_id_var_id</code>).</li>
+<li><strong>Сущность не типа <code>its_req</code></strong> — <code>update &lt;entity&gt; set &lt;status_attr&gt; = &lt;value&gt; where id = var[&lt;id_var&gt;]</code>.</li>
+<li><strong>Сущность типа <code>its_req</code></strong> (<code>entity_types.code='its_req'</code>):
+   - если у записи пустой <code>req_id</code> — <code>insert into its_req (entity_id, created_by, entity_pk, entity_uuid, initial_req_uuid)</code> и <code>update &lt;entity&gt; set req_id</code>;
+   - номер: если параметр <code>its_disable_docnum_auto</code> ≠ 1, <code>entities.docnum_after_approve</code> ≠ 1 и <code>its_req.docnum</code> пуст — <code>get_number_by_entity_prefix(entity_id, entities.docnum_prefix)</code>;
+   - <code>its_req.title</code> собирается из краткого содержания (жёстко прописанный список сущностей);
+   - <code>update its_req set &lt;status_attr&gt; = &lt;value&gt;</code>.</li>
+</ol>
+<p>Если <code>docnum_after_approve = 1</code>, номер присваивается в <code>tasks_start_approve</code> после согласования.</p>
+<p>Для its_d_statements статусы задаются на точках workflow:</p>
+<table>
+<thead>
+<tr>
+<th>Точка</th>
+<th>wf_status_attr_value</th>
+<th>its_req_stat</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Старт</td>
+<td>1</td>
+<td>draft — Создан</td>
+</tr>
+<tr>
+<td>На доработке</td>
+<td>12</td>
+<td>rework — На доработке</td>
+</tr>
+<tr>
+<td>Успех</td>
+<td>3</td>
+<td>closed — Закрыт</td>
+</tr>
+<tr>
+<td>Отказано</td>
+<td>4</td>
+<td>refused — Отклонен</td>
+</tr>
+</tbody>
+</table>
+<p>Следствие: для новой сущности не надо писать код смены статусов и создания its_req — достаточно правильно настроить процесс (тип сущности, атрибут статуса, переменную id) и проставить <code>wf_status_attr_value</code> на точках.</p>
+<hr />
+<h2 id="3-создание-новой-заявки-с-согласованием">3. Создание новой заявки с согласованием</h2>
+<p>Пример: <code>its_d_newreq</code>, модуль <code>its</code>. Работа через MCP onedoc.</p>
+<h3 id="шаг-1-сущность">Шаг 1. Сущность</h3>
+<ol>
+<li><code>create_entity</code> — тип <code>its_req</code> (иначе <code>set_status</code> не создаст its_req и не даст номер).</li>
+<li>Обязательные атрибуты (<code>add_entity_attr</code>):</li>
+</ol>
+<table>
+<thead>
+<tr>
+<th>code</th>
+<th>тип</th>
+<th>Назначение</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>title</td>
+<td>varchar</td>
+<td>Наименование</td>
+</tr>
+<tr>
+<td>stat_id</td>
+<td>reference → its_req_stat</td>
+<td>Статус (атрибут workflow)</td>
+</tr>
+<tr>
+<td>req_id</td>
+<td>reference → its_req</td>
+<td>Регистрационная карточка</td>
+</tr>
+<tr>
+<td>doc_num</td>
+<td>varchar</td>
+<td>Номер (если нужен на самой записи)</td>
+</tr>
+<tr>
+<td>created_by / created_at</td>
+<td>системные</td>
+<td></td>
+</tr>
+<tr>
+<td>type_id</td>
+<td>reference → <code>&lt;справочник видов&gt;</code></td>
+<td>Только если маршрут зависит от вида</td>
+</tr>
+</tbody>
+</table>
+<ol start="3">
+<li>Настроить сущность: <code>task_approve_t_id</code> (шаблон по умолчанию), при необходимости <code>docnum_prefix</code>, <code>docnum_after_approve</code>.</li>
+</ol>
+<pre><code class="language-sql">update entities set task_approve_t_id = &lt;id шаблона&gt;, docnum_prefix = 'НЗ' where code = 'its_d_newreq';
+</code></pre>
+<h3 id="шаг-2-шаблон-согласования-и-этапы">Шаг 2. Шаблон согласования и этапы</h3>
+<pre><code class="language-sql">insert into task_approve_t (code, title, can_add_task) values ('its_d_newreq', 'Новая заявка', 1) returning id;
+
+insert into task_approve_t_s (task_approve_t_id, step_nn, nn, title, type_id, rt_id, staff_id, approve_type_id, is_rq)
+values
+ (&lt;t_id&gt;, 1, 1, 'Руководитель', (select id from task_types where code='approve'),
+  (select id from task_approve_t_s_rt where code='task_staff'), &lt;task_staff.id&gt;,
+  (select id from task_approve_type where code='serial'), 1),
+ (&lt;t_id&gt;, 2, 1, 'Подписание', (select id from task_types where code='sign'),
+  (select id from task_approve_t_s_rt where code='user'), null,
+  (select id from task_approve_type where code='serial'), 1);
+-- для этапа «Пользователь» дополнительно user_id
+</code></pre>
+<p>Этап по роли:</p>
+<pre><code class="language-sql">insert into task_approve_t_s (task_approve_t_id, step_nn, nn, title, type_id, rt_id, role_id, is_rq)
+values (&lt;t_id&gt;, 3, 1, 'Исполнение', (select id from task_types where code='exec'),
+        (select id from task_approve_t_s_rt where code='role'), &lt;role_id&gt;, 1) returning id;
+insert into task_approve_t_s_roles (task_approve_t_s_id, role_id, send_by_role) values (&lt;s_id&gt;, &lt;role_id&gt;, 1);
+</code></pre>
+<p>Ограничение <code>db_execute_sql</code>: возвращается только первый результат, а <code>?</code> в литералах ломается — делать по одному оператору.</p>
+<h3 id="шаг-3-создание-записи-с-маршрутом-entitytool-визард">Шаг 3. Создание записи с маршрутом (entityTool-визард)</h3>
+<p>Скопировать <code>its_d_statements_wizard</code> (<code>create_bp_process</code> по шаблону) и поменять:</p>
+<ul>
+<li><code>DMLI("insert","its_d_newreq",...)</code>;</li>
+<li>источник шаблона: <code>select task_approve_t_id from entities where code='its_d_newreq'</code> (или из справочника вида);</li>
+<li><code>redirect_url = "its_d_newreqdetails/"..i</code>.</li>
+</ul>
+<p>Сохранить savepoint/rollback из оригинала: при ошибке вставки задач запись и задачи откатываются.</p>
+<h3 id="шаг-4-события-сущности">Шаг 4. События сущности</h3>
+<p><code>entityEvent</code> <code>its_d_newreq_upsert</code> с одной script-точкой:</p>
+<pre><code class="language-lua">local pkgTasks = dbrequire(&quot;pkg/tasks&quot;)
+local errText,errNum = pkgTasks.upsertEvent(&quot;its_d_newreq&quot;,var.pk,sys.user_id)
+if errNum~=0 then
+    var.last_error = errText
+    return
+end
+</code></pre>
+<p>Нужно, только если есть этапы с формулой, зависящей от полей записи.</p>
+<h3 id="шаг-5-workflow">Шаг 5. Workflow</h3>
+<p>Создать процесс <code>its_d_newreq</code> типа <code>workFlow</code> (копия <code>its_d_statements</code> или <code>task_approve_template</code> как основа):</p>
+<ol>
+<li><code>action_entity_id</code> = новая сущность, <code>wf_status_attr_id</code> = <code>stat_id</code>, <code>wf_id_var_id</code> = переменная <code>id</code>.</li>
+<li>Переменные: <code>id</code>, <code>last_error</code>, <code>approved</code>, <code>approve_res_id</code>.</li>
+<li>Точки:
+   - <strong>Старт</strong> (script, <code>wf_status_attr_value=1</code>):
+     <code>lua
+     local pkg_tasks = dbrequire("pkg/tasks")
+     local errText,errNum = pkg_tasks.managersToStep(sys.action_entity_id, var.id, sys.user_id)
+     if errNum~=0 then var.last_error = errText return end</code>
+   - шлюз <code>var.last_error==""</code> / <code>var.last_error~=""</code> → EndEvent «Ошибка»;
+   - <strong>Согласование</strong> — subprocess <code>tasks_start_approve</code>;
+   - шлюз <code>var.approved=="1"</code> → «Успех» (<code>wf_status_attr_value=3</code>);
+   - шлюз <code>EntityValueById("task_approve_res","code",var.approve_res_id) == "rework"</code> → script сохранения результатов → «На доработке» (12);
+   - иначе → «Отказано» (4);
+   - при необходимости уведомления — subprocess <code>workflow_notify_close</code>.</li>
+<li>Script для доработки (позволяет перезапустить маршрут):
+   <code>lua
+   local uuid = EntityValueById(EntityValueById("entities","code",sys.action_entity_id),"sys$uuid",var.id)
+   local errText,errNum = SqlExec2([[update tasks set approve_res2_id=approve_res_id, closed2_dt=closed_dt, status2_id=status_id where entity_pk=?]],uuid)
+   if errNum~=0 then var.last_error = errText return end
+   errText,errNum = SqlExec2([[update tasks set approve_res_id=null, closed_dt=null, status_id=null where entity_pk=?]],uuid)
+   if errNum~=0 then var.last_error = errText return end</code></li>
+</ol>
+<p>Нумерацию отдельной точкой (как «Нумерация документа» в its_d_statements) делать не нужно, если работает <code>set_status</code> + <code>docnum_prefix</code>; собственная точка нужна только при особом формате номера.</p>
+<p>В скриптах БП не вызывать <code>Commit()/Rollback()</code>.</p>
+<h3 id="шаг-6-кнопки-согласования">Шаг 6. Кнопки согласования</h3>
+<p>Ничего создавать не нужно: задачи обрабатываются общим <code>task_approve_or_reject</code> (входы: <code>entity_code</code>, <code>pk_uuid</code>, <code>step_nn</code>, <code>approve_res_id</code>, <code>approve_t_s_c_id</code>, <code>reason</code>). Он:</p>
+<ul>
+<li>проверяет право <code>is_detail_view</code> на запись;</li>
+<li>находит открытую задачу пользователя (или его замещаемого по <code>users_alternate</code>) на шаге;</li>
+<li>запрашивает комментарий: <code>need_reason=1</code> — необязательный, <code>2</code> — обязательный (для <code>rework</code> и вида <code>exec</code>);</li>
+<li>выполняет <code>BPMSRunManualTask</code>, пишет историю <code>task_hst_add</code>, ставит номер при <code>set_docnum</code> / <code>its_r_nomen_docnum</code> / <code>deps_entities_counter</code>;</li>
+<li>поддерживает массовое согласование (<code>mass=1</code>, <code>mass_data</code>).</li>
+</ul>
+<p>Специфичные для сущности ветки (как <code>its_decision</code>, <code>its_vacation</code>) добавлять в этот процесс не стоит — лучше реализовать в своём workflow.</p>
+<h3 id="шаг-7-страница">Шаг 7. Страница</h3>
+<p>Автостраница <code>&lt;entity&gt;details</code> уже показывает «Маршрут» по <code>tasks.entity_pk</code>. Свои страницы не называть кодами сущностей (<code>create_page</code> перезапишет автостраницу).</p>
+<h3 id="шаг-8-проверка">Шаг 8. Проверка</h3>
+<ol>
+<li>Создать запись через визард → проверить <code>tasks</code> (<code>where entity_pk = &lt;uuid&gt; order by step_nn, nn</code>).</li>
+<li>Запустить workflow → <code>stat_id=1</code>, создан <code>its_req</code>, присвоен <code>docnum</code>.</li>
+<li>Пройти согласование всеми ролями, включая «На доработке» и «Отказать».</li>
+<li>Проверить итоговые <code>stat_id</code> / <code>its_req.stat_id</code> и историю.</li>
+</ol>
+<hr />
+<h2 id="4-редактирование-этапов-согласования">4. Редактирование этапов согласования</h2>
+<h3 id="4-1-где-менять">4.1 Где менять</h3>
+<table>
+<thead>
+<tr>
+<th>Что</th>
+<th>Действие</th>
+<th>Влияет на</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Состав и порядок этапов</td>
+<td><code>task_approve_t_s</code> (step_nn, nn)</td>
+<td>только новые записи</td>
+</tr>
+<tr>
+<td>Исполнитель</td>
+<td>rt_id + user_id / role_id / staff_id</td>
+<td>новые записи; для формулы — также существующие при сохранении (upsertEvent)</td>
+</tr>
+<tr>
+<td>Параллельно / последовательно</td>
+<td><code>approve_type_id</code></td>
+<td>новые записи</td>
+</tr>
+<tr>
+<td>Вид задачи</td>
+<td><code>type_id</code></td>
+<td>новые записи</td>
+</tr>
+<tr>
+<td>Обязательность</td>
+<td><code>is_rq</code></td>
+<td>проверка в <code>managersToStep</code> при старте</td>
+</tr>
+<tr>
+<td>Условие этапа</td>
+<td><code>use_ng_if</code>, <code>ng_if</code></td>
+<td>новые записи; формулы — при upsert</td>
+</tr>
+<tr>
+<td>Шаблон сущности целиком</td>
+<td><code>entities.task_approve_t_id</code> или справочник вида</td>
+<td>новые записи</td>
+</tr>
+</tbody>
+</table>
+<p>Шаблон копируется в <code>tasks</code> в момент создания записи. Изменения шаблона не попадают в уже созданные записи, кроме пересчёта формул.</p>
+<h3 id="4-2-типовые-операции">4.2 Типовые операции</h3>
+<p>Добавить этап между шагами 1 и 2:</p>
+<pre><code class="language-sql">update task_approve_t_s set step_nn = step_nn + 1 where task_approve_t_id = &lt;t_id&gt; and step_nn &gt;= 2;
+insert into task_approve_t_s (task_approve_t_id, step_nn, nn, title, type_id, rt_id, user_id, is_rq)
+values (&lt;t_id&gt;, 2, 1, 'Юрист', (select id from task_types where code='approve'),
+        (select id from task_approve_t_s_rt where code='user'), &lt;user_id&gt;, 1);
+</code></pre>
+<p>Параллельное согласование в одном шаге — несколько этапов с одним <code>step_nn</code> и разными <code>nn</code>, <code>approve_type_id = parallel</code>.</p>
+<p>Сменить исполнителя:</p>
+<pre><code class="language-sql">update task_approve_t_s set rt_id = (select id from task_approve_t_s_rt where code='user'), user_id = &lt;user_id&gt;, staff_id = null
+where id = &lt;s_id&gt;;
+</code></pre>
+<p>Сделать этап условным:</p>
+<pre><code class="language-sql">update task_approve_t_s set use_ng_if = 1, ng_if = 'detail.type_id == 5' where id = &lt;s_id&gt;;
+</code></pre>
+<p>Удалить этап: сначала проверить, что нет открытых задач.</p>
+<pre><code class="language-sql">select count(1) from tasks where approve_t_s_id = &lt;s_id&gt; and closed_dt is null;
+delete from task_approve_t_s_roles where task_approve_t_s_id = &lt;s_id&gt;;
+delete from task_approve_t_s where id = &lt;s_id&gt;;
+</code></pre>
+<p>Если на этап ссылаются старые задачи, лучше не удалять, а сделать необязательным (<code>is_rq=0</code>) или выключить условием <code>ng_if='false'</code>.</p>
+<h3 id="4-3-перенос-изменений-в-существующие-записи">4.3 Перенос изменений в существующие записи</h3>
+<p>Для черновиков (workflow ещё не запускался):</p>
+<pre><code class="language-sql">-- посмотреть
+select id, title, step_nn, nn, approve_t_s_id, managers from tasks where entity_pk = '&lt;uuid&gt;' order by step_nn, nn;
+</code></pre>
+<p>Точечно — обновить <code>tasks.managers</code> / <code>step_nn</code> вручную, либо удалить строки маршрута записи и пересоздать их логикой визарда (шаг 2.1) для этого <code>entity_pk</code>. Для записей на согласовании правка маршрута меняет текущий процесс — делать только через доработку.</p>
+<h3 id="4-4-частые-ошибки">4.4 Частые ошибки</h3>
+<ul>
+<li>«Не указан ответственный в разделе Маршрут» — обязательный этап без <code>managers</code>: пустая формула, у пользователя нет руководителя, или <code>rt_id</code>/<code>staff_id</code> не заданы.</li>
+<li>Задачи не появились — у вида документа / сущности пустой <code>task_approve_t_id</code> (визард выдаст «Ошибка при поиске вида документа»).</li>
+<li>Нет its_req и номера — сущность не типа <code>its_req</code>, не задан <code>wf_status_attr_id</code> / <code>wf_id_var_id</code> у процесса, или на точке нет <code>wf_status_attr_value</code>.</li>
+<li>Номер не присваивается — включен параметр <code>its_disable_docnum_auto</code> или <code>docnum_after_approve=1</code> (номер появится после согласования).</li>
+<li>Массивы в <code>managers</code> — только через <code>JsonToString(array(...))</code>, иначе получится объект <code>{"1":…}</code>.</li>
+</ul>
+<p style="margin-top:32px"><a class="home" href="index.html">← На главную</a></p>
+</main>
+</div>
+</body>
+</html>
