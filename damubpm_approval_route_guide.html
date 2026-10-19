@@ -83,7 +83,8 @@ footer{max-width:1240px;margin:0 auto;padding:0 16px 32px;color:var(--muted);fon
 <li><a href="#5-3-маршрут-ui_block_tpl-task_approve_task">5.3 «Маршрут» — ui_block_tpl task_approve_task</a></li>
 <li><a href="#5-4-ход-исполнения-ui_block_tpl-task_approve_hst">5.4 «Ход исполнения» — ui_block_tpl task_approve_hst</a></li>
 <li><a href="#5-5-добавить-вкладки-на-новую-details-страницу">5.5 Добавить вкладки на новую details-страницу</a></li>
-<li><a href="#5-6-условия-и-частые-ошибки">5.6 Условия и частые ошибки</a></li>
+<li><a href="#5-6-заголовки-вкладок-и-блоков">5.6 Заголовки вкладок и блоков</a></li>
+<li><a href="#5-7-условия-и-частые-ошибки">5.7 Условия и частые ошибки</a></li>
 </ul>
 </li>
 </ul>
@@ -923,6 +924,7 @@ select id, title, step_nn, nn, approve_t_s_id, managers from tasks where entity_
   ]
 }
 </code></pre>
+<p><code>header_title</code> у блоков <code>tabview_tab</code> обязателен — это текст ярлыка вкладки (см. 5.6).</p>
 <ol start="2">
 <li>Связи (все типа <code>block</code>):</li>
 </ol>
@@ -950,8 +952,77 @@ order by b.id, n.nn;
 </code></pre>
 <p>Проверки: у всех элементов <code>et='block'</code> заполнен <code>block_id</code>; каждый <code>tabview_tab</code> привязан к TabView; блоки содержимого <code>task_approve_*</code> привязаны к своей вкладке, а не к TabView напрямую.</p>
 <p>Другие готовые блоки для вкладок документа: <code>task_eds_files</code> (Подписанные файлы), <code>its_link</code> (Связанные документы), <code>log_rows</code> (История), <code>global_msg</code> (Обсуждение и файлы), <code>files_for_preview</code> (Предпросмотр), <code>changes</code> (Изменение документа).</p>
-<h3 id="5-6-условия-и-частые-ошибки">5.6 Условия и частые ошибки</h3>
+<h3 id="5-6-заголовки-вкладок-и-блоков">5.6 Заголовки вкладок и блоков</h3>
+<p>Текст ярлыка вкладки и заголовок панели берутся <strong>только</strong> из <code>pages_ui_blocks.header_title</code>. Поле <code>title</code> — служебное имя блока в настройках, на экран как заголовок не выводится. Если <code>header_title</code> пуст, шаблон просто не выводит атрибут <code>header</code> — вкладка получается без надписи (пустой ярлык), панель — без заголовка. Ошибки при генерации нет.</p>
+<table>
+<thead>
+<tr>
+<th>ui_block_tpl</th>
+<th>Что выводится из <code>header_title</code></th>
+<th>Если пусто</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>tabview_tab</code></td>
+<td><code>&lt;p-tabPanel header="…"&gt;</code> — текст ярлыка вкладки</td>
+<td>пустой ярлык</td>
+</tr>
+<tr>
+<td><code>panel_block</code></td>
+<td><code>&lt;h5 translate="…"&gt;</code> над панелью</td>
+<td>панель без заголовка</td>
+</tr>
+<tr>
+<td><code>default_page</code>, <code>default</code>, <code>default_page_view</code></td>
+<td><code>&lt;h4&gt;…&lt;/h4&gt;</code> над блоком</td>
+<td>блок без заголовка (нормально для служебных обёрток)</td>
+</tr>
+<tr>
+<td><code>tabview</code></td>
+<td>не используется</td>
+<td>—</td>
+</tr>
+<tr>
+<td><code>task_approve_task</code>, <code>task_approve_hst</code>, <code>its_link</code>, <code>task_eds_files</code>, <code>files_for_preview</code></td>
+<td>не используется — заголовок зашит в шаблон («Маршрут документа», «Ход исполнения», «Связанные документы»)</td>
+<td>—</td>
+</tr>
+</tbody>
+</table>
+<p>Правила:</p>
 <ul>
+<li>У каждого блока <code>tabview_tab</code> обязательно заполнять <code>header_title</code> (в <code>add_page_ui_blocks</code> — поле <code>header_title</code>, не только <code>title</code>). Удобно делать <code>title</code> и <code>header_title</code> одинаковыми, как в its_d_statements и its_d_company_check.</li>
+<li>У блоков содержимого (<code>panel_block</code>, <code>default_page</code> внутри вкладки) <code>header_title</code> заполнять, если нужен заголовок секции («Основные реквизиты», «Сведения о компании»); у служебных обёрток оставлять пустым, чтобы не дублировать ярлык вкладки.</li>
+<li>Текст заголовка <code>panel_block</code> проходит через <code>translate</code> — для казахского/английского интерфейса добавить перевод (<code>create_translates</code>).</li>
+<li>Шаблон <code>tabview_tab</code> подставляет <code>title</code> вкладки в атрибуты внутри неё как их <code>header_title</code> — поэтому <code>title</code> вкладки тоже заполнять осмысленно.</li>
+</ul>
+<p>Найти пустые заголовки на странице:</p>
+<pre><code class="language-sql">select b.id, b.code, ubt.code tpl, b.title, b.header_title
+from pages_ui_blocks b
+join pages p on p.id = b.pages_id
+join ui_block_tpl ubt on ubt.id = b.ui_block_tpl_id
+where p.code = 'its_d_company_checkdetails'
+  and ubt.code in ('tabview_tab','panel_block')
+  and coalesce(b.header_title,'') = '';
+</code></pre>
+<p>Исправить (взять из <code>title</code>) и перегенерировать страницу:</p>
+<pre><code class="language-sql">update pages_ui_blocks b set header_title = b.title
+from pages p, ui_block_tpl ubt
+where p.id = b.pages_id and ubt.id = b.ui_block_tpl_id
+  and p.code = 'its_d_company_checkdetails'
+  and ubt.code = 'tabview_tab'
+  and coalesce(b.header_title,'') = '' and coalesce(b.title,'') &lt;&gt; '';
+</code></pre>
+<p>Проверить, что заголовки попали в сгенерированную страницу:</p>
+<pre><code class="language-sql">select (select string_agg(m[1], ' | ')
+          from regexp_matches(p.angular_template, 'header=.([^&quot;]*).', 'g') m) headers
+from pages p where p.code = 'its_d_company_checkdetails';
+</code></pre>
+<p>Ожидаемо: <code>Главная | Предпросмотр | Маршрут | Ход исполнения | Связанные документы</code>. Если в <code>pages_ui_blocks</code> заголовки есть, а здесь нет — страница не перегенерирована; если и здесь есть, а в браузере пусто — обновить страницу без кэша.</p>
+<h3 id="5-7-условия-и-частые-ошибки">5.7 Условия и частые ошибки</h3>
+<ul>
+<li>Вкладка без надписи — у блока <code>tabview_tab</code> пустой <code>header_title</code> (заполнен только <code>title</code>), см. 5.6.</li>
 <li>Скрыть вкладку по полю записи — <code>ng_if</code> у блока <code>tabview_tab</code> (например <code>detail['type_id$code'] == 'leave'</code>); скрыть совсем — <code>1==0</code>, как у «Предпросмотр».</li>
 <li>Вкладка «Маршрут» пустая на новой записи — у сущности нет <code>entities.task_approve_t_id</code> и записи ещё не создан маршрут визардом.</li>
 <li>«Ход исполнения» пустой — workflow не запускался (у задач нет <code>status_id</code>), это нормально.</li>
