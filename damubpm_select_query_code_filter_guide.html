@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DamuBPM — фильтр ссылочного поля через `query_code`</title>
+<style>
+:root { --bg:#f3f5f9; --card:#fff; --text:#1f2937; --muted:#6b7280; --primary:#1d4ed8; --border:#e5e7eb; --code:#0f172a; }
+* { box-sizing:border-box; }
+body { margin:0; background:var(--bg); color:var(--text); font:15px/1.6 -apple-system,"Segoe UI",Roboto,Arial,sans-serif; }
+header { background:linear-gradient(120deg,#0b2a5b,#123e7c 55%,#0f5f63); color:#fff; padding:20px 32px; }
+header a { color:#fff; text-decoration:none; opacity:.9; font-size:14px; }
+header a:hover { opacity:1; text-decoration:underline; }
+main { max-width:1100px; margin:24px auto 48px; background:var(--card); border-radius:20px; padding:32px 40px; box-shadow:0 1px 3px rgba(15,23,42,.06); }
+h1 { margin-top:0; font-size:28px; line-height:1.25; }
+h2 { margin-top:36px; padding-top:12px; border-top:1px solid var(--border); font-size:21px; }
+h3 { margin-top:24px; font-size:17px; }
+a { color:var(--primary); }
+code { font-family:"JetBrains Mono",Consolas,monospace; font-size:13px; background:#eef2ff; color:#1e3a8a; padding:1px 5px; border-radius:5px; }
+pre { background:var(--code); color:#e2e8f0; padding:14px 16px; border-radius:12px; overflow:auto; }
+pre code { background:none; color:inherit; padding:0; font-size:13px; }
+table { border-collapse:collapse; width:100%; margin:12px 0; font-size:14px; }
+th, td { border:1px solid var(--border); padding:7px 10px; text-align:left; vertical-align:top; }
+th { background:#f8fafc; }
+blockquote { margin:16px 0; padding:12px 16px; background:#eff6ff; border-left:4px solid var(--primary); border-radius:8px; }
+blockquote p { margin:0; }
+hr { display:none; }
+.back-bottom { margin-top:32px; }
+</style>
+</head>
+<body>
+<header><a href="index.html">← Главная</a></header>
+<main>
+<h1 id="damubpm-query_code">DamuBPM — фильтр ссылочного поля через <code>query_code</code></h1>
+<p>Как на автогенерируемой detail-странице сузить выпадающий список ссылочного поля (<code>prime-select</code>) по значению другого поля карточки. Пример — «Номер банковского счета организации» показывает только счета организации, выбранной в поле «Организация». Проверено на стенде test-helpdesk 05.11.2026 на странице <code>its_cli_contractdetails</code>.</p>
+<blockquote>
+<p>Главная идея: <strong>фильтр задаётся параметром компонента <code>query_code</code> у элемента страницы (<code>pages_ui_blocks_n_cpv</code>). Значение подставляется в Angular-выражение внутри одинарных кавычек, поэтому в нём можно склеить код query, фильтр <code>flt$&lt;колонка&gt;$eq=</code> и значение из <code>detail</code>.</strong> После правки страницу нужно перегенерировать.</p>
+</blockquote>
+<hr />
+<h2 id="1">1. Где что лежит</h2>
+<pre><code class="language-text">pages (is_auto = 1)
+└── pages_ui_blocks
+    └── pages_ui_blocks_n            ← элемент: attr_id, ui_comp_id
+        └── pages_ui_blocks_n_cpv    ← параметры компонента: param_id, value
+                └── ui_comp_params   ← attr = 'query_code', comp_id = компонент
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>Таблица</th>
+<th>Нужные колонки</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>pages_ui_blocks_n</code></td>
+<td><code>id</code>, <code>code</code>, <code>pages_ui_blocks_id</code>, <code>attr_id</code> (не <code>entity_attrs_id</code>), <code>ui_comp_id</code></td>
+</tr>
+<tr>
+<td><code>pages_ui_blocks_n_cpv</code></td>
+<td><code>pages_ui_blocks_n_id</code>, <code>param_id</code>, <code>value</code></td>
+</tr>
+<tr>
+<td><code>ui_comp_params</code></td>
+<td><code>id</code>, <code>attr</code>, <code>comp_id</code></td>
+</tr>
+<tr>
+<td><code>entity_attrs</code></td>
+<td><code>entity_link_id</code>, <code>ui_component_id</code></td>
+</tr>
+<tr>
+<td><code>data_types</code></td>
+<td><code>ui_default_component_id</code> (у <code>reference</code> — <code>select</code>, id 4)</td>
+</tr>
+<tr>
+<td><code>entities</code></td>
+<td><code>def_sel_query_id</code> — query выбора по умолчанию</td>
+</tr>
+</tbody>
+</table>
+<p>Компонент элемента выбирается так: <code>pages_ui_blocks_n.ui_comp_id</code> → <code>entity_attrs.ui_component_id</code> → <code>data_types.ui_default_component_id</code>.</p>
+<p>Параметр <code>query_code</code> есть у нескольких компонентов, и у каждого свой <code>ui_comp_params.id</code>. Для <code>select</code> на test-helpdesk это <code>id = 2</code>. На другом стенде id искать по <code>attr</code> и <code>comp_id</code>:</p>
+<pre><code class="language-sql">select cp.id, cp.attr, uc.code
+from ui_comp_params cp join ui_components uc on uc.id = cp.comp_id
+where cp.attr = 'query_code' and uc.code = 'select';
+</code></pre>
+<hr />
+<h2 id="2-select-query_code">2. Как компонент <code>select</code> использует <code>query_code</code></h2>
+<p>Фрагмент <code>ui_components.angular_template</code> (id 4):</p>
+<pre><code class="language-html">&lt;prime-select
+    formControlName=&quot;{{.code}}&quot;
+    {{if isnil .component_param.flt }}{{else}}[flt]=&quot;{{.component_param.flt}}&quot;{{end}}
+    {{if isnil .component_param.flteq }}{{else}}[flteq]=&quot;{{.component_param.flteq}}&quot;{{end}}
+    {{if isnil .component_param.fltin }}{{else}}[fltin]=&quot;{{.component_param.fltin}}&quot;{{end}}
+    {{if isnil .component_param.param1 }}{{else}}[param1]=&quot;{{.component_param.param1}}&quot;{{end}}
+    [query-code]=&quot;'{{if isnil .component_param.query_code }}{{.sel_query_code}}{{else}}{{.component_param.query_code}}{{end}}'&quot;
+&gt;
+</code></pre>
+<ul>
+<li>Без параметра берётся <code>sel_query_code</code> — query по умолчанию связанной сущности (<code>entities.def_sel_query_id</code>).</li>
+<li>Значение параметра попадает <strong>внутрь</strong> <code>'…'</code>. Значение вида</li>
+</ul>
+<p><code>text
+  companies_bank_select&amp;flt$companies_id$eq='+detail.company_id+'</code></p>
+<p>превращается в выражение Angular</p>
+<p><code>html
+  [query-code]="'companies_bank_select&amp;flt$companies_id$eq='+detail.company_id+''"</code></p>
+<p>то есть в строку <code>companies_bank_select&amp;flt$companies_id$eq=13724</code>, которая пересчитывается при изменении <code>detail.company_id</code>.
+- Фильтр <code>flt$&lt;колонка&gt;$eq=&lt;значение&gt;</code> применяется к <code>main.&lt;колонка&gt;</code> таблицы query. Колонку не обязательно выводить в select: в <code>its_cli_tp_bank_select</code> нет <code>its_cli_id</code>, а фильтр <code>flt$its_cli_id$eq</code> работает.
+- Пустые значения параметров генератор пропускает (<code>nullif(value,'') is not null</code>).
+- Параметры <code>flt</code>, <code>flteq</code>, <code>fltin</code>, <code>fltnotin</code>, <code>param1</code>, <code>param2</code>, <code>limit</code> в шаблоне есть, но как они работают, на стенде не проверялось.</p>
+<hr />
+<h2 id="3">3. Рабочие примеры на стенде</h2>
+<table>
+<thead>
+<tr>
+<th>Страница</th>
+<th>Поле</th>
+<th><code>query_code</code></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>its_cli_contractdetails</code></td>
+<td><code>companies_bank_id</code></td>
+<td><code>companies_bank_select&amp;flt$companies_id$eq='+detail.company_id+'</code></td>
+</tr>
+<tr>
+<td><code>its_d_invoicedetails</code></td>
+<td><code>its_cli_tp_bank_id</code></td>
+<td><code>its_cli_tp_bank_select&amp;flt$its_cli_id$eq='+detail.its_cli_id+'</code></td>
+</tr>
+<tr>
+<td><code>its_d_invoicedetails</code></td>
+<td><code>its_cli_contract_id</code></td>
+<td><code>its_cli_contract_select&amp;flt$its_cli_id$eq='+detail.its_cli_id+'</code></td>
+</tr>
+<tr>
+<td><code>its_stmt_in_enrolldetails</code></td>
+<td><code>its_cli_contract_item_id</code></td>
+<td><code>its_cli_contract_item_select&amp;flt$its_cli_contract_id$eq='+detail.its_cli_contract_id+'</code></td>
+</tr>
+<tr>
+<td><code>its_d_statementsdetails</code></td>
+<td><code>staff_position_id</code></td>
+<td><code>staff_position_select&amp;flt$deps_id$eq='+detail.new_dep_id+'</code></td>
+</tr>
+<tr>
+<td><code>its_indetails</code></td>
+<td><code>receiver_cli_id</code></td>
+<td><code>its_cli_select_my_branch</code> — фильтр внутри SQL query (<code>:user_id</code>)</td>
+</tr>
+</tbody>
+</table>
+<p>Если условие нельзя выразить фильтром по колонке, делают отдельный query с условием в SQL после <code>%filter%</code> (как <code>its_cli_select_my_branch</code>) и указывают его код без <code>flt$</code>.</p>
+<hr />
+<h2 id="4">4. Порядок работы</h2>
+<h3 id="41">4.1. Найти элемент</h3>
+<pre><code class="language-sql">select n.id n_id, n.code, n.ui_comp_id, ea.code attr, ea.title, el.code link_ent,
+       (select json_agg(json_build_object('attr', cp.attr, 'v', v.value))
+          from pages_ui_blocks_n_cpv v join ui_comp_params cp on cp.id = v.param_id
+         where v.pages_ui_blocks_n_id = n.id) cpv
+from pages p
+join pages_ui_blocks b on b.pages_id = p.id
+join pages_ui_blocks_n n on n.pages_ui_blocks_id = b.id
+left join entity_attrs ea on ea.id = n.attr_id
+left join entities el on el.id = ea.entity_link_id
+where p.code = 'its_cli_contractdetails' and ea.code = 'companies_bank_id';
+</code></pre>
+<h3 id="42-query">4.2. Проверить query связанной сущности</h3>
+<pre><code class="language-sql">select e.code, q.code qcode, q.sql_text
+from entities e left join queries q on q.id = e.def_sel_query_id
+where e.code = 'companies_bank';
+</code></pre>
+<p>Убедиться, что в таблице есть колонка для фильтра (<code>companies_bank.companies_id</code>) и в SQL есть <code>%filter%</code>.</p>
+<h3 id="43">4.3. Записать параметр</h3>
+<p>Кавычки собирать через <code>chr(39)</code> — так не ошибиться с экранированием:</p>
+<pre><code class="language-sql">with u as (
+  update pages_ui_blocks_n set ui_comp_id = 4
+  where id = 18949 and ui_comp_id is null returning id
+), i as (
+  insert into pages_ui_blocks_n_cpv (pages_ui_blocks_n_id, param_id, value)
+  select 18949, 2,
+         'companies_bank_select&amp;flt$companies_id$eq=' || chr(39) || '+detail.company_id+' || chr(39)
+  where not exists (select 1 from pages_ui_blocks_n_cpv
+                    where pages_ui_blocks_n_id = 18949 and param_id = 2)
+  returning id, value
+)
+select (select count(*) from u) upd, (select json_agg(i) from i) ins;
+</code></pre>
+<p><code>ui_comp_id = 4</code> ставится явно, чтобы параметр относился к тому компоненту, который реально выводится. Для reference-атрибута это тот же компонент по умолчанию.</p>
+<h3 id="44">4.4. Перегенерировать страницу</h3>
+<p>Запись в <code>pages_ui_blocks_n_cpv</code> страницу <strong>не</strong> перегенерирует: <code>pages.updated_at</code> и <code>angular_template</code> не меняются. Генерация — <code>pkg/page.genPages(entity_id, user_id)</code> (передаётся id <strong>сущности</strong>, генерируются все её автостраницы). Одноразовый крон, который сам себя выключает:</p>
+<pre><code class="language-lua">SqlExec2(&quot;update crontab set is_active = 0, warning_text = 'running' where code = 'its_cli_contract_genpages_once'&quot;)
+Commit()
+local res = &quot;&quot;
+local ok, e = pcall(function()
+  local page = dbrequire(&quot;pkg/page&quot;)
+  local errText, errNum = page.genPages(3190, 1)
+  res = &quot;genPages: &quot; .. tostring(errNum) .. &quot; &quot; .. tostring(errText)
+end)
+if not ok then res = &quot;error: &quot; .. tostring(e) end
+SqlExec2(&quot;update crontab set is_active = 0, warning_text = ? where code = 'its_cli_contract_genpages_once'&quot;, res)
+Commit()
+</code></pre>
+<p>Создать через MCP <code>create_crontab</code> (<code>croninterval</code> <code>*/10 * * * * *</code>, <code>is_active = true</code>, модуль сущности). Через 10–20 секунд в <code>warning_text</code> должно быть <code>genPages: 0</code>, <code>is_active = 0</code>.</p>
+<h3 id="45">4.5. Проверить результат</h3>
+<pre><code class="language-sql">select (select is_active::text || ' | ' || coalesce(warning_text, '')
+          from crontab where code = 'its_cli_contract_genpages_once') cron,
+       p.updated_at,
+       substr(p.angular_template,
+              position('[query-code]=&quot;''companies_bank_select' in p.angular_template), 120) frag
+from pages p where p.id = 12053;
+</code></pre>
+<p>Ожидается <code>[query-code]="'companies_bank_select&amp;flt$companies_id$eq='+detail.company_id+''"</code>.</p>
+<hr />
+<h2 id="5">5. Подводные камни</h2>
+<ol>
+<li>Колонка ссылки на атрибут в <code>pages_ui_blocks_n</code> — <code>attr_id</code>. Запрос с <code>entity_attrs_id</code> падает с <code>column does not exist</code>.</li>
+<li>У <code>data_types</code> нет <code>ui_component_id</code> — колонка называется <code>ui_default_component_id</code>.</li>
+<li>Тройные кавычки (<code>eq='''+detail…</code>) дают <code>unterminated quoted string</code>. Использовать <code>chr(39)</code>.</li>
+<li><code>$</code> внутри строкового литерала (<code>flt$companies_id$eq</code>) безопасен. Нельзя только <code>$1</code>, <code>$2</code>… — MCP <code>db_execute_sql</code> примет их за параметры. Символ <code>?</code> в литерале тоже ломается (<code>chr(63)</code>).</li>
+<li><code>db_execute_sql</code> принимает SQL в Base64; из нескольких операторов возвращает только первый результат, поэтому изменения удобно собирать в один <code>with … returning</code>.</li>
+<li>Без перегенерации правка не видна. <code>genPages</code> принимает id сущности, а не страницы.</li>
+<li>Пока поле-источник пустое, выражение даёт <code>…$eq=null</code> или <code>…$eq=undefined</code>, и список пустой. Это ожидаемо, но пользователю стоит подсказать, что сначала выбирается организация.</li>
+<li>При смене поля-источника уже выбранное значение зависимого поля не очищается. Если нужно, это отдельная логика на странице.</li>
+<li>Значение, которое само в кавычках (<code>'its_staff_bank_select'</code>, встречается на <code>its_d_hr_contract_staff_ndetails</code>), после подстановки даёт <code>''its_staff_bank_select''</code>. Такое выражение подозрительно; в браузере не проверено. Писать код query без кавычек.</li>
+<li>Фильтр в <code>query_code</code> — только удобство интерфейса. Права на строки определяются <code>entity_grants</code> и <code>entity_view_limits</code>; серверную проверку, что счёт принадлежит организации договора, фильтр не заменяет.</li>
+</ol>
+<hr />
+<h2 id="6">6. Короткая памятка</h2>
+<pre><code class="language-text">ЗАВИСИМЫЙ СПИСОК НА DETAIL-СТРАНИЦЕ
+1. pages_ui_blocks_n (attr_id) → id элемента
+2. entities.def_sel_query_id → код query, есть ли колонка и %filter%
+3. ui_comp_params: attr='query_code' для своего компонента → param_id
+4. pages_ui_blocks_n_cpv.value = &lt;query&gt;&amp;flt$&lt;колонка&gt;$eq='+detail.&lt;поле&gt;+'
+   (кавычки через chr(39))
+5. pkg/page.genPages(&lt;entity_id&gt;, 1) одноразовым кроном → genPages: 0
+6. pages.angular_template содержит [query-code]=&quot;'&lt;query&gt;&amp;flt$…'+detail.&lt;поле&gt;+''&quot;
+7. Проверить в браузере: пустой источник, смена источника, сохранение
+</code></pre>
+<p class="back-bottom"><a href="index.html">← Главная</a></p>
+</main>
+</body>
+</html>
