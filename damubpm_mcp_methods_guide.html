@@ -1,0 +1,721 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MCP-методы DamuBPM: mcp_method, mcp_object, mcp_method_role</title>
+<style>
+:root{--bg:#f3f5f9;--card:#fff;--text:#1f2937;--muted:#64748b;--line:#e2e8f0;--primary:#1d4ed8;--code-bg:#0f172a;--code-text:#e2e8f0;--inline:#eef2ff}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:15px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif}
+.hero{background:linear-gradient(120deg,#0b2a5b,#123e7c 55%,#0f5f63);color:#fff;padding:22px 32px 26px}
+.hero a.home{color:#fff;text-decoration:none;font-size:14px;opacity:.9;display:inline-block;margin-bottom:10px;padding:4px 12px;border:1px solid rgba(255,255,255,.35);border-radius:999px;background:rgba(255,255,255,.08)}
+.hero a.home:hover{background:rgba(255,255,255,.18)}
+.hero h1{margin:0;font-size:26px;line-height:1.3;color:#fff}
+.hero p{margin:8px 0 0;opacity:.85;max-width:900px}
+.layout{display:grid;grid-template-columns:280px minmax(0,1fr);gap:24px;max-width:1400px;margin:0 auto;padding:24px}
+nav.toc{position:sticky;top:16px;align-self:start;max-height:calc(100vh - 32px);overflow:auto;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px}
+nav.toc b{display:block;font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin:0 0 8px 6px}
+nav.toc a{display:block;padding:6px 8px;border-radius:8px;color:var(--text);text-decoration:none;font-size:13.5px}
+nav.toc a:hover,nav.toc a.active{background:var(--inline);color:var(--primary)}
+main{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:8px 36px 32px;min-width:0}
+h2{margin:34px 0 12px;padding-top:12px;border-top:1px solid var(--line);font-size:21px;color:#0b2a5b}
+h2:first-of-type{border-top:0}
+h3{margin:24px 0 8px;font-size:17px;color:#123e7c}
+a{color:var(--primary)}
+blockquote{margin:16px 0;padding:12px 16px;border-left:4px solid var(--primary);background:var(--inline);border-radius:0 12px 12px 0}
+blockquote p{margin:0}
+code{font:13px/1.5 "JetBrains Mono",Consolas,Menlo,monospace;background:var(--inline);padding:1px 5px;border-radius:5px;color:#1e3a8a}
+pre{position:relative;background:var(--code-bg);color:var(--code-text);padding:14px 16px;border-radius:12px;overflow:auto}
+pre code{background:none;color:inherit;padding:0}
+pre button.copy{position:absolute;top:8px;right:8px;font-size:12px;padding:3px 10px;border:1px solid #334155;border-radius:6px;background:#1e293b;color:#cbd5e1;cursor:pointer}
+pre button.copy:hover{background:#334155}
+table{border-collapse:collapse;width:100%;margin:12px 0;font-size:14px;display:block;overflow-x:auto}
+th,td{border:1px solid var(--line);padding:7px 10px;text-align:left;vertical-align:top}
+th{background:#f8fafc;font-weight:600}
+tr:nth-child(even) td{background:#fbfcfe}
+.footer{margin-top:32px;padding-top:16px;border-top:1px solid var(--line)}
+@media (max-width:900px){.layout{grid-template-columns:1fr;padding:12px}nav.toc{position:static;max-height:none}main{padding:4px 18px 24px}}
+@media print{nav.toc,.hero a.home,pre button.copy{display:none}.layout{display:block}}
+</style>
+</head>
+<body>
+<header class="hero">
+<a class="home" href="index.html">← Главная</a>
+<h1>MCP-методы DamuBPM: mcp_method, mcp_object, mcp_method_role</h1>
+<p>Публикация функций платформы для ИИ-клиентов по протоколу MCP: таблицы, обработчик, контракт БП, роли, добавление метода.</p>
+</header>
+<div class="layout">
+<nav class="toc"><b>Содержание</b><a href="#1-как-проходит-запрос">1. Как проходит запрос</a><a href="#2-точки-входа">2. Точки входа</a><a href="#3-модель-данных">3. Модель данных</a><a href="#4-toolslist--как-строится-список-инструментов">4. tools/list — как строится список инструментов</a><a href="#5-toolscall--как-вызывается-метод">5. tools/call — как вызывается метод</a><a href="#6-контракт-бизнес-процесса">6. Контракт бизнес-процесса</a><a href="#7-инструкции-mcp_instruction">7. Инструкции mcp_instruction</a><a href="#8-роли-и-доступ">8. Роли и доступ</a><a href="#9-объекты-mcp_object--сложные-параметры">9. Объекты mcp_object — сложные параметры</a><a href="#10-каталог-методов-стенда">10. Каталог методов стенда</a><a href="#11-как-добавить-новый-метод">11. Как добавить новый метод</a><a href="#12-проверка-без-ии-клиента">12. Проверка без ИИ-клиента</a><a href="#13-oauth-20">13. OAuth 2.0</a><a href="#14-служебные-механизмы">14. Служебные механизмы</a><a href="#15-подводные-камни-и-замечания">15. Подводные камни и замечания</a><a href="#16-короткая-памятка">16. Короткая памятка</a></nav>
+<main>
+<p>Как платформа DamuBPM публикует свои функции для ИИ-клиентов (Claude, ChatGPT, Cursor и др.) по протоколу MCP: таблицы настройки, REST-обработчик, контракт бизнес-процесса, роли, порядок добавления метода и типовые ошибки. Основано на коде REST <code>mcp</code>, <code>mcp_oauth</code>, модуле <code>mcp_oauth_common</code> и данных стенда test-helpdesk (07.11.2026: 77 методов, 187 параметров, 7 объектов, 2 инструкции).</p>
+<blockquote>
+<p>Главная идея: <strong>MCP-метод — это запись в <code>mcp_method</code>, которая указывает на бизнес-процесс. Параметры метода (<code>mcp_method_input</code>, <code>mcp_object</code>) превращаются в JSON Schema инструмента, роли (<code>mcp_method_role</code>) решают, кто видит и вызывает метод. При вызове REST <code>mcp</code> запускает БП, передаёт ему весь JSON-RPC запрос в переменной <code>input</code> и возвращает клиенту текст из переменной <code>result</code>.</strong></p>
+</blockquote>
+<h2 id="1-как-проходит-запрос">1. Как проходит запрос</h2>
+<pre><code class="language-text">ИИ-клиент (JSON-RPC 2.0, POST)
+   │  Authorization: Bearer &lt;токен платформы&gt;       → /restapi/services/mcp/mcp
+   │  Authorization: Bearer mca_&lt;64 hex&gt; (OAuth)     → /restapi/services/mcp/mcp_oauth
+   ▼
+REST mcp_oauth (только для OAuth) ── проверка токена, rate limit, JSON-RPC,
+   │                                 is_disabled → выполняет тело REST mcp
+   ▼
+REST mcp
+   ├─ пишет запрос в mcp_log, Commit()
+   ├─ собирает instructions из mcp_instruction (по ролям пользователя)
+   ├─ initialize / server/discover → версия протокола, instructions
+   ├─ tools/list  → mcp_method (+ mcp_method_input, mcp_object_attr) по mcp_method_role
+   └─ tools/call  → mcp_method.bp_process_id → BPMSStartProcess(код БП, user_id, {input = JSON запроса})
+                                                    ▼
+                                         БП: StringToJson(var.input).params.arguments
+                                             → логика → var.result (строка)
+   ◄── result.content[0].text = var.result
+   └─ пишет ответ в mcp_log (outp = 1)
+</code></pre>
+<h2 id="2-точки-входа">2. Точки входа</h2>
+<table>
+<thead>
+<tr>
+<th>REST (<code>rest_services.code</code>)</th>
+<th>Назначение</th>
+<th>Доступ</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>mcp</code></td>
+<td>Основной обработчик MCP: <code>initialize</code>, <code>server/discover</code>, <code>notifications/initialized</code>, <code>tools/list</code>, <code>tools/call</code>. Пользователь — <code>request.user_id</code> из токена платформы.</td>
+<td><code>is_public = 1</code>, <code>mcp = 1</code></td>
+</tr>
+<tr>
+<td><code>mcp_oauth</code></td>
+<td>Тот же MCP с OAuth-токеном <code>mca_…</code>: <code>LoadScript('mcp_oauth_common')</code> → <code>McpOAuth.run('mcp')</code>, затем тело <code>mcp</code> выполняется через <code>DoScriptReturnTableRec</code>.</td>
+<td><code>is_public = 1</code>, <code>mcp = 1</code></td>
+</tr>
+<tr>
+<td><code>mcp_oauth_authorize</code>, <code>_token</code>, <code>_register</code>, <code>_consent</code>, <code>_context</code>, <code>_metadata</code>, <code>_resource_metadata</code>, <code>_client_admin</code>, <code>_openid_configuration</code></td>
+<td>Сервер авторизации OAuth 2.0 + PKCE для MCP-клиентов</td>
+<td>публичные, кроме <code>client_admin</code></td>
+</tr>
+<tr>
+<td><code>mcp/document-search</code></td>
+<td>Отдельный ранний MCP-сервер (своя логика, к <code>mcp_method</code> не относится)</td>
+<td><code>is_public = 1</code>, <code>mcp = 1</code></td>
+</tr>
+<tr>
+<td><code>ai_user_myapp_mcp_get</code></td>
+<td>Отдаёт пользователю URL и токен его MCP-подключения (<code>ai_user_myapp_ws</code> → <code>its_cloud_myapp</code>)</td>
+<td><code>only_auth = 1</code></td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li>Адреса ресурса берутся из <code>mcp_oauth_settings</code> (id = 1): <code>issuer</code> = <code>https://test-helpdesk.damubpm.com</code>, <code>resource</code> = <code>…/restapi/services/mcp/mcp</code>.</li>
+<li>Флаг <code>rest_services.mcp = 1</code> стоит у трёх сервисов, которые обслуживаются по маршруту <code>/restapi/services/mcp/&lt;code&gt;</code>. Как именно ядро использует флаг, в коде Lua не видно — это вывод по метаданным OAuth.</li>
+<li>Страницы администрирования: <code>mcp_method_list</code> («MCP · Каталог методов»), <code>mcp_instruction_list</code> («Библиотека инструкций»), <code>mcp_oauth_settings</code>, <code>mcp_oauth_consent</code>, автостраницы всех <code>mcp_*</code> сущностей.</li>
+</ul>
+<h2 id="3-модель-данных">3. Модель данных</h2>
+<pre><code class="language-text">mcp_method ──&lt; mcp_method_input &gt;── mcp_datatype
+    │                 └── object_id → mcp_object ──&lt; mcp_object_attr &gt;── mcp_datatype
+    │                                                     └── object_id → mcp_object (вложенный)
+    ├── bp_process_id → bp_processes
+    └──&lt; mcp_method_role &gt;── roles ──&lt; user_roles &gt;── users
+
+mcp_instruction ──&lt; mcp_instruction_role &gt;── roles
+mcp_log                 (журнал запросов и ответов)
+mcp_oauth_*             (клиенты, запросы, коды, разрешения, токены, настройки)
+</code></pre>
+<h3 id="mcp_method--инструмент">mcp_method — инструмент</h3>
+<table>
+<thead>
+<tr>
+<th>Колонка</th>
+<th>Смысл</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>code</code></td>
+<td>Имя инструмента (<code>tools[].name</code>). Уникально без учёта регистра (<code>lower(code)</code>).</td>
+</tr>
+<tr>
+<td><code>title</code></td>
+<td>Заголовок (<code>tools[].title</code>)</td>
+</tr>
+<tr>
+<td><code>dscr</code></td>
+<td>Описание для модели (<code>tools[].description</code>) — главный текст, по которому ИИ решает, когда звать метод</td>
+</tr>
+<tr>
+<td><code>bp_process_id</code></td>
+<td>БП, который выполняет метод</td>
+</tr>
+<tr>
+<td><code>is_disabled</code></td>
+<td>1 — метод скрыт из <code>tools/list</code> (см. п. 15 про <code>tools/call</code>)</td>
+</tr>
+</tbody>
+</table>
+<h3 id="mcp_method_input--параметры">mcp_method_input — параметры</h3>
+<table>
+<thead>
+<tr>
+<th>Колонка</th>
+<th>Смысл</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>mcp_method_id</code></td>
+<td>метод</td>
+</tr>
+<tr>
+<td><code>param</code></td>
+<td>имя свойства в <code>arguments</code></td>
+</tr>
+<tr>
+<td><code>datatype_id</code> → <code>mcp_datatype</code></td>
+<td><code>string</code> (1), <code>boolean</code> (2), <code>object</code> (4). Типа <code>number</code> нет — числа передаются строкой</td>
+</tr>
+<tr>
+<td><code>rq</code></td>
+<td>1 — обязательный (<code>required</code>)</td>
+</tr>
+<tr>
+<td><code>is_array</code></td>
+<td>1 — массив (<code>{type: "array", items: …}</code>)</td>
+</tr>
+<tr>
+<td><code>object_id</code> → <code>mcp_object</code></td>
+<td>схема объекта для <code>datatype = object</code></td>
+</tr>
+<tr>
+<td><code>dscr</code></td>
+<td>описание параметра</td>
+</tr>
+<tr>
+<td><code>code</code></td>
+<td>технический код, заполняется UUID entityEvent-процессом <code>mcp_method_input_upsert</code> (After Upsert). Уникален (<code>lower(code)</code>)</td>
+</tr>
+</tbody>
+</table>
+<h3 id="mcp_method_role--кто-видит-и-вызывает">mcp_method_role — кто видит и вызывает</h3>
+<table>
+<thead>
+<tr>
+<th>Колонка</th>
+<th>Смысл</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>mcp_method_id</code>, <code>role_id</code></td>
+<td>метод × роль</td>
+</tr>
+<tr>
+<td><code>code</code></td>
+<td>на стенде = <code>md5(id)</code>; обработчик его не использует</td>
+</tr>
+</tbody>
+</table>
+<h3 id="mcp_object--mcp_object_attr--схема-вложенного-объекта">mcp_object / mcp_object_attr — схема вложенного объекта</h3>
+<table>
+<thead>
+<tr>
+<th>Таблица</th>
+<th>Колонки</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>mcp_object</code></td>
+<td><code>code</code> (уникален без учёта регистра), <code>title</code></td>
+</tr>
+<tr>
+<td><code>mcp_object_attr</code></td>
+<td><code>mcp_object_id</code>, <code>attr</code> (имя свойства), <code>title</code> (→ <code>description</code>), <code>datatype_id</code>, <code>rq</code>, <code>is_array</code>, <code>object_id</code> (вложенный объект), <code>code</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="mcp_instruction--mcp_instruction_role">mcp_instruction / mcp_instruction_role</h3>
+<p><code>instructions</code> (text) — текст для поля <code>instructions</code> в ответе <code>initialize</code>; роли определяют, кому он отдаётся.</p>
+<h3 id="mcp_log">mcp_log</h3>
+<p><code>data</code> (text, JSON запроса или ответа), <code>outp</code> (1 — ответ), <code>created_at</code>. Пишется на каждый запрос, без очистки (на стенде 66 МБ с 23.09.2026).</p>
+<h2 id="4-toolslist--как-строится-список-инструментов">4. tools/list — как строится список инструментов</h2>
+<ol>
+<li>Методы: <code>coalesce(is_disabled, 0) = 0</code> и есть <code>mcp_method_role</code> с ролью из <code>user_roles</code> пользователя. Роль <code>admin</code> здесь <strong>не</strong> даёт доступ автоматически — нужна строка в <code>mcp_method_role</code>.</li>
+<li>Параметры: <code>mcp_method_input</code> <strong>inner join</strong> <code>mcp_datatype</code>, порядок по <code>id</code>.</li>
+<li>Схема параметра:
+   - <code>string</code> / <code>boolean</code> → <code>{type, description}</code>;
+   - <code>object</code> → <code>{type: "object", properties, required}</code> из <code>mcp_object_attr</code> объекта <code>object_id</code>; вложенность до 10 уровней, циклы обрываются;
+   - <code>is_array = 1</code> → <code>{type: "array", items: &lt;схема&gt;}</code>;
+   - <code>rq = 1</code> → имя в <code>required</code>.</li>
+<li><code>description</code> параметра = <strong>все инструкции пользователя</strong> + <code>"Описание метода: "</code> + <code>mcp_method_input.dscr</code>. Поэтому у каждого параметра в клиенте видна приписка «Ты разработчик платформы DamuBPM…».</li>
+<li><code>inputSchema</code> = <code>{type: "object", properties, required, additionalProperties: false}</code>.</li>
+<li>В инструмент добавляются <code>securitySchemes: [{type: "oauth2", scopes: ["mcp"]}]</code> (и в <code>_meta</code>).</li>
+<li>В ответе <code>ttlMs = 60000</code>, <code>cacheScope = "private"</code>. <code>initialize</code> объявляет <code>tools.listChanged = true</code>, но уведомления об изменении списка сервер не отправляет — новый метод клиент увидит после переподключения.</li>
+</ol>
+<p>Пример получившейся схемы (<code>create_crontab</code>):</p>
+<pre><code class="language-json">{
+  &quot;name&quot;: &quot;create_crontab&quot;,
+  &quot;title&quot;: &quot;Создать задачу в планировщике заданий&quot;,
+  &quot;description&quot;: &quot;Создает задачу в планировщике заданий по коду с lua скриптом…&quot;,
+  &quot;inputSchema&quot;: {
+    &quot;type&quot;: &quot;object&quot;,
+    &quot;properties&quot;: {
+      &quot;code&quot;: {&quot;type&quot;: &quot;string&quot;, &quot;description&quot;: &quot;&lt;instructions&gt;Описание метода: Уникальный код задания&quot;},
+      &quot;is_active&quot;: {&quot;type&quot;: &quot;boolean&quot;, &quot;description&quot;: &quot;&lt;instructions&gt;Описание метода: Включить или выключить.&quot;}
+    },
+    &quot;required&quot;: [&quot;code&quot;, &quot;title&quot;, &quot;croninterval&quot;, &quot;script&quot;, &quot;module_code&quot;, &quot;is_active&quot;],
+    &quot;additionalProperties&quot;: false
+  }
+}
+</code></pre>
+<h2 id="5-toolscall--как-вызывается-метод">5. tools/call — как вызывается метод</h2>
+<ol>
+<li><code>mcp_user_id = request.user_id</code>. Нет пользователя → HTTP 401, <code>WWW-Authenticate: Bearer resource_metadata="…/.well-known/oauth-protected-resource/restapi/services/mcp/mcp", scope="mcp"</code>.</li>
+<li>Поиск: <code>mcp_method.code = params.name</code> + роль пользователя в <code>mcp_method_role</code> → <code>bp_processes.code</code>.</li>
+<li><code>BPMSStartProcess(код_БП, mcp_user_id, { input = JsonToString(request.input) })</code> — в БП приходит <strong>весь</strong> JSON-RPC запрос.</li>
+<li>Ответ клиенту — всегда <code>result.content = [{type: "text", text: …}]</code>:</li>
+</ol>
+<table>
+<thead>
+<tr>
+<th>Ситуация</th>
+<th>text</th>
+<th>isError</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>bpErrNum ≠ 0</code> (исключение, ошибка SQL в БП — «Critical Error! Transaction RollBack…»)</td>
+<td><code>Ошибка выполнения метода: &lt;errText&gt;</code></td>
+<td><code>true</code></td>
+</tr>
+<tr>
+<td>БП завершился, <code>result</code> пустой</td>
+<td><code>Метод не вернул результат</code></td>
+<td><code>true</code></td>
+</tr>
+<tr>
+<td>БП завершился, <code>result</code> заполнен</td>
+<td>значение <code>result</code> как есть</td>
+<td><code>false</code></td>
+</tr>
+<tr>
+<td>метод не найден или нет роли</td>
+<td><code>Метод не найден или нет доступа: &lt;name&gt;</code></td>
+<td><code>true</code></td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li><code>last_error</code> обработчик <strong>не читает</strong>. Если БП записал ошибку только в <code>result</code> («Ошибка: …») или в <code>last_error</code>, клиент получит <code>isError = false</code>. Ошибку для модели нужно писать в <code>result</code> понятным текстом или JSON <code>{ok:false, error}</code>.</li>
+<li>Через <code>mcp_oauth</code> до вызова дополнительно проверяется <code>is_disabled = 0</code> (иначе JSON-RPC ошибка <code>-32602 Unknown or disabled tool</code>), разрешены только <code>initialize</code>, <code>server/discover</code>, <code>tools/list</code>, <code>tools/call</code>, <code>ping</code>; тело запроса до 4 МБ, 180 запросов в минуту с IP.</li>
+</ul>
+<h2 id="6-контракт-бизнес-процесса">6. Контракт бизнес-процесса</h2>
+<p>Все 77 методов стенда устроены одинаково:</p>
+<table>
+<thead>
+<tr>
+<th>Что</th>
+<th>Значение</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Тип БП</td>
+<td><code>businessprocess</code>, модуль обычно <code>core</code>, код <code>mcp_method_&lt;имя&gt;</code></td>
+</tr>
+<tr>
+<td>Переменные</td>
+<td><code>input</code> (jsonb, входная), <code>result</code> (longtext, выходная), <code>last_error</code> (varchar, выходная)</td>
+</tr>
+<tr>
+<td>Схема</td>
+<td>Start → ScriptTask → XOR → End «Успех» (<code>var.last_error==""</code>) / End «Ошибка» (<code>var.last_error~=""</code>)</td>
+</tr>
+<tr>
+<td>Шаблоны на стенде</td>
+<td><code>mcp_method_get_template</code> (запись), <code>mcp_method_list_template</code> (список), <code>mcp_method_create_update_template</code> (создание/изменение) — <code>is_template = 1</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="что-лежит-в-varinput">Что лежит в var.input</h3>
+<pre><code class="language-json">{
+  &quot;jsonrpc&quot;: &quot;2.0&quot;,
+  &quot;id&quot;: 12,
+  &quot;method&quot;: &quot;tools/call&quot;,
+  &quot;params&quot;: {
+    &quot;name&quot;: &quot;c_ai_booking_create&quot;,
+    &quot;arguments&quot;: {&quot;master_id&quot;: &quot;3&quot;, &quot;service_id&quot;: &quot;7&quot;, &quot;date&quot;: &quot;2026-11-10&quot;, &quot;start_time&quot;: &quot;11:00&quot;}
+  }
+}
+</code></pre>
+<ul>
+<li><code>boolean</code> приходит Lua-логическим значением, массив — таблицей, объект — таблицей.</li>
+<li><code>string</code>-параметры, которые по смыслу числа, переводить <code>tonumber</code> и проверять.</li>
+<li><code>sys.user_id</code> в БП = пользователь MCP-подключения.</li>
+</ul>
+<h3 id="рекомендуемый-скрипт-по-образцу-c_ai_">Рекомендуемый скрипт (по образцу <code>c_ai_*</code>)</h3>
+<pre><code class="language-lua">var.last_error = &quot;&quot;
+var.result = &quot;&quot;
+local function fail(msg)
+  var.last_error = tostring(msg)
+  var.result = JsonToString({ok = false, error = var.last_error})
+end
+
+local req = StringToJson(var.input)
+local a = (type(req) == &quot;table&quot; and type(req.params) == &quot;table&quot; and req.params.arguments) or {}
+if type(a) ~= &quot;table&quot; then fail(&quot;arguments должен быть объектом&quot;) return end
+
+local id = tonumber(a.id)
+if not id or id &lt; 1 or id ~= math.floor(id) then fail(&quot;id: целое число &gt; 0&quot;) return end
+
+local errText, errNum = CheckGrantOfEntity(sys.user_id, &quot;its_cli_contract&quot;, &quot;is_detail_view&quot;, id)
+if errNum ~= 0 then fail(&quot;Нет доступа к записи&quot;) return end
+
+local row, e, n = SqlQueryRow2([[select id, code, title from its_cli_contract where id = ?]], id)
+if n == 2 then fail(&quot;Запись не найдена&quot;) return end
+if n ~= 0 then fail(e) return end
+
+var.result = JsonToString({ok = true, item = row})
+</code></pre>
+<p>Правила:
+- Ответ — компактный JSON: только поля, нужные модели; списки — через <code>array()</code>, с <code>limit</code>/<code>offset</code>.
+- Не вызывать <code>Commit()</code>/<code>Rollback()</code> в скрипте БП.
+- Ошибку SQL лучше ловить по <code>errNum</code> и отдавать через <code>fail</code>; необработанная ошибка SQL роняет весь БП (откат, <code>isError = true</code>).
+- Методы, которые меняют метаданные платформы, после записи вызывают <code>ClearCache()</code> (или <code>dbrequire("pkg/cache").clearCacheHosts()</code>) и <code>dbrequire("pkg/mcppatch").process({entity_code=…, pk=…, user_id=sys.user_id})</code>.
+- <code>SqlQueryRows</code>/<code>SqlExec2</code> ограничения видимости не применяют: права на записи проверять <code>CheckGrantOfEntity</code> или условием в SQL.</p>
+<h2 id="7-инструкции-mcp_instruction">7. Инструкции mcp_instruction</h2>
+<ul>
+<li>В <code>initialize</code> и <code>server/discover</code> поле <code>instructions</code> = склейка <code>instructions</code> всех записей, у которых в <code>mcp_instruction_role</code> есть роль пользователя (через <code>\n\n</code>).</li>
+<li>Тот же текст приписывается к описанию <strong>каждого</strong> параметра в <code>tools/list</code> (п. 4).</li>
+<li>На стенде: <code>damubpm</code> (роль <code>mcp_user</code>) — «Ты разработчик платформы DamuBPM. Используй локальный навык damubpm development…»; <code>mcp_seller_example</code> (роль <code>mcp_seller_example</code>) — «Ты продажник продукта DamuBPM…».</li>
+<li>Инструкцию держать короткой: она повторяется столько раз, сколько параметров у доступных методов (на стенде 187).</li>
+</ul>
+<h2 id="8-роли-и-доступ">8. Роли и доступ</h2>
+<p>Три независимых слоя:</p>
+<table>
+<thead>
+<tr>
+<th>Слой</th>
+<th>Где</th>
+<th>Что решает</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Подключение</td>
+<td>токен платформы или OAuth-токен</td>
+<td>кто пользователь (<code>request.user_id</code>)</td>
+</tr>
+<tr>
+<td>Метод</td>
+<td><code>mcp_method_role</code></td>
+<td>виден ли метод в <code>tools/list</code> и можно ли его вызвать</td>
+</tr>
+<tr>
+<td>Данные</td>
+<td>код БП: <code>CheckGrantOfEntity</code>, условия SQL</td>
+<td>какие записи метод читает и меняет</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li>Роли на стенде: <code>mcp_user</code> (69 методов разработчика, 2 пользователя: 1 — admin, 89 — не admin), <code>mcp_seller_example</code> (8 методов <code>c_ai_*</code>, 1 пользователь).</li>
+<li><code>bp_process_roles</code> у БП методов заполнены несогласованно: у части только <code>admin</code> (например, <code>mcp_method_db_get_query</code>, <code>mcp_method_add_pages_ui_blocks_n</code>, все <code>flt_*</code>), у <code>mcp_method_get_angular_widget</code> ролей нет. Проверяет ли <code>BPMSStartProcess</code> эту таблицу при вызове из REST, на стенде не проверено. Для новых методов выдавать роль и в <code>mcp_method_role</code>, и в <code>bp_process_roles</code> (<code>can_run = 1</code>) и проверять вызов под не-admin.</li>
+<li>Методы разработчика (<code>db_execute_sql</code>, <code>create_rest_service</code>, <code>create_crontab</code> и др.) дают полный доступ к базе и коду. Роль <code>mcp_user</code> выдавать только разработчикам; для внешних ИИ-агентов заводить отдельную роль с узкими методами (как <code>mcp_seller_example</code>).</li>
+</ul>
+<h2 id="9-объекты-mcp_object--сложные-параметры">9. Объекты mcp_object — сложные параметры</h2>
+<p>Объект описывает структуру элемента параметра типа <code>object</code> (обычно массива объектов).</p>
+<table>
+<thead>
+<tr>
+<th>Объект (<code>code</code>)</th>
+<th>Где используется</th>
+<th>Поля</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>entity_attribute</code></td>
+<td><code>create_entity.attributes[]</code>, <code>add_entity_attr.attributes[]</code></td>
+<td><code>code</code>*, <code>title</code>*, <code>data_type_code</code>*, <code>entity_link_code</code></td>
+</tr>
+<tr>
+<td><code>bp process attribute</code></td>
+<td><code>create_bp_process.vars[]</code>, <code>add_vars_to_bp_process.vars[]</code></td>
+<td><code>code</code>*, <code>title</code>*, <code>data_type_code</code>*, <code>entity_link_code</code>, <code>is_input</code>, <code>is_output</code>, <code>is_rq</code></td>
+</tr>
+<tr>
+<td><code>bp_point_vars</code></td>
+<td><code>update_bp_points_usertask.vars[]</code></td>
+<td><code>code</code>*, <code>is_input</code>, <code>is_output</code>, <code>is_rq</code></td>
+</tr>
+<tr>
+<td><code>page_ui_blocks</code></td>
+<td><code>add_page_ui_blocks.pages_ui_blocks[]</code></td>
+<td><code>code</code>*, <code>ui_block_tpl_code</code>*, <code>header_title</code>*, <code>title</code>*, <code>nn</code>*, <code>ng_if</code>, <code>ng_disabled</code>, <code>ui_width_code</code></td>
+</tr>
+<tr>
+<td><code>pages_ui_blocks_n</code></td>
+<td><code>add_pages_ui_blocks_n.pages_ui_blocks_n[]</code></td>
+<td><code>code</code>*, <code>pages_ui_blocks_n_t_code</code>*, <code>pages_ui_blocks_code</code>*, <code>nn</code>*, <code>entity_attrs_code</code>, <code>block_code</code>, <code>table_parts_code</code>, <code>ui_widths_code</code>, <code>angular_html</code>, <code>logic</code>, <code>ui_components_code</code>, <code>pages_ui_blocks_n_cpv[]</code> → объект 9</td>
+</tr>
+<tr>
+<td><code>pages_ui_blocks_n_cpv</code> (id 9)</td>
+<td>вложен в <code>pages_ui_blocks_n</code></td>
+<td><code>attr</code>*, <code>value</code>*, <code>id_value</code></td>
+</tr>
+<tr>
+<td><code>Параметры UI компонента</code></td>
+<td><code>create_update_ui_components.ui_comp_params[]</code></td>
+<td><code>attr</code>*, <code>data_type_code</code>*, <code>help</code></td>
+</tr>
+</tbody>
+</table>
+<p><code>*</code> — обязательное.</p>
+<ul>
+<li>Вложенный объект берётся по <code>mcp_object_attr.object_id</code>; если он пуст, обработчик ищет <code>mcp_object</code> с <code>code = attr</code>.</li>
+<li>Описание поля в схеме = <code>mcp_object_attr.title</code>. Туда пишут правила для модели (например, экранирование <code>{{</code> как <code>{[{</code> в <code>angular_html</code>).</li>
+<li>Коды объектов с пробелами и кириллицей работают (поиск идёт по <code>id</code>), но для новых объектов использовать латиницу и <code>_</code>.</li>
+</ul>
+<h2 id="10-каталог-методов-стенда">10. Каталог методов стенда</h2>
+<p>БП каждого метода — <code>mcp_method_&lt;…&gt;</code>. Пробел в коде отмечен <code>␣</code>: клиент Claude показывает такие методы как <code>_mcp_method_create_query</code>, <code>update_bp_points_script_</code> и т. п.</p>
+<table>
+<thead>
+<tr>
+<th>Группа</th>
+<th>Методы</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>База данных</td>
+<td><code>db_get_schema</code> (возвращает параметр <code>openai_db_prompt</code>), <code>db_execute_sql</code> (<code>query_base64</code>; после выполнения <code>pkg/cache.clearCacheHosts()</code>)</td>
+</tr>
+<tr>
+<td>Модули и сущности</td>
+<td><code>get_modules</code>, <code>create_module</code>, <code>get_entities</code>, <code>get_entity_detail</code> (атрибуты, обратные ссылки, БП сущности), <code>create_entity</code>, <code>add_entity_attr</code>, <code>get_data_types</code></td>
+</tr>
+<tr>
+<td>Query</td>
+<td><code>get_query</code>, <code>␣mcp_method_create_query</code></td>
+</tr>
+<tr>
+<td>REST и Lua</td>
+<td><code>get_rest_service</code>, <code>create_rest_service</code> (upsert по <code>code</code>, роли <code>role_rest_services</code>), <code>␣mcp_method_get_luas</code></td>
+</tr>
+<tr>
+<td>Страницы</td>
+<td><code>create_page</code>, <code>get_page</code>, <code>page_tpls_list</code>, <code>get_page_tpls</code>, <code>create_page_tpls</code>, <code>get_ui_block_tpl_list</code>, <code>get_ui_block_tpl_details</code>, <code>get_pages_ui_blocks_n_t</code>, <code>add_page_ui_blocks</code>, <code>del_page_ui_blocks</code>, <code>add_pages_ui_blocks_n</code>, <code>del_pages_ui_blocks_n</code></td>
+</tr>
+<tr>
+<td>UI-компоненты и виджеты</td>
+<td><code>get_ui_components_list</code>, <code>get_ui_components_get</code>, <code>create_update_ui_components</code>, <code>mcp_method_get_angular_widget_list</code>, <code>get_angular_widget</code>, <code>create_angular_widget</code></td>
+</tr>
+<tr>
+<td>Ресурсы</td>
+<td><code>get_css_list</code>, <code>get_css_details</code>, <code>create_css</code>, <code>get_svg_list</code>, <code>get_svg_details</code>, <code>create_svg</code>, <code>get_translates_list</code>, <code>get_translates_details</code>, <code>create_translates</code>, <code>get_dirs_list</code>, <code>upload_file</code></td>
+</tr>
+<tr>
+<td>Бизнес-процессы</td>
+<td><code>bp_process_template_list</code>, <code>create_bp_process</code>, <code>get_bp_process_list␣</code>, <code>get_bp_process_details</code>, <code>add_vars_to_bp_process</code>, <code>update_bp_points_script␣</code>, <code>update_bp_points_usertask</code>, <code>bp_ut_tpls_list</code>, <code>update_bp_process_diagram</code>, <code>update_bp_sequence_flows</code></td>
+</tr>
+<tr>
+<td>Планировщик</td>
+<td><code>create_crontab</code> (upsert, затем БП <code>crontab_reload</code>), <code>get_crontab_list</code></td>
+</tr>
+<tr>
+<td>Дашборды</td>
+<td><code>get_dashboads_list</code>, <code>dashboards_details</code>, <code>dashboards_add_page</code>, <code>dashboards_del_page␣</code></td>
+</tr>
+<tr>
+<td>Flutter (<code>flt</code>)</td>
+<td><code>flt_projects_list/get/create_update</code>, <code>flt_pages_list/get/create_update</code>, <code>flt_assets_list/get/create_update</code></td>
+</tr>
+<tr>
+<td>Почта</td>
+<td><code>damu_send_email</code> (<code>email_send_by_ch_id</code>, канал из параметра <code>email_notify_ch_id</code>)</td>
+</tr>
+<tr>
+<td>Пример бизнес-агента (<code>mcp_seller_example</code>)</td>
+<td><code>c_ai_services_list</code>, <code>c_ai_services_get</code>, <code>c_ai_masters_list</code>, <code>c_ai_availability</code>, <code>c_ai_day_plan</code>, <code>c_ai_booking_create</code>, <code>c_ai_booking_get</code>, <code>c_ai_booking_cancel</code> — запись клиентов в салон маникюра; образец проверки аргументов и ответа <code>{ok, error}</code></td>
+</tr>
+</tbody>
+</table>
+<p>Актуальный список:</p>
+<pre><code class="language-sql">select m.id, m.code, m.title, p.code bp, coalesce(m.is_disabled, 0) dis,
+       (select string_agg(r.code, ',') from mcp_method_role mr join roles r on r.id = mr.role_id
+         where mr.mcp_method_id = m.id) roles,
+       (select string_agg(i.param || case when i.rq = 1 then '*' else '' end || ':' || d.code
+                          || case when i.is_array = 1 then '[]' else '' end, ', ' order by i.id)
+          from mcp_method_input i join mcp_datatype d on d.id = i.datatype_id
+         where i.mcp_method_id = m.id) params
+from mcp_method m left join bp_processes p on p.id = m.bp_process_id
+order by m.id;
+</code></pre>
+<h2 id="11-как-добавить-новый-метод">11. Как добавить новый метод</h2>
+<h3 id="111-спроектировать">11.1. Спроектировать</h3>
+<ul>
+<li>Имя: латиница, <code>_</code>, без пробелов, с префиксом модуля (<code>its_contract_get</code>). Код БП: <code>mcp_method_&lt;имя&gt;</code>.</li>
+<li>Одна задача на метод. <code>dscr</code> пишет <strong>когда</strong> вызывать, что вернёт, ограничения («создавать запись только после согласия клиента»).</li>
+<li>Параметры: минимум обязательных, числа — <code>string</code> с проверкой в БП, сложная структура — через <code>mcp_object</code>.</li>
+</ul>
+<h3 id="112-создать-бп">11.2. Создать БП</h3>
+<p>Вариант A — через MCP: <code>create_bp_process</code> с <code>bp_processes_code_template</code> = <code>mcp_method_get_template</code> / <code>mcp_method_list_template</code> / <code>mcp_method_create_update_template</code>, затем <code>get_bp_process_details</code> (найти код ScriptTask) и <code>update_bp_points_script␣</code>. Копирование шаблона этим методом в этой сессии не проверялось — после создания сверить переменные <code>input</code>/<code>result</code>/<code>last_error</code> и условия на стрелках.</p>
+<p>Вариант B — вручную в конструкторе по таблице п. 6.</p>
+<h3 id="113-зарегистрировать-метод-одним-запросом">11.3. Зарегистрировать метод (одним запросом)</h3>
+<pre><code class="language-sql">with m as (
+  insert into mcp_method (code, title, dscr, bp_process_id, is_disabled)
+  select 'its_contract_get', 'Договор клиента по id',
+         'Возвращает номер, даты и сумму договора клиента по его id. Вызывать, когда пользователь спрашивает о конкретном договоре.',
+         p.id, 0
+  from bp_processes p where p.code = 'mcp_method_its_contract_get'
+  returning id
+), i as (
+  insert into mcp_method_input (mcp_method_id, param, rq, datatype_id, is_array, dscr, code)
+  select m.id, x.param, x.rq, d.id, 0, x.dscr, uuid_generate_v4()
+  from m cross join (values ('id', 1, 'string', 'ID договора (число)')) x(param, rq, dt, dscr)
+  join mcp_datatype d on d.code = x.dt
+  returning id
+), r as (
+  insert into mcp_method_role (mcp_method_id, role_id)
+  select m.id, ro.id from m cross join roles ro where ro.code = 'mcp_user'
+  returning id
+), br as (
+  insert into bp_process_roles (process_id, role_id, can_run)
+  select p.id, ro.id, 1 from bp_processes p cross join roles ro
+  where p.code = 'mcp_method_its_contract_get' and ro.code = 'mcp_user'
+    and not exists (select 1 from bp_process_roles x where x.process_id = p.id and x.role_id = ro.id)
+  returning id
+)
+select (select id from m) method_id, (select count(*) from i) inputs,
+       (select count(*) from r) roles, (select count(*) from br) bp_roles;
+</code></pre>
+<ul>
+<li>Через <code>db_execute_sql</code> запрос передаётся в Base64; в литералах нельзя <code>?</code> и <code>$1</code> (см. навык, MCP-инструменты).</li>
+<li><code>mcp_method_input.code</code> при SQL-вставке заполнять самому: entityEvent <code>mcp_method_input_upsert</code> срабатывает только при сохранении через платформу.</li>
+<li>Параметр-массив объектов: <code>datatype = object</code>, <code>is_array = 1</code>, <code>object_id</code> = id объекта из <code>mcp_object</code>.</li>
+</ul>
+<h3 id="114-включить-у-клиента">11.4. Включить у клиента</h3>
+<p>Переподключить MCP-сервер в клиенте (список кэшируется, <code>ttlMs</code> 60 с, уведомлений нет). Проверить, что метод виден под нужной ролью и не виден под чужой.</p>
+<h2 id="12-проверка-без-ии-клиента">12. Проверка без ИИ-клиента</h2>
+<h3 id="вызов-бп-так-же-как-это-делает-rest-mcp-одноразовый-крон">Вызов БП так же, как это делает REST <code>mcp</code> (одноразовый крон)</h3>
+<pre><code class="language-lua">SqlExec2(&quot;update crontab set is_active = 0, warning_text = 'running' where code = 'mcp_test_once'&quot;)
+Commit()
+local req = {jsonrpc = &quot;2.0&quot;, id = 1, method = &quot;tools/call&quot;,
+             params = {name = &quot;its_contract_get&quot;, arguments = {id = &quot;15&quot;}}}
+local res = &quot;&quot;
+local ok, e = pcall(function()
+  local vars, inst, task, errText, errNum = BPMSStartProcess(&quot;mcp_method_its_contract_get&quot;, 89, {input = JsonToString(req)})
+  res = &quot;errNum=&quot; .. tostring(errNum) .. &quot; err=&quot; .. tostring(errText) .. &quot; result=&quot; .. tostring(vars and vars.result)
+end)
+if not ok then res = &quot;error: &quot; .. tostring(e) end
+SqlExec2(&quot;update crontab set is_active = 0, warning_text = ? where code = 'mcp_test_once'&quot;, utf8.sub(res, 1, 3000))
+Commit()
+</code></pre>
+<p>Пользователь 89 — не admin с ролью <code>mcp_user</code>. Проверять и успешный вызов, и ошибки (пустой/неверный аргумент, чужая запись).</p>
+<h3 id="что-увидит-клиент-в-toolslist-для-роли">Что увидит клиент в tools/list для роли</h3>
+<pre><code class="language-sql">select m.code, m.title from mcp_method m
+where coalesce(m.is_disabled, 0) = 0
+  and exists (select 1 from mcp_method_role mr join user_roles ur on ur.role_id = mr.role_id
+              where mr.mcp_method_id = m.id and ur.user_id = 89)
+order by m.code;
+</code></pre>
+<h3 id="журнал">Журнал</h3>
+<pre><code class="language-sql">select id, created_at, outp,
+       (data::jsonb) -&gt; 'input' -&gt;&gt; 'method' rpc,
+       (data::jsonb) -&gt; 'input' -&gt; 'params' -&gt;&gt; 'name' tool,
+       left(data, 300) data
+from mcp_log
+where outp is null and data like '%&quot;its_contract_get&quot;%'
+order by id desc limit 20;
+</code></pre>
+<p>Ответы — строки с <code>outp = 1</code> (в них JSON <code>output</code>: <code>result.content[0].text</code>, <code>isError</code>).</p>
+<h2 id="13-oauth-20">13. OAuth 2.0</h2>
+<ul>
+<li>Поток: <code>mcp_oauth_register</code> (публичный клиент, без секрета) → <code>mcp_oauth_authorize</code> (GET, PKCE <code>S256</code>, cookie <code>__Host-damubpm_mcp_oauth</code>) → страница <code>mcp_oauth_consent</code> (вход пользователя, согласие) → <code>mcp_oauth_token</code> (<code>authorization_code</code>, <code>refresh_token</code>) → вызовы <code>mcp_oauth</code> с <code>Authorization: Bearer mca_&lt;64 hex&gt;</code>.</li>
+<li>Логика в SQL-функциях <code>public.mcp_oauth_*</code> (<code>begin_authorization</code>, <code>consent_action</code>, <code>exchange_token</code>, <code>token_action</code>, <code>client_action</code>, <code>issue_tokens</code> и др.), Lua — только HTTP-адаптер (<code>mcp_oauth_common</code>): заголовки безопасности, CORS, лимиты <code>RateLimiter</code>, разбор form/JSON.</li>
+<li>Токен в строке запроса (<code>?access_token=</code>) отклоняется (400). Scope один — <code>mcp</code>.</li>
+<li>Таблицы: <code>mcp_oauth_clients</code> (на стенде 27), <code>_requests</code>, <code>_codes</code>, <code>_grants</code> (активных 7), <code>_tokens</code>, <code>_settings</code>, <code>_test_runs</code>; самопроверка — модуль <code>mcp_oauth_selftest</code>.</li>
+<li>Доступные методы при OAuth определяются теми же <code>mcp_method_role</code> по <code>user_id</code> из разрешения.</li>
+</ul>
+<h2 id="14-служебные-механизмы">14. Служебные механизмы</h2>
+<table>
+<thead>
+<tr>
+<th>Механизм</th>
+<th>Что делает</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>pkg/mcppatch.process({entity_code, pk, user_id})</code></td>
+<td>Для каждой <code>remote_cis</code> с <code>mcp_auto_patchout = 1</code> (на стенде <code>helpdesk.damubpm.com</code>) добавляет объект в исходящий патч <code>&lt;код&gt;-mcp</code> (<code>patch_out</code>, <code>patch_out_obj</code>). Так изменения, сделанные через MCP, переносятся на другой стенд.</td>
+</tr>
+<tr>
+<td><code>ClearCache()</code> / <code>pkg/cache.clearCacheHosts()</code></td>
+<td>Сброс кэша после изменения метаданных (REST, crontab, query, страницы)</td>
+</tr>
+<tr>
+<td><code>mcp_method_input_upsert</code> (entityEvent, After Upsert)</td>
+<td><code>code = uuid_generate_v4()</code> у нового параметра</td>
+</tr>
+<tr>
+<td><code>mcp_log</code></td>
+<td>Журнал всех запросов и ответов MCP</td>
+</tr>
+<tr>
+<td><code>crontab_reload</code></td>
+<td>Вызывается из <code>create_crontab</code> для перезагрузки задачи</td>
+</tr>
+</tbody>
+</table>
+<h2 id="15-подводные-камни-и-замечания">15. Подводные камни и замечания</h2>
+<ol>
+<li><strong>Ошибки как успех.</strong> REST смотрит только на <code>bpErrNum</code> и пустой <code>result</code>. «Ошибка: …» в <code>result</code> или заполненный <code>last_error</code> уходят с <code>isError = false</code>. Писать ошибки так, чтобы модель их поняла из текста (<code>{ok:false,error}</code>).</li>
+<li><strong><code>is_disabled</code> при прямом подключении.</strong> Через <code>mcp</code> (токен платформы) <code>tools/call</code> выключенный метод не проверяет: он исчезает из списка, но вызывается, если клиент знает имя. Через <code>mcp_oauth</code> проверка есть. Чтобы метод точно не работал — убрать его роли или БП.</li>
+<li><strong>Пробелы в кодах.</strong> У 5 методов код с пробелом в начале или конце (<code>mcp_method_create_query</code>, <code>mcp_method_get_luas</code>, <code>update_bp_points_script</code>, <code>get_bp_process_list</code>, <code>dashboards_del_page</code>). Клиенты переименовывают их (<code>_…</code>, <code>…_</code>), не все клиенты сопоставляют имя обратно. Новые коды — без пробелов.</li>
+<li><strong>Инструкция в каждом параметре.</strong> Текст <code>mcp_instruction</code> повторяется в описании каждого параметра → большой <code>tools/list</code>. Держать инструкцию короткой.</li>
+<li><strong>Нет типа number.</strong> Только <code>string</code>, <code>boolean</code>, <code>object</code>. Числа — строкой с <code>tonumber</code> и проверкой диапазона в БП.</li>
+<li><strong>Параметр без типа пропадает.</strong> <code>mcp_method_input</code> соединяется с <code>mcp_datatype</code> через inner join: без <code>datatype_id</code> параметр не попадёт в схему (сейчас таких 0).</li>
+<li><strong>Список не обновляется сам.</strong> <code>listChanged = true</code> объявлен, но уведомлений нет; после добавления метода переподключать клиента.</li>
+<li><strong>Права на данные — в БП.</strong> <code>mcp_method_role</code> открывает метод, а не записи. <code>SqlQueryRows</code> ограничений не применяет.</li>
+<li><strong><code>db_execute_sql</code></strong> выполняет любой SQL (включая DDL) от имени платформы, возвращает только первый результат; при ошибке выполнения SQL внутри БП — «Critical Error! Transaction RollBack…». Не выдавать роль с этим методом внешним агентам.</li>
+<li><strong>Журнал хранит заголовки.</strong> <code>mcp_log.data</code> содержит запрос целиком, включая <code>Authorization</code> с токеном. Таблица растёт без очистки (66 МБ за 1,5 месяца). Ограничить доступ к <code>mcp_log</code>, маскировать заголовок и чистить старые записи.</li>
+<li><strong><code>bp_process_roles</code> несогласованы</strong> с <code>mcp_method_role</code> (п. 8). Выдавать обе и проверять под не-admin.</li>
+<li><strong>Роль <code>admin</code></strong> не видит методы без строки в <code>mcp_method_role</code>.</li>
+<li><strong>Большие ответы.</strong> Весь <code>result</code> уходит в контекст модели; отдавать только нужные поля, ставить лимиты по умолчанию (<code>c_ai_services_list</code>: 20, максимум 100).</li>
+</ol>
+<h2 id="16-короткая-памятка">16. Короткая памятка</h2>
+<pre><code class="language-text">НОВЫЙ MCP-МЕТОД
+1. БП mcp_method_&lt;имя&gt; (businessprocess): input jsonb (in), result longtext (out), last_error varchar (out)
+   Start → ScriptTask → XOR → Успех (last_error==&quot;&quot;) / Ошибка (last_error~=&quot;&quot;)
+2. Скрипт: a = StringToJson(var.input).params.arguments
+   проверка аргументов → CheckGrantOfEntity(sys.user_id, …) → SQL → var.result = JsonToString({ok=true,…})
+   ошибка → var.last_error + var.result = JsonToString({ok=false,error=…})
+3. mcp_method (code без пробелов, title, dscr «когда звать и что вернёт», bp_process_id, is_disabled=0)
+4. mcp_method_input (param, datatype string|boolean|object, rq, is_array, object_id, dscr, code=uuid)
+5. mcp_method_role (+ bp_process_roles can_run=1) — узкая роль, не mcp_user для внешних агентов
+6. Проверка: BPMSStartProcess(… {input = JsonToString(req)}) под не-admin, ошибки тоже
+7. Переподключить клиента, проверить tools/list и mcp_log
+</code></pre>
+<div class="footer"><a href="index.html">← Вернуться на Главную</a></div>
+</main>
+</div>
+<script>
+document.querySelectorAll('pre').forEach(function(pre){
+  var b=document.createElement('button');b.className='copy';b.textContent='Копировать';
+  b.onclick=function(){var t=pre.querySelector('code')?pre.querySelector('code').innerText:pre.innerText;
+    try{navigator.clipboard.writeText(t).then(function(){b.textContent='Скопировано';setTimeout(function(){b.textContent='Копировать'},1500)})}catch(e){}};
+  pre.appendChild(b);
+});
+var links=[].slice.call(document.querySelectorAll('nav.toc a'));
+var heads=links.map(function(a){return document.getElementById(decodeURIComponent(a.getAttribute('href').slice(1)))});
+window.addEventListener('scroll',function(){var i=0;heads.forEach(function(h,k){if(h&&h.getBoundingClientRect().top<120)i=k});
+  links.forEach(function(a,k){a.classList.toggle('active',k===i)})});
+</script>
+</body>
+</html>
