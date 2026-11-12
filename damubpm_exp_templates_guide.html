@@ -1,0 +1,1086 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Печатные формы DamuBPM: exp_templates и БП exp_template</title>
+<style>
+:root{--bg:#f7f8fa;--card:#fff;--text:#1f2933;--muted:#5f6b7a;--line:#e3e7ec;--accent:#1565c0;--code:#f1f3f6}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:15px/1.6 -apple-system,"Segoe UI",Roboto,Arial,sans-serif}
+.top{position:sticky;top:0;z-index:5;background:#fff;border-bottom:1px solid var(--line);padding:10px 24px}
+.top a{color:var(--accent);text-decoration:none;font-weight:600}
+main{max-width:1100px;margin:24px auto;padding:32px 40px;background:var(--card);border:1px solid var(--line);border-radius:10px}
+h1{font-size:28px;margin-top:0}
+h2{font-size:22px;margin-top:40px;padding-top:12px;border-top:1px solid var(--line)}
+h3{font-size:18px;margin-top:28px}
+a{color:var(--accent)}
+table{border-collapse:collapse;width:100%;margin:12px 0;font-size:14px;display:block;overflow-x:auto}
+th,td{border:1px solid var(--line);padding:6px 10px;vertical-align:top;text-align:left}
+th{background:#eef2f7}
+code{background:var(--code);padding:1px 5px;border-radius:4px;font:13px/1.5 "JetBrains Mono",Consolas,monospace}
+pre{background:#0f172a;color:#e2e8f0;padding:14px 16px;border-radius:8px;overflow-x:auto}
+pre code{background:none;color:inherit;padding:0}
+blockquote{margin:12px 0;padding:8px 16px;border-left:4px solid var(--accent);background:#eef4fc}
+hr{border:none;border-top:1px solid var(--line);margin:24px 0}
+</style>
+</head>
+<body>
+<div class="top"><a href="index.html">← На главную</a></div>
+<main>
+<h1 id="печатные-формы-damubpm-exp_templates-и-бп-exp_template">Печатные формы DamuBPM: exp_templates и БП exp_template</h1>
+<p><a href="index.html">← На главную</a></p>
+<p>Справочник по устройству печатных форм (шаблонов экспорта) DamuBPM: таблица <code>exp_templates</code>, связанные справочники, виды шаблонов, БП <code>exp_template</code> (код «Экспорт»), процессы обслуживания шаблонов и типовые ошибки. Материал собран по живой базе onedoc (12.11.2026): 264 шаблона по 125 сущностям, скрипты БП и Lua-функции генерации.</p>
+<p>Синтаксис <code>{{ }}</code> и функции шаблонизатора подробно описаны в <a href="parse_template.html">parse_template.md</a>; здесь — только то, что относится к печатным формам.</p>
+<h2 id="содержание">Содержание</h2>
+<ul>
+<li><a href="#1-как-это-работает-в-двух-словах">1. Как это работает в двух словах</a></li>
+<li><a href="#2-таблица-exp_templates">2. Таблица exp_templates</a></li>
+<li><a href="#3-справочники-и-связанные-таблицы">3. Справочники и связанные таблицы</a></li>
+<li><a href="#4-источник-данных-query-и-detail">4. Источник данных: query и detail</a></li>
+<li><a href="#5-виды-шаблонов-и-образцы">5. Виды шаблонов и образцы</a></li>
+<li><a href="#6-функции-в-шаблонах">6. Функции в шаблонах</a></li>
+<li><a href="#7-бп-exp_template">7. БП exp_template</a></li>
+<li><a href="#8-как-запускать-печать">8. Как запускать печать</a></li>
+<li><a href="#9-fodt-bottom-line-импорт-docx-и-разметка-полей">9. FODT «bottom line»: импорт docx и разметка полей</a></li>
+<li><a href="#10-процессы-обслуживания-шаблонов">10. Процессы обслуживания шаблонов</a></li>
+<li><a href="#11-ловушки">11. Ловушки</a></li>
+<li><a href="#12-чек-лист-новой-печатной-формы">12. Чек-лист новой печатной формы</a></li>
+</ul>
+<hr>
+<h2 id="1-как-это-работает-в-двух-словах">1. Как это работает в двух словах</h2>
+<ol>
+<li>Шаблон — строка в <code>exp_templates.template</code> (Go text/template + HTML, FODT XML или CSV).</li>
+<li>Пользователь жмёт «Печать» в списке или карточке → фронт запускает БП <code>exp_template</code> с <code>url</code> (какие записи) и <code>entity_id</code>.</li>
+<li>БП выбирает шаблон (по коду, по <code>autoprint</code> или через выбор пользователя), собирает данные (<code>Query</code> или <code>Detail</code>) в массив <code>items</code>, рендерит <code>ParseTemplate</code>.</li>
+<li>Результат конвертируется LibreOffice (<code>soffice --headless --convert-to pdf|xls|docx</code>) и загружается в <code>files</code> через <code>UploadRawData</code>.</li>
+<li>PDF показывается в модальном окне (<code>&lt;embed&gt;</code>), остальные форматы скачиваются сразу.</li>
+</ol>
+<pre><code class="language-text">UI print() / кнопка карточки / BPMSStartProcess2
+        │  url=&quot;?code=&lt;query|entity&gt;&amp;ids=1,2&quot;, entity_id, [template_id|template_code]
+        ▼
+   БП exp_template ──► Query(url) / Detail(id, detail_code) ──► items
+        ▼
+   ParseTemplate(template, {user_id, items, last_file_uuid})
+        ▼
+   soffice → pdf/xls/docx  ──► UploadRawData ──► files.code
+        ▼
+   PDF: предпросмотр  |  прочее: скачивание
+</code></pre>
+<hr>
+<h2 id="2-таблица-exp_templates">2. Таблица exp_templates</h2>
+<p>Сущность <code>exp_templates</code> (модуль <code>core</code>, id 697).</p>
+<table>
+<thead>
+<tr>
+<th>Поле</th>
+<th>Тип</th>
+<th>Назначение</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>id</code></td>
+<td>bigserial</td>
+<td>ID шаблона</td>
+</tr>
+<tr>
+<td><code>code</code></td>
+<td>varchar</td>
+<td>Код. Используется в <code>template_code</code>, в <code>EntityValueByCode("exp_templates",...)</code></td>
+</tr>
+<tr>
+<td><code>title</code></td>
+<td>varchar</td>
+<td>Название в списке выбора шаблонов</td>
+</tr>
+<tr>
+<td><code>entity_id</code></td>
+<td>→ <code>entities</code></td>
+<td>Сущность, к которой относится шаблон (по ней строится список доступных)</td>
+</tr>
+<tr>
+<td><code>src_id</code></td>
+<td>→ <code>exp_temp_srcs</code></td>
+<td>Источник данных: <code>1 query</code> (из запроса) / <code>2 detail</code> (из детали)</td>
+</tr>
+<tr>
+<td><code>detail_id</code></td>
+<td>→ <code>details</code></td>
+<td>Деталь для источника <code>detail</code>. Обычно авто-деталь с кодом сущности</td>
+</tr>
+<tr>
+<td><code>ftype_id</code></td>
+<td>→ <code>exp_tmp_ftypes</code></td>
+<td>Тип выходного файла (pdf, xls, docx, csv…)</td>
+</tr>
+<tr>
+<td><code>filename</code></td>
+<td>varchar</td>
+<td>Имя файла без расширения; расширение берётся из <code>exp_tmp_ftypes.ext</code></td>
+</tr>
+<tr>
+<td><code>template</code></td>
+<td>text</td>
+<td>Сам шаблон</td>
+</tr>
+<tr>
+<td><code>autoprint</code></td>
+<td>boolean</td>
+<td>«Автоматический предпросмотр без выбора»: если у сущности ровно один такой шаблон, он выбирается без диалога</td>
+</tr>
+<tr>
+<td><code>autopreview</code></td>
+<td>boolean</td>
+<td>Отдаётся в датасете <code>exp_templates$</code> детали; БП <code>exp_template</code> его не читает</td>
+</tr>
+<tr>
+<td><code>only_users</code></td>
+<td>boolean</td>
+<td>Доступен только пользователям из <code>exp_templates_user</code></td>
+</tr>
+<tr>
+<td><code>is_sql_condition</code></td>
+<td>boolean</td>
+<td>Включить фильтр доступности по SQL</td>
+</tr>
+<tr>
+<td><code>sql_condition</code></td>
+<td>text</td>
+<td>Условие по таблице сущности с алиасом <code>main</code>; <code>:user_id</code> подставляется</td>
+</tr>
+<tr>
+<td><code>signed</code></td>
+<td>boolean</td>
+<td>«Подписывать?» — флаг, в БП <code>exp_template</code> не используется</td>
+</tr>
+<tr>
+<td><code>docx_file_id</code></td>
+<td>→ <code>files</code></td>
+<td>Рабочая копия docx при онлайн-редактировании (WebDAV)</td>
+</tr>
+<tr>
+<td><code>dev_notes</code></td>
+<td>text</td>
+<td>Заметки разработчика (что правили руками после импорта и т.п.)</td>
+</tr>
+<tr>
+<td><code>bl_fodt_orig</code></td>
+<td>text</td>
+<td>FODT после конвертации загруженного docx (bottom line)</td>
+</tr>
+<tr>
+<td><code>bl_fodt_with_ids</code></td>
+<td>text</td>
+<td>FODT с маркерами <code>_FIELD_n_</code>, <code>_ROW_…</code>, <code>_COL_…</code>, <code>_BLOCK_…</code></td>
+</tr>
+<tr>
+<td><code>bl_html</code></td>
+<td>text</td>
+<td>HTML-представление для визуальной разметки полей</td>
+</tr>
+<tr>
+<td><code>bl_max_field</code></td>
+<td>bigint</td>
+<td>Количество найденных полей <code>_FIELD_n_</code></td>
+</tr>
+<tr>
+<td><code>bl_map</code></td>
+<td>jsonb</td>
+<td>Карта полей <code>f&lt;n&gt;</code></td>
+</tr>
+<tr>
+<td><code>bl_map_r</code></td>
+<td>jsonb</td>
+<td>Карта табличных строк <code>r&lt;k&gt;</code> (какой датасет повторять)</td>
+</tr>
+<tr>
+<td><code>bl_map_c</code></td>
+<td>jsonb</td>
+<td>Карта колонок <code>c&lt;row&gt;_&lt;col&gt;</code></td>
+</tr>
+<tr>
+<td><code>bl_map_b</code></td>
+<td>jsonb</td>
+<td>Карта условных блоков <code>b&lt;k&gt;</code></td>
+</tr>
+</tbody>
+</table>
+<p>Действия на карточке шаблона (bp_processes сущности): «Мастер создания шаблона экспорта», «Импорт шаблона (docx)», «Применить изменения», «Экспорт шаблона в Docx», «Онлайн редактирование», «Прекратить онлайн-редактирование», «Скопировать», «Экспорт шаблона в файл» — см. <a href="#10-процессы-обслуживания-шаблонов">раздел 10</a>.</p>
+<hr>
+<h2 id="3-справочники-и-связанные-таблицы">3. Справочники и связанные таблицы</h2>
+<h3 id="exp_tmp_ftypes--типы-файлов">exp_tmp_ftypes — типы файлов</h3>
+<table>
+<thead>
+<tr>
+<th style="text-align: right;">id</th>
+<th>code</th>
+<th>ext</th>
+<th>Как генерируется в БП</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: right;">1</td>
+<td><code>pdf</code></td>
+<td><code>.pdf</code></td>
+<td><code>generatePdfbyHTML</code> → <code>soffice --writer --convert-to pdf</code></td>
+</tr>
+<tr>
+<td style="text-align: right;">2</td>
+<td><code>xml</code></td>
+<td><code>.xml</code></td>
+<td><code>ParseTemplate</code> + <code>UploadRawData</code> (сырой текст)</td>
+</tr>
+<tr>
+<td style="text-align: right;">3</td>
+<td><code>xls</code></td>
+<td><code>.xls</code></td>
+<td><code>generateXlsbyHTML</code> → <code>soffice --calc --convert-to xls</code></td>
+</tr>
+<tr>
+<td style="text-align: right;">4</td>
+<td><code>html</code></td>
+<td><code>.html</code></td>
+<td>сырой текст</td>
+</tr>
+<tr>
+<td style="text-align: right;">5</td>
+<td><code>csv</code></td>
+<td><code>.csv</code></td>
+<td>сырой текст</td>
+</tr>
+<tr>
+<td style="text-align: right;">6</td>
+<td><code>docx</code></td>
+<td><code>.docx</code></td>
+<td>только источник <code>detail</code>: <code>generateDocxbyHTML</code> → <code>soffice --writer --convert-to docx</code></td>
+</tr>
+<tr>
+<td style="text-align: right;">7</td>
+<td><code>xlshtml</code></td>
+<td><code>.xls</code></td>
+<td>сырой HTML с расширением <code>.xls</code> (Excel открывает HTML)</td>
+</tr>
+</tbody>
+</table>
+<p>Ветка <code>xlsx</code> (<code>generateXlsxbyHTML</code>) есть в скрипте Query, но типа <code>xlsx</code> в справочнике нет.</p>
+<h3 id="exp_temp_srcs--источники-данных">exp_temp_srcs — источники данных</h3>
+<table>
+<thead>
+<tr>
+<th style="text-align: right;">id</th>
+<th>code</th>
+<th>title</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: right;">1</td>
+<td><code>query</code></td>
+<td>Из запроса</td>
+</tr>
+<tr>
+<td style="text-align: right;">2</td>
+<td><code>detail</code></td>
+<td>Из детали</td>
+</tr>
+</tbody>
+</table>
+<h3 id="прочие-таблицы">Прочие таблицы</h3>
+<table>
+<thead>
+<tr>
+<th>Таблица</th>
+<th>Назначение</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>exp_templates_user</code></td>
+<td><code>exp_templates_id</code>, <code>user_id</code> — кому доступен шаблон при <code>only_users=1</code></td>
+</tr>
+<tr>
+<td><code>exp_result</code></td>
+<td><code>entity_pk</code> (sys$uuid записи), <code>file_id</code> — «эталонный» файл записи; используется для наложения штампа ЭЦП</td>
+</tr>
+<tr>
+<td><code>template_funcs</code></td>
+<td><code>code → script</code>: Lua-функции, вызываемые в шаблоне через <code>{{lua "code" ...}}</code></td>
+</tr>
+<tr>
+<td><code>exp_design</code></td>
+<td>Дизайны для мастера (<code>simple</code> — «Простой дизайн», PDF)</td>
+</tr>
+<tr>
+<td><code>luas</code></td>
+<td><code>generatePdfbyHTML</code>, <code>generateXlsbyHTML</code>, <code>generateXlsxbyHTML</code>, <code>generateDocxbyHTML</code>, <code>generatePdfbyHTML2</code>, <code>convertHTML2Docx</code></td>
+</tr>
+<tr>
+<td><code>its_r_statements_onedoc_t</code>, <code>its_r_prikaz_pers2_onedoc_t</code></td>
+<td>Прикладные справочники «тип файла → <code>exp_template_id</code>» для пакетной генерации документов</td>
+</tr>
+</tbody>
+</table>
+<h3 id="генераторы-luas">Генераторы (luas)</h3>
+<p>Все <code>generate*byHTML(dir, filename, html, arr, user_id)</code> устроены одинаково:</p>
+<pre><code class="language-lua">res, errText, errNum = ParseTemplate(html, arr, user_id)
+res = StrReplace(res, &quot;&lt;no value&gt;&quot;, &quot;&quot;, -1)       -- только pdf и docx
+WriteFile(TempDir()..&quot;/&quot;..uuid..&quot;.html&quot;, res)
+Command(&quot;soffice&quot;, &quot;--headless&quot;, &quot;--writer&quot;, &quot;--convert-to&quot;, &quot;pdf&quot;, tempFile, &quot;--outdir&quot;, TempDir())
+s = ReadFile(TempDir()..&quot;/&quot;..uuid..&quot;.pdf&quot;)
+uuid = UploadRawData(dir, filename, s, user_id)  -- возвращает files.code
+</code></pre>
+<p>Временный файл всегда пишется с расширением <code>.html</code>, но LibreOffice определяет формат по содержимому, поэтому FODT-шаблоны (<code>&lt;?xml …&gt;&lt;office:document …&gt;</code>) тоже конвертируются корректно.</p>
+<h3 id="статистика-onedoc-12112026">Статистика onedoc (12.11.2026)</h3>
+<table>
+<thead>
+<tr>
+<th>Показатель</th>
+<th style="text-align: right;">Кол-во</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Всего шаблонов</td>
+<td style="text-align: right;">264</td>
+</tr>
+<tr>
+<td>Сущностей с шаблонами</td>
+<td style="text-align: right;">125</td>
+</tr>
+<tr>
+<td><code>detail</code> → PDF: HTML / FODT</td>
+<td style="text-align: right;">85 / 28</td>
+</tr>
+<tr>
+<td><code>detail</code> → DOCX: HTML / FODT</td>
+<td style="text-align: right;">26 / 10</td>
+</tr>
+<tr>
+<td><code>query</code> → XLS (реестры), из них <code>&lt;entity&gt;$xls$page</code></td>
+<td style="text-align: right;">97 / 65</td>
+</tr>
+<tr>
+<td><code>query</code> → CSV</td>
+<td style="text-align: right;">2</td>
+</tr>
+<tr>
+<td>С <code>autoprint=1</code></td>
+<td style="text-align: right;">56</td>
+</tr>
+<tr>
+<td>С <code>is_sql_condition=1</code></td>
+<td style="text-align: right;">66</td>
+</tr>
+<tr>
+<td>С <code>only_users=1</code></td>
+<td style="text-align: right;">7</td>
+</tr>
+<tr>
+<td>Импортированы из docx (bottom line, <code>bl_html</code> заполнен)</td>
+<td style="text-align: right;">39</td>
+</tr>
+<tr>
+<td>Созданы мастером (<code>…$from_wizard$N</code>)</td>
+<td style="text-align: right;">8</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h2 id="4-источник-данных-query-и-detail">4. Источник данных: query и detail</h2>
+<p>Корень данных шаблона всегда один и тот же:</p>
+<pre><code class="language-lua">{ user_id = sys.user_id, items = items, last_file_uuid = &quot;&lt;uuid&gt;&quot; }  -- last_file_uuid только в detail
+</code></pre>
+<h3 id="src--query">src = query</h3>
+<p><code>items</code> — строки запроса, полученные <code>Query(var.url, sys.user_id)</code>. Одна строка = одна запись. Ссылочные поля приходят парами: <code>dep_id</code> (id) и <code>dep_id$</code> (title), вложенные — <code>created_by$title_rp</code> и т.п.</p>
+<pre><code class="language-text">{{ range $item_key, $item_value := .items }}
+  {{index $item_value &quot;title&quot;}} — {{index $item_value &quot;stat_id$&quot;}}
+{{ end }}
+</code></pre>
+<p>Значения <strong>не экранируются</strong> — HTML в данных попадёт в документ как есть.</p>
+<h3 id="src--detail">src = detail</h3>
+<p>Для каждой строки запроса вызывается <code>Detail(v.id, &lt;details.code&gt;, sys.user_id)</code>. <code>items[i]</code> — это <strong>объект датасетов детали</strong>: ключ — код <code>detail_queries</code>, значение — массив строк.</p>
+<pre><code class="language-text">.items[i]
+  ├─ its_hr_premiya        ← основной датасет (код = код сущности), 1 строка
+  ├─ its_hr_premiya_user   ← табличная часть
+  ├─ its_hr_premiya_file
+  ├─ task_approve_list$    ← служебные датасеты авто-детали (с $ на конце)
+  ├─ exp_templates$, workflows$, workflow_stat$, error_rows$ …
+</code></pre>
+<p>Канонический каркас detail-шаблона:</p>
+<pre><code class="language-text">{{ range $item_key, $item_value := .items }}
+  {{ range $key, $value := $item_value.its_hr_premiya }}
+    Номер {{index $value &quot;docnum&quot;}} от {{ TimeParseFormat (index $value &quot;created_at&quot;) &quot;2006-01-02 15:04:05&quot; &quot;02.01.2006&quot; }}
+    Инициатор: {{index $value &quot;created_by$&quot;}}
+  {{ end }}
+
+  {{ range $key, $value := $item_value.its_hr_premiya_user }}
+    {{inc $key 1}}. {{index $value &quot;user_id$&quot;}} — {{index $value &quot;amount&quot;}}
+  {{ end }}
+
+  {{ range $key, $value := index $item_value &quot;task_approve_list$&quot; }}
+    {{index $value &quot;approve_res_id$title&quot;}} {{index $value &quot;manager_id$&quot;}}
+  {{ end }}
+{{ end }}
+</code></pre>
+<p>Правила detail-источника:</p>
+<ul>
+<li>Датасеты с <code>$</code> в коде читаются только через <code>index $item_value "код$"</code> — точечная запись не работает.</li>
+<li>Все строковые значения датасетов проходят <code>HTMLEscapeString</code>, <strong>кроме ключей с префиксом <code>fodt</code></strong> (<code>fodt_text</code>, <code>fodt_styles</code> …). Чтобы вывести HTML из поля, используйте поле <code>fodt*</code> или функцию <code>{{lua "StrReplace" …}}</code>, которая возвращает <code>&amp;lt;</code>/<code>&amp;gt;</code> обратно.</li>
+<li>Связь «строка ТЧ → строки вложенной ТЧ» делается фильтром внутри <code>range</code>: <code>{{if eq $value.id $value_inner.parent_id}}</code> (см. <code>its_protocol$pdf</code>, датасет <code>…$cross$</code>).</li>
+<li>Датасет <code>exp_templates$</code> авто-детали отвечает за показ кнопки печати в карточке; в нём жёстко зашит <code>entity_id</code> сущности.</li>
+</ul>
+<h3 id="формат-url">Формат url</h3>
+<table>
+<thead>
+<tr>
+<th>Вызов</th>
+<th>url</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Карточка записи</td>
+<td><code>?code=&lt;код сущности&gt;&amp;ids=&lt;id&gt;</code></td>
+</tr>
+<tr>
+<td>Выбранные строки списка</td>
+<td><code>?code=&lt;код query списка&gt;&amp;ids=1,2,3</code></td>
+</tr>
+<tr>
+<td>Весь список с фильтрами</td>
+<td><code>?</code> + <code>query_options.url</code> без <code>page</code>, <code>perpage</code>, <code>loader</code></td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h2 id="5-виды-шаблонов-и-образцы">5. Виды шаблонов и образцы</h2>
+<h3 id="51-реестр-списка-в-excel-entityxlspage-query--xls">5.1 Реестр списка в Excel (<code>&lt;entity&gt;$xls$page</code>, query → xls)</h3>
+<p>Генерируется автоматически для списков; 65 шаблонов почти идентичны (≈1 622 символа).</p>
+<pre><code class="language-html">&lt;html&gt;
+{{$items := .items}}
+&lt;head&gt;
+  &lt;meta http-equiv=&quot;content-type&quot; content=&quot;text/html; charset=utf-8&quot; /&gt;
+  &lt;style type=&quot;text/css&quot;&gt;
+    @page { size: landscape; margin-left: 1cm; margin-right: 1cm }
+    p { font-family: &quot;Arial&quot;; font-size: 7pt }
+  &lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+  &lt;table cellpadding=0 cellspacing=0 style=&quot;border:solid 1px&quot;&gt;
+    &lt;tr&gt;
+      &lt;th style=&quot;border:solid 1px&quot;&gt;Должность&lt;/th&gt;
+      &lt;th style=&quot;border:solid 1px&quot;&gt;Статус&lt;/th&gt;
+      &lt;th style=&quot;border:solid 1px&quot;&gt;Сумма&lt;/th&gt;
+    &lt;/tr&gt;
+    {{ range $item_key, $item_value := .items }}
+    &lt;tr&gt;
+      &lt;td&gt;{{index $item_value &quot;hr_position_id$&quot; }}&lt;/td&gt;
+      &lt;td&gt;{{index $item_value &quot;stat_id$&quot; }}&lt;/td&gt;
+      &lt;td&gt;{{index $item_value &quot;amount&quot; }}&lt;/td&gt;
+    &lt;/tr&gt;
+    {{ end}}
+  &lt;/table&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+</code></pre>
+<h3 id="52-csv-query--csv">5.2 CSV (query → csv)</h3>
+<p>Без HTML; разделитель — <code>\t</code> или <code>;</code>, строки — <code>\r\n</code>.</p>
+<pre><code class="language-text">{{$items := .items}}id  title   email
+{{ range $item_key, $item_value := .items }}{{index $item_value &quot;id&quot;}}  {{index $item_value &quot;title&quot;}}   {{index $item_value &quot;email&quot;}}
+{{ end}}
+</code></pre>
+<h3 id="53-карточка-в-pdfdocx-из-html-detail--pdfdocx">5.3 Карточка в PDF/DOCX из HTML (detail → pdf/docx)</h3>
+<p>Самый массовый вид (111 шаблонов). HTML обычно получен сохранением Word/LibreOffice в HTML, затем вставлены <code>{{range}}</code> и поля. <code>@page</code> задаёт формат листа и поля:</p>
+<pre><code class="language-html">&lt;style type=&quot;text/css&quot;&gt;
+  @page { size: 21cm 29.7cm; margin: 2cm }
+  p { margin-bottom: 0.25cm; line-height: 115% }
+&lt;/style&gt;
+</code></pre>
+<p>Альбомная ориентация — <code>@page { size: landscape }</code>. Картинки — абсолютный URL <code>…/restapi/getfile?code=…</code> или base64 через <code>{{lua "file_base64_by_file_id" …}}</code>.</p>
+<h3 id="54-fodt-detail--pdfdocx">5.4 FODT (detail → pdf/docx)</h3>
+<p>38 шаблонов — Flat ODT (<code>&lt;?xml …?&gt;&lt;office:document …&gt;</code>), почти все получены импортом docx (<a href="#9-fodt-bottom-line-импорт-docx-и-разметка-полей">раздел 9</a>). Каркас, который ставит процесс «Применить изменения»:</p>
+<pre><code class="language-text">{{$last_file_uuid:=.last_file_uuid}}{{$items:= .items}}{{range $item_key, $item_value := .items}}{{range $key, $value := $item_value.&lt;entity_code&gt;}}&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
+&lt;office:document …&gt;
+  … {{index $value &quot;docnum&quot;}} … {{ lua &quot;task_list_approve&quot; (index $value &quot;sys$uuid&quot;) }} …
+&lt;/office:document&gt;{{end}}{{end}}
+</code></pre>
+<p>Внутри FODT разрыв строки — <code>&lt;text:line-break/&gt;</code>, поэтому Lua-функции для FODT склеивают значения через него (<code>task_hst_users_info_fodt</code>, <code>task_user_approve_list</code>). QR-код — <code>{{lua "fodt_qr" &lt;текст&gt; &lt;width&gt; &lt;height&gt; &lt;x&gt; &lt;y&gt; &lt;style&gt;}}</code>, возвращает <code>&lt;draw:frame&gt;</code> с base64 PNG.</p>
+<h3 id="55-шаблон-обёртка-html-хранится-в-записи">5.5 Шаблон-обёртка (HTML хранится в записи)</h3>
+<p>Когда текст документа формируется в самой записи (редактор CKEditor, генерация по шаблону), печатная форма лишь выводит поле:</p>
+<pre><code class="language-text">{{ range $item_key, $item_value := .items }}
+{{ range $key, $value := $item_value.its_memo }}
+    {{index $value &quot;template&quot;}}
+{{end}}{{end}}
+</code></pre>
+<p>Учитывайте экранирование detail-источника (см. <a href="#src--detail">раздел 4</a>).</p>
+<h3 id="56-мастер-entityfrom_wizardn">5.6 Мастер (<code>&lt;entity&gt;$from_wizard$N</code>)</h3>
+<p>Процесс <code>exp_template_wizard</code> берёт дизайн из <code>exp_design</code>, рендерит его по метаданным сущности (<code>Detail(entity_id, "entities_for_gen")</code>) и создаёт шаблон с <code>src=detail</code>, <code>detail_id</code> = деталь с кодом сущности. Результат — готовая заготовка для правки.</p>
+<h3 id="57-особые-случаи">5.7 Особые случаи</h3>
+<table>
+<thead>
+<tr>
+<th>Шаблон</th>
+<th>Что делает</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>bp_processes_doc</code> (ftype html)</td>
+<td>Выводит <code>svg</code> процесса: <code>{{(index $item_value.bp_processes 0).svg}}</code></td>
+</tr>
+<tr>
+<td><code>its_hr_test_req06_lua</code></td>
+<td>Весь шаблон — <code>{{ lua "hello_world" "177755" }}</code>; документ целиком собирается Lua-функцией</td>
+</tr>
+<tr>
+<td><code>its_budget</code>, <code>its_time_sheet</code></td>
+<td>Динамические колонки: <code>Iterate 1 12</code>, <code>index $value (print "day_r_" $val "$")</code></td>
+</tr>
+<tr>
+<td><code>its_protocols_v*</code></td>
+<td>Несколько вариантов одной формы, выбор по <code>sql_condition</code> (<code>main.collegial in (…)</code>)</td>
+</tr>
+<tr>
+<td><code>its_memo$</code>, <code>its_in$xlsx</code>, <code>its_out$pdf</code></td>
+<td><code>sql_condition = 1 = 0</code>: скрыты из выбора, вызываются из Lua по <code>template_id</code></td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h2 id="6-функции-в-шаблонах">6. Функции в шаблонах</h2>
+<p>Частота по 264 шаблонам onedoc:</p>
+<table>
+<thead>
+<tr>
+<th>Функция</th>
+<th style="text-align: right;">Вызовов</th>
+<th>Пример</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>index</code></td>
+<td style="text-align: right;">4 320</td>
+<td><code>{{index $value "created_by$"}}</code></td>
+</tr>
+<tr>
+<td><code>TimeParseFormat</code></td>
+<td style="text-align: right;">326</td>
+<td><code>{{ TimeParseFormat (index $value "created_at") "2006-01-02 15:04:05" "02.01.2006" }}</code></td>
+</tr>
+<tr>
+<td><code>lua</code></td>
+<td style="text-align: right;">227</td>
+<td><code>{{lua "rus_date" (TimeParseFormat (index $value "act") "02.01.2006" "02 January 2006")}}</code></td>
+</tr>
+<tr>
+<td><code>eq</code> / <code>ne</code></td>
+<td style="text-align: right;">205</td>
+<td><code>{{if eq $value2.step_nn "1"}}</code></td>
+</tr>
+<tr>
+<td><code>isnil</code></td>
+<td style="text-align: right;">117</td>
+<td><code>{{if isnil $value.docnum}}ПР-{{$value.id}}{{else}}{{$value.docnum}}{{end}}</code></td>
+</tr>
+<tr>
+<td><code>inc</code></td>
+<td style="text-align: right;">28</td>
+<td><code>{{inc $key 1}}</code> — нумерация строк</td>
+</tr>
+<tr>
+<td><code>Iterate</code></td>
+<td style="text-align: right;">16</td>
+<td><code>{{range $val := Iterate 1 (index $value "day_count")}}</code></td>
+</tr>
+<tr>
+<td><code>print</code></td>
+<td style="text-align: right;">9</td>
+<td>построение имени ключа</td>
+</tr>
+<tr>
+<td><code>len</code></td>
+<td style="text-align: right;">9</td>
+<td><code>{{len $item_value.its_protocols_users}}</code></td>
+</tr>
+<tr>
+<td><code>EntityValueById</code></td>
+<td style="text-align: right;">3</td>
+<td><code>{{ EntityValueById "users" "title" (index $value_inner "user_id") }}</code></td>
+</tr>
+<tr>
+<td><code>DBCurrentDateTime</code>, <code>formatNumber</code>, <code>GetParamValue</code></td>
+<td style="text-align: right;">по 2–3</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<p>Самые используемые <code>template_funcs</code>:</p>
+<table>
+<thead>
+<tr>
+<th>Код</th>
+<th>Назначение</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>format_date</code></td>
+<td><code>YYYY-MM-DD…</code> → <code>ДД.ММ.ГГГГ</code></td>
+</tr>
+<tr>
+<td><code>rus_date</code> / <code>kaz_date</code></td>
+<td>Замена английских месяцев на русские/казахские (после <code>TimeParseFormat … "02 January 2006"</code>)</td>
+</tr>
+<tr>
+<td><code>StrReplace</code></td>
+<td>Замена + возврат <code>&amp;lt;</code>/<code>&amp;gt;</code> в <code>&lt;</code>/<code>&gt;</code> (вывод HTML из экранированных полей)</td>
+</tr>
+<tr>
+<td><code>file_base64_by_file_id</code></td>
+<td>Base64 файла (картинки в документе)</td>
+</tr>
+<tr>
+<td><code>ckeditorTableBorder</code></td>
+<td>Добавляет <code>border='1'</code> таблицам из CKEditor</td>
+</tr>
+<tr>
+<td><code>ruNum2Word</code> / <code>kzNum2Word</code> / <code>num_to_text_kz</code></td>
+<td>Сумма прописью</td>
+</tr>
+<tr>
+<td><code>priceSpace</code></td>
+<td>Разделители разрядов</td>
+</tr>
+<tr>
+<td><code>dayOfWeek</code></td>
+<td>День недели (табели)</td>
+</tr>
+<tr>
+<td><code>task_list_approve</code>, <code>task_user_approve_list</code>, <code>task_hst_users_info_fodt/_br/_fyi_fodt*</code></td>
+<td>Лист согласования / ознакомления из <code>tasks</code>/<code>task_hst</code> (HTML <code>&lt;br /&gt;</code> или FODT <code>&lt;text:line-break/&gt;</code>)</td>
+</tr>
+<tr>
+<td><code>task_user_*_by_step_nn</code>, <code>task_hst_users_*bytitlefodt</code></td>
+<td>ФИО/должность согласующего по шагу (<code>argv1</code> = sys$uuid записи, <code>argv2</code> = step_nn или название шага)</td>
+</tr>
+<tr>
+<td><code>fodt_qr</code></td>
+<td>QR-код в FODT</td>
+</tr>
+<tr>
+<td><code>root_*_prikaz</code>, <code>root_head_*</code></td>
+<td>Прикладные: реквизиты руководителя для приказов</td>
+</tr>
+</tbody>
+</table>
+<p>В <code>lua</code> аргументы приходят как <code>argv1…</code>, функция обязана вернуть значение. Новую функцию добавляйте в <code>template_funcs</code>, а не в шаблон.</p>
+<hr>
+<h2 id="7-бп-exp_template">7. БП exp_template</h2>
+<p>Код <code>exp_template</code>, название «Экспорт», тип <code>businessprocess</code>, модуль <code>core</code>, id 313.</p>
+<h3 id="переменные">Переменные</h3>
+<table>
+<thead>
+<tr>
+<th>Переменная</th>
+<th>Тип</th>
+<th>Вход/выход</th>
+<th>Назначение</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>url</code></td>
+<td>longtext</td>
+<td>вход, обяз.</td>
+<td>Строка <code>Query</code> — какие записи печатать</td>
+</tr>
+<tr>
+<td><code>entity_id</code></td>
+<td>reference entities</td>
+<td>вход</td>
+<td>Сущность (список шаблонов, таблица для <code>sql_condition</code>, деталь)</td>
+</tr>
+<tr>
+<td><code>template_id</code></td>
+<td>integer</td>
+<td>вход</td>
+<td>Шаблон задан заранее — без выбора</td>
+</tr>
+<tr>
+<td><code>template_code</code></td>
+<td>varchar</td>
+<td>вход</td>
+<td>То же по коду</td>
+</tr>
+<tr>
+<td><code>nopreview</code></td>
+<td>boolean</td>
+<td>вход</td>
+<td><code>1</code> — не показывать PDF, завершить на «Без предпросмотра»</td>
+</tr>
+<tr>
+<td><code>add_to_exp_result</code></td>
+<td>boolean</td>
+<td>вход</td>
+<td><code>1</code> — записать файл в <code>exp_result</code> как эталон записи</td>
+</tr>
+<tr>
+<td><code>avaiable_templates</code></td>
+<td>struct</td>
+<td>внутр.</td>
+<td>Список доступных шаблонов для выбора</td>
+</tr>
+<tr>
+<td><code>cnt</code></td>
+<td>integer</td>
+<td>внутр.</td>
+<td>Количество документов</td>
+</tr>
+<tr>
+<td><code>last_error</code></td>
+<td>varchar</td>
+<td>выход</td>
+<td>Текст ошибки</td>
+</tr>
+<tr>
+<td><code>file_uuid</code></td>
+<td>varchar</td>
+<td>выход</td>
+<td><code>files.code</code> результата (<strong>только источник detail</strong>)</td>
+</tr>
+<tr>
+<td><code>file_url</code></td>
+<td>varchar</td>
+<td>выход</td>
+<td><code>/restapi/getfile?code=…&amp;attachment=true</code></td>
+</tr>
+<tr>
+<td><code>file_url_woa</code></td>
+<td>varchar</td>
+<td>выход</td>
+<td>Ссылка без attachment (для <code>&lt;embed&gt;</code>)</td>
+</tr>
+</tbody>
+</table>
+<h3 id="маршрут">Маршрут</h3>
+<pre><code class="language-text">Start
+ └► Calc TemplateId
+     └► Общее количество документов
+         └► Рассчитать доступные шаблоны
+             └► ◇ template_id задан?
+                 ├─ нет ► [UserTask] Выберите шаблон ─┐
+                 └─ да ───────────────────────────────┤
+                                                      ▼
+                                   ◇ exp_temp_srcs.code шаблона
+                     ┌──────── query ─────────┴──────── detail ────────┐
+                     ▼                                                 ▼
+                   Query                                            Detail
+                     │                                                 ▼
+                     │                                       Add to exp_result
+                     │                                                 ▼
+                     │                              Наложим штамп из ЭЦП exp_result
+                     │                                                 ▼
+                     │                                              Ссылки
+                     └───────────────────────┬─────────────────────────┘
+                                             ▼
+                                ◇ last_error ~= &quot;&quot;  ──► [End] Ошибка
+                                             ▼ без ошибки
+                                ◇ ftype == pdf ?
+                       ├─ нет ► [End] Close (скачивание location.href = file_url)
+                       └─ да ► ◇ nopreview == &quot;1&quot; ?
+                                   ├─ нет ► [End] PDF (embed file_url_woa)
+                                   └─ да  ► [End] Без предпросмотра
+</code></pre>
+<p>Условия стрелок (Lua):</p>
+<table>
+<thead>
+<tr>
+<th>Стрелка</th>
+<th>Условие</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Шаблон ещё не выбран</td>
+<td><code>var.template_id == nil or var.template_id=="" or var.template_id==0</code></td>
+</tr>
+<tr>
+<td>Шаблон уже выбран</td>
+<td><code>var.template_id~=nil and var.template_id~=0</code></td>
+</tr>
+<tr>
+<td>Query</td>
+<td><code>EntityValueById("exp_temp_srcs","code", EntityValueById("exp_templates","src_id",var.template_id)) == "query"</code></td>
+</tr>
+<tr>
+<td>Detail</td>
+<td>то же <code>== "detail"</code></td>
+</tr>
+<tr>
+<td>С ошибкой / Без ошибки</td>
+<td><code>var.last_error ~= ""</code> / <code>var.last_error == ""</code></td>
+</tr>
+<tr>
+<td>PDF / не PDF</td>
+<td><code>EntityValueById("exp_tmp_ftypes","code", EntityValueById("exp_templates","ftype_id",var.template_id)) == "pdf"</code> / <code>~= "pdf"</code></td>
+</tr>
+<tr>
+<td>Предпросмотр</td>
+<td><code>var.nopreview ~= "1"</code> / <code>== "1"</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="шаги">Шаги</h3>
+<p><strong>Calc TemplateId.</strong> Если передан <code>template_code</code> — <code>select id from exp_templates where code=?</code>. Иначе ищет шаблоны сущности с <code>autoprint = 1</code>; если такой ровно один — выбирает его (<code>template_id</code>, <code>template_code</code>). Если передан <code>template_id</code>, шаг его не трогает.</p>
+<p><strong>Общее количество документов.</strong> <code>Query(var.url)</code> → <code>var.cnt</code> (выводится в диалоге выбора).</p>
+<p><strong>Рассчитать доступные шаблоны.</strong></p>
+<pre><code class="language-sql">select coalesce(e.sql_condition,'') sql_condition, coalesce(e.is_sql_condition,0) is_sql_condition, e.id, e.title
+from exp_templates e
+where e.entity_id = ?
+  and (coalesce(e.only_users,0) = 0
+       or exists (select 1 from exp_templates_user ee where ee.exp_templates_id = e.id and ee.user_id = ?))
+</code></pre>
+<p>Для шаблонов с <code>is_sql_condition</code> по <strong>каждой</strong> записи из <code>url</code> выполняется
+<code>select count(1) cnt from &lt;entity_code&gt; main where (&lt;sql_condition&gt;) and main.id=?</code> (<code>:user_id</code> заменяется на <code>'&lt;id&gt;'</code>). Если хоть одна запись не прошла — шаблон скрывается.</p>
+<p><strong>Выберите шаблон (UserTask).</strong> Таблица ссылок по <code>vars.avaiable_templates</code>; клик ставит <code>vars.template_id</code> и вызывает <code>runTask</code>.</p>
+<p><strong>Query</strong> (src = query). <code>Query(url)</code> → <code>items</code>; для <code>pdf</code>/<code>xls</code>/<code>xlsx</code> — соответствующий <code>generate*byHTML</code>, иначе <code>ParseTemplate</code> + замена <code>&amp;lt;!</code>→<code>&lt;!</code>, <code>&amp;lt;?</code>→<code>&lt;?</code> + <code>UploadRawData("CUST", …)</code>. Ставит <code>file_url</code>, <code>file_url_woa</code>; <code>file_uuid</code> <strong>не ставит</strong>.</p>
+<p><strong>Detail</strong> (src = detail).
+1. <code>last_file_uuid = UUID()</code>.
+2. По каждой строке <code>Query(url)</code>: <code>Detail(v.id, details.code, user)</code>, все датасеты → <code>array()</code>, строковые значения → <code>HTMLEscapeString</code> (кроме ключей <code>fodt*</code>); <code>items[i] = detail</code>.
+3. Типографские кавычки <code>“ ”</code> в шаблоне заменяются на <code>"</code>.
+4. <code>Commit()</code>.
+5. Кеш: <code>detail_md5 = Md5(JsonToString({template, template_id, items}))</code>; если в <code>files</code> есть файл с таким <code>detail_md5</code> — берётся он, генерация пропускается.
+6. Генерация по <code>ftype</code>: <code>pdf</code> → <code>generatePdfbyHTML</code>, <code>xls</code> → <code>generateXlsbyHTML</code>, <code>docx</code> → <code>generateDocxbyHTML</code>, прочее — сырой текст. Каталог <code>EXP_TEMPLATE</code>.
+7. <code>update files set code = last_file_uuid</code> — код файла заранее известен шаблону (<code>{{$last_file_uuid}}</code>), поэтому в документ можно вшить QR-ссылку на сам себя.
+8. <code>update files set detail_md5 = …</code>.
+9. Прикладные хуки: для шаблона <code>its_memo_ncste$pdf</code> перед <code>Detail</code> вызывается <code>pkg/its_memo_ncste.prepareFODT(id)</code>; для сущности <code>its_decision</code> PDF склеивается с приложениями (<code>pdftk … cat output</code>).</p>
+<p><strong>Add to exp_result.</strong> Только при <code>add_to_exp_result = "1"</code>: для каждой записи, у которой ещё нет строки в <code>exp_result</code> (<code>entity_pk</code> = sys$uuid), вставляет <code>(entity_pk, file_id)</code>.</p>
+<p><strong>Наложим штамп из ЭЦП exp_result.</strong> Если у записи есть <code>exp_result.file_id</code> — <code>dbrequire("pkg/eds").addStamp(&lt;id нового файла&gt;, &lt;file_id из exp_result&gt;, entity_pk)</code>; результат становится новым <code>file_uuid</code>.</p>
+<p><strong>Ссылки.</strong></p>
+<pre><code class="language-lua">var.file_url     = &quot;/restapi/getfile?code=&quot; .. var.file_uuid .. &quot;&amp;attachment=true&quot;
+var.file_url_woa = &quot;/restapi/getfile2/&quot; .. EntityValueByCode(&quot;files&quot;,&quot;title&quot;,var.file_uuid) .. &quot;?code=&quot; .. var.file_uuid
+</code></pre>
+<p><strong>Конечные события.</strong> <code>PDF</code> — <code>&lt;embed [src]="vars.file_url_woa | safe:'resourceUrl'" type="application/pdf"&gt;</code>, заголовок «Предварительный просмотр». <code>Close</code> — <code>location.href = file_url; appComponent.opened_modal = false</code>. <code>Ошибка</code> — поле <code>last_error</code>. <code>Без предпросмотра</code> — пустая форма.</p>
+<p>Копия процесса <code>exp_template_without_watch</code> («Экспорт без просмотра») содержит те же шаги без PDF-просмотра.</p>
+<hr>
+<h2 id="8-как-запускать-печать">8. Как запускать печать</h2>
+<h3 id="из-списка-jit-page_tpls-list-list_v2-list_basic-list_tree">Из списка (JIT page_tpls <code>list</code>, <code>list_v2</code>, <code>list_basic</code>, <code>list_tree</code>)</h3>
+<pre><code class="language-javascript">print() {
+    const options = Object.assign({}, this.query_options);
+
+    if (this.checked_rows.length &gt; 0) {
+        this.appComponent.bpRun('exp_template', {
+            url: `?code=${options.code}&amp;ids=${this.checked_rows.join()}`,
+            entity_id: this.entity_id
+        });
+        return;
+    }
+
+    const url = '?' + this.query_options.url.replace(/&amp;((perpage|page|loader)=[^&amp;]*)/gi, '');
+    this.appComponent.bpRun('exp_template', { url, entity_id: this.entity_id });
+}
+</code></pre>
+<h3 id="из-карточки-page_tpls-detail-detail_designer">Из карточки (page_tpls <code>detail</code>, <code>detail_designer</code>)</h3>
+<pre><code class="language-html">&lt;p-button type=&quot;button&quot;
+    *ngIf=&quot;!form_changed &amp;&amp; detail_id != 0 &amp;&amp; details &amp;&amp; details['exp_templates$'] &amp;&amp; details['exp_templates$'].length &gt; 0&quot;
+    (click)=&quot;appComponent.bpRun('exp_template', { url: '?code=' + entity_code + '&amp;ids=' + detail_id, entity_id })&quot;
+    icon=&quot;pi pi-print&quot;
+    [label]=&quot;'Печатная версия документа' | translate&quot;
+    styleClass=&quot;ms-2&quot;&gt;
+&lt;/p-button&gt;
+</code></pre>
+<p>Конкретную форму без диалога: добавьте <code>template_code: 'its_prikaz$pdf'</code> (или <code>template_id</code>). Скачать без предпросмотра PDF: <code>nopreview: 1</code>.</p>
+<h3 id="из-lua-генерация-файла-в-процессе">Из Lua (генерация файла в процессе)</h3>
+<pre><code class="language-lua">local found, errText, errNum = SqlQueryRow2(
+    [[select id from exp_templates where entity_id = (select id from entities where code = ?) and autoprint = 1 limit 1]],
+    entity_code)
+if errNum ~= 0 then
+    var.last_error = &quot;Не найден шаблон: &quot; .. errText
+    return
+end
+
+local vars, instanceId, taskId, errText, errNum = BPMSStartProcess2(&quot;exp_template&quot;, sys.user_id, {
+    entity_id   = EntityValueByCode(&quot;entities&quot;, &quot;id&quot;, entity_code),
+    template_id = found.id,
+    url         = &quot;?code=&quot; .. entity_code .. &quot;&amp;ids=&quot; .. var.id
+}, sys.instance_id)
+
+if errNum ~= 0 or (vars.last_error or &quot;&quot;) ~= &quot;&quot; then
+    var.last_error = &quot;Ошибка печати: &quot; .. tostring(errText) .. &quot; &quot; .. tostring(vars.last_error)
+    return
+end
+
+local fileId = EntityValueByCode(&quot;files&quot;, &quot;id&quot;, vars.file_uuid)
+</code></pre>
+<p>Так генерируются вложения писем, файлы для ЭЦП и ЕСЭДО (<code>its_sd_application</code>, <code>its_send_attach_to_cli_copy</code>, <code>its_d_req_item_send_to_prv</code>). Для такого вызова шаблон должен иметь источник <code>detail</code> — только он возвращает <code>file_uuid</code>. Скрытые из UI шаблоны (<code>sql_condition = 1 = 0</code>) вызываются этим способом.</p>
+<hr>
+<h2 id="9-fodt-bottom-line-импорт-docx-и-разметка-полей">9. FODT «bottom line»: импорт docx и разметка полей</h2>
+<p>Позволяет сделать печатную форму из готового Word-документа без ручного написания <code>{{ }}</code>.</p>
+<h3 id="разметка-в-docx">Разметка в docx</h3>
+<table>
+<thead>
+<tr>
+<th>Что пишут в Word</th>
+<th>Чем становится</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Подчёркивания <code>___</code> (от 3 до 80 подряд)</td>
+<td><code>_FIELD_n_</code> → поле <code>f&lt;n&gt;</code></td>
+</tr>
+<tr>
+<td><code>_ROW_BEGIN_k_</code> / <code>_ROW_END_k_</code> в отдельных строках таблицы</td>
+<td><code>{{range $key_&lt;код&gt;, $value_&lt;код&gt; := $item_value.&lt;код&gt;}}</code> … <code>{{end}}</code>; строки-маркеры удаляются целиком</td>
+</tr>
+<tr>
+<td><code>_COL_k_c_</code> в ячейке строки между маркерами</td>
+<td>значение колонки <code>c&lt;k&gt;_&lt;c&gt;</code></td>
+</tr>
+<tr>
+<td><code>_BLOCK_BEGIN_k_</code> / <code>_BLOCK_END_k_</code> в отдельных абзацах</td>
+<td><code>{{ if &lt;условие&gt; }}</code> … <code>{{end}}</code>; абзацы-маркеры удаляются</td>
+</tr>
+</tbody>
+</table>
+<h3 id="процессы">Процессы</h3>
+<ol>
+<li><strong>Импорт шаблона (docx)</strong> <code>exp_templates_imp_fodt_bl</code> — docx → <code>soffice --convert-to fodt</code> → <code>bl_fodt_orig</code>; подчёркивания нумеруются в <code>_FIELD_n_</code> (сначала самые длинные) → <code>bl_fodt_with_ids</code>; HTML-превью с кликабельными плашками → <code>bl_html</code>; <code>bl_max_field</code>.</li>
+<li><strong>Разметка</strong> — в карточке <code>exp_templates</code> (блок <code>pages_ui_blocks_n</code> id 17535): клик по плашке открывает выбор атрибута или выражения.</li>
+<li><strong>Применить изменения</strong> <code>exp_templates_fodt_bl_apply</code> — собирает <code>template</code> из <code>bl_fodt_with_ids</code> и карт.</li>
+<li><strong>Экспорт шаблона в Docx</strong> <code>exp_templates_fodt_bl_exp_docx</code> — скачать размеченный FODT как docx для правки в Word.</li>
+</ol>
+<h3 id="карты">Карты</h3>
+<pre><code class="language-json">&quot;bl_map&quot;: {
+  &quot;f1&quot;: { &quot;isExpr&quot;: false, &quot;value&quot;: { &quot;code&quot;: &quot;docnum&quot;, &quot;title&quot;: &quot;Номер документа&quot; } },
+  &quot;f5&quot;: { &quot;isExpr&quot;: true,  &quot;expr&quot;: &quot;{{ lua \&quot;task_list_approve\&quot; ( index $value \&quot;sys$uuid\&quot; ) }}&quot; },
+  &quot;f11&quot;: { &quot;isExpr&quot;: false, &quot;value&quot;: { &quot;code&quot;: &quot;created_at&quot; }, &quot;template_funcs&quot;: { &quot;code&quot;: &quot;format_date&quot; } }
+},
+&quot;bl_map_r&quot;: { &quot;r1&quot;: { &quot;value&quot;: { &quot;id&quot;: &quot;27369&quot;, &quot;code&quot;: &quot;its_d_statements_hc&quot;, &quot;title&quot;: &quot;Налоговые вычеты&quot; } } },
+&quot;bl_map_c&quot;: { &quot;c1_2&quot;: { &quot;info&quot;: { &quot;row&quot;: 1, &quot;col&quot;: 2 }, &quot;isExpr&quot;: false, &quot;value&quot;: { &quot;code&quot;: &quot;hiring_calc_id$&quot; } } },
+&quot;bl_map_b&quot;: { &quot;b1&quot;: { &quot;value&quot;: { &quot;condition&quot;: &quot;eq $value.type_id \&quot;2\&quot;&quot; } } }
+</code></pre>
+<p>Подстановка при «Применить изменения»:</p>
+<table>
+<thead>
+<tr>
+<th>Маркер</th>
+<th>Не выражение</th>
+<th>Выражение (<code>isExpr</code>)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>_FIELD_n_</code></td>
+<td><code>{{index $value "&lt;code&gt;"}}</code></td>
+<td><code>expr</code> как есть</td>
+</tr>
+<tr>
+<td><code>_COL_k_c_</code></td>
+<td><code>{{index $value_&lt;код r_k&gt; "&lt;code&gt;"}}</code></td>
+<td><code>expr</code> как есть</td>
+</tr>
+<tr>
+<td><code>_BLOCK_BEGIN_k_</code></td>
+<td><code>{{if eq 1 1}}</code> если условие пустое</td>
+<td><code>{{ if &lt;condition&gt; }}</code></td>
+</tr>
+</tbody>
+</table>
+<p>Внутри строк ТЧ основная запись по-прежнему доступна как <code>$value</code>, строка ТЧ — как <code>$value_&lt;код&gt;</code>. Ошибки «Строка k оформлена неверно» / «Блок k оформлен неверно» — нет парного <code>_END_</code>.</p>
+<p>После «Применить изменения» <code>template</code> <strong>перезаписывается</strong>: ручные правки шаблона теряются. Повторяемые ручные вставки записывайте в <code>dev_notes</code> (так сделано в <code>its_memo_ncste$pdf</code>).</p>
+<hr>
+<h2 id="10-процессы-обслуживания-шаблонов">10. Процессы обслуживания шаблонов</h2>
+<table>
+<thead>
+<tr>
+<th>Код</th>
+<th>Тип</th>
+<th>Что делает</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>exp_template_wizard</code></td>
+<td>entityTool</td>
+<td>Выбор сущности и дизайна <code>exp_design</code> → <code>Upsert</code> шаблона <code>&lt;entity&gt;$from_wizard$N</code> (src detail)</td>
+</tr>
+<tr>
+<td><code>exp_templates_imp_fodt_bl</code></td>
+<td>entityActionByID</td>
+<td>Импорт docx в bottom line</td>
+</tr>
+<tr>
+<td><code>exp_templates_fodt_bl_apply</code></td>
+<td>entityActionByID</td>
+<td>Сборка <code>template</code> из разметки</td>
+</tr>
+<tr>
+<td><code>exp_templates_fodt_bl_exp_docx</code></td>
+<td>entityActionByID</td>
+<td>Выгрузка <code>bl_fodt_with_ids</code> в docx</td>
+</tr>
+<tr>
+<td><code>export_template_online</code></td>
+<td>entityActionByID</td>
+<td>HTML-шаблон → docx (<code>convertHTML2Docx</code>, каталог <code>dav</code>), <code>docx_file_id</code>, ссылка <code>ms-word:ofe|u|&lt;cloud_url&gt;restapi/dav/dav/&lt;code&gt;/&lt;file&gt;</code> для правки в Word по WebDAV</td>
+</tr>
+<tr>
+<td><code>exp_templates_online</code></td>
+<td>entityActionByID</td>
+<td>«Прекратить онлайн-редактирование»: <code>docx_file_id = null</code></td>
+</tr>
+<tr>
+<td><code>exp_template_copy</code></td>
+<td>entityActionByID</td>
+<td>Копия записи с новым <code>code</code>/<code>title</code> (по умолчанию <code>_v1</code>) через <code>DMLI("insert", …)</code></td>
+</tr>
+<tr>
+<td><code>exp_template_export_to_file</code></td>
+<td>entityAction</td>
+<td>JSON-выгрузка выбранных шаблонов через деталь <code>exp_templates_export</code> для переноса</td>
+</tr>
+<tr>
+<td><code>exp_template_without_watch</code></td>
+<td>businessprocess</td>
+<td>Вариант <code>exp_template</code> без PDF-просмотра</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h2 id="11-ловушки">11. Ловушки</h2>
+<ol>
+<li><strong><code>no_autoprint</code> не существует.</strong> В БП нет такой переменной — параметр игнорируется. Автовыбор управляется только <code>exp_templates.autoprint</code>: если у сущности ровно один шаблон с <code>autoprint=1</code>, список и карточка печатают его без диалога. Отключить — снять флаг или передать <code>template_code</code>.</li>
+<li><strong>Заданный шаблон не проверяется на доступ.</strong> При <code>template_id</code>/<code>template_code</code>/autoprint шаг выбора пропускается, <code>only_users</code> и <code>sql_condition</code> не применяются. Это штатный способ печатать скрытые формы, но не способ ограничивать права.</li>
+<li><strong><code>sql_condition</code> проверяется по всем записям <code>url</code>.</strong> Если при печати списка хоть одна запись не проходит условие, шаблон пропадает для всего списка. Алиас таблицы — <code>main</code>, пользователь — <code>:user_id</code>.</li>
+<li><strong><code>file_uuid</code> есть только у detail.</strong> Ветка Query отдаёт лишь <code>file_url</code>. Для <code>BPMSStartProcess2</code> используйте detail-шаблоны.</li>
+<li><strong>DOCX только из detail.</strong> В ветке Query тип <code>docx</code> уходит в «сырой текст» — получится HTML с расширением <code>.docx</code>.</li>
+<li><strong>Экранирование в detail.</strong> Все строки проходят <code>HTMLEscapeString</code> (кроме <code>fodt*</code>). HTML-поля выводите через <code>{{lua "StrReplace" (index $value "body") "" "" -1}}</code> или храните в <code>fodt_*</code>. В FODT неэкранированный <code>&amp;</code>/<code>&lt;</code> ломает XML.</li>
+<li><strong><code>&lt;no value&gt;</code>.</strong> Отсутствующий ключ печатается как <code>&lt;no value&gt;</code>. PDF и DOCX его вычищают, XLS и текстовые типы — нет: используйте <code>{{if isnil …}}</code>.</li>
+<li><strong>Кеш по <code>detail_md5</code>.</strong> Те же данные + тот же шаблон → возвращается старый файл. После правки Lua-функции (<code>template_funcs</code>) или параметров результат не обновится, пока не изменятся данные или текст шаблона.</li>
+<li><strong><code>Commit()</code> в шаге Detail.</strong> Всё, что вызывающий процесс записал до запуска <code>exp_template</code>, фиксируется.</li>
+<li><strong>Ключи с <code>$</code>.</strong> <code>$item_value.task_approve_list$</code> не парсится — только <code>index $item_value "task_approve_list$"</code>. Аналогично поля <code>created_by$</code>.</li>
+<li><strong>Форматы дат.</strong> <code>TimeParseFormat</code> требует точного входного формата: timestamp из detail — <code>"2006-01-02 15:04:05"</code>, date — <code>"2006-01-02"</code>, иногда <code>"2006-01-02T15:04:05Z"</code>. Несовпадение даёт пустую строку.</li>
+<li><strong>Кавычки Word.</strong> <code>“ ”</code> в шаблоне заменяются автоматически только в ветке Detail; в Query-шаблонах вставка из Word ломает <code>{{ }}</code>.</li>
+<li><strong><code>exp_templates$</code> в авто-детали</strong> содержит жёсткий <code>entity_id</code> и не учитывает <code>sql_condition</code>: кнопка видна, если у сущности есть хоть один шаблон.</li>
+<li><strong>Лишний <code>{{end}}</code></strong> — частая ошибка ручной правки FODT после «Применить изменения»: проверяйте парность <code>range</code>/<code>if</code>/<code>end</code>.</li>
+<li><strong>Временные файлы.</strong> Свой генератор по образцу <code>generate*byHTML</code> обязан удалять файлы в <code>TempDir()</code> во всех ветках ошибок.</li>
+</ol>
+<hr>
+<h2 id="12-чек-лист-новой-печатной-формы">12. Чек-лист новой печатной формы</h2>
+<ol>
+<li>Определить источник: реестр/выгрузка списка → <code>query</code>; документ по записи, нужен файл в Lua, DOCX → <code>detail</code>.</li>
+<li>Для <code>detail</code> — убедиться, что есть деталь с кодом сущности и нужные <code>detail_queries</code> (ТЧ, <code>task_approve_list$</code>).</li>
+<li>Создать запись <code>exp_templates</code>: <code>code</code> (<code>&lt;entity&gt;$pdf</code>, <code>&lt;entity&gt;$docx</code>, <code>&lt;entity&gt;$xls$page</code>), <code>title</code>, <code>entity_id</code>, <code>src_id</code>, <code>detail_id</code>, <code>ftype_id</code>, <code>filename</code>.</li>
+<li>Шаблон: из Word — через «Импорт шаблона (docx)» + разметка + «Применить изменения»; вручную — HTML с <code>@page</code> и каркасом из <a href="#4-источник-данных-query-и-detail">раздела 4</a>.</li>
+<li>Повторяющуюся логику (даты прописью, листы согласования, QR) брать из <code>template_funcs</code>, новую — добавлять туда.</li>
+<li>Настроить доступ: <code>autoprint</code> (единственная форма по умолчанию), <code>only_users</code> + <code>exp_templates_user</code>, <code>is_sql_condition</code> + <code>sql_condition</code>.</li>
+<li>Проверить из карточки и из списка (одна и несколько записей), под пользователем без роли admin.</li>
+<li>Если форма нужна в процессе — вызвать <code>BPMSStartProcess2("exp_template", …)</code> и проверить <code>vars.file_uuid</code> и <code>vars.last_error</code>.</li>
+</ol>
+</main>
+</body>
+</html>
