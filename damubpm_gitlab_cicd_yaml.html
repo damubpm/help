@@ -138,6 +138,23 @@ yaml/core/dashboards_page/id_17.yaml                        <span class="c"># п
   <tr><td><code>bp_points$wf_status_attr_value_code</code></td><td>статус точки workflow по коду, а не по id</td></tr>
 </table>
 <div class="note warn"><p>id, <code>created_*</code>, <code>updated_*</code>, <code>entryid</code> и формульные атрибуты не выгружаются. Объекты связываются между стендами только по ключевым атрибутам (<code>is_object = 1</code>), поэтому у ключей должны быть одинаковые значения на всех стендах.</p></div>
+<h3 id="table-parts">Табличные части в выгрузке сущности</h3>
+<p>Выгрузка сущности тянет табличные части целиком, по цепочке дочерних объектов (<code>table_parts.is_child_obj = 1</code>):</p>
+<pre><code>entities
+└─ table_parts             <span class="c">ключ: code + entity_id</span>
+   ├─ table_parts_tp       <span class="c">ключ: code</span>
+   └─ table_part_cols      <span class="c">ключ: table_part_id + attr_id + code</span>
+      └─ table_part_cols_a        <span class="c">ключ: code</span>
+         └─ table_part_cols_a_pv  <span class="c">ключ: code   (параметры компонента, например query_code)</span></code></pre>
+<p>Пример: для ТЧ <code>its_d_payord_out_contract</code> в файл попадают 12 объектов — сама ТЧ, 5 колонок, 5 элементов и параметр <code>query_code</code> с фильтром <code>its_cli_contract_select&amp;flt$its_cli_id$eq='+detail.cli_id+'</code>.</p>
+<ul class="tight">
+  <li>Ключ каждого уровня — <code>code</code> (uuid по умолчанию, уникален). У <code>table_part_cols_a</code> и <code>table_part_cols_a_pv</code> у атрибута <code>code</code> должен стоять <code>is_object = 1</code>. Без ключа ссылка дочерней записи на родителя (<code>table_part_cols_a_id</code>) не выгружается, и параметр садится на приёмнике с пустой ссылкой.</li>
+  <li>Коды колонок, элементов и параметров должны совпадать на стендах. Если ТЧ на приёмнике собрана вручную с другими <code>code</code>, первая загрузка создаст строки заново, а старые удалит как лишние дочерние.</li>
+  <li>Повторная загрузка того же файла ничего не меняет: id, количество строк и связи остаются прежними (проверено двумя загрузками подряд).</li>
+  <li><code>table_part_param_values</code> (параметры старых ng-шаблонов) дочерним объектом не выгружается.</li>
+  <li>Колонки и элементы в БД появляются при публикации сущности (<code>gen_show_cols = 1</code>), а файл их перезаписывает своими значениями. После загрузки страницы сущности нужно перегенерировать, чтобы изменения ТЧ стали видны.</li>
+</ul>
+<p>Подробно про устройство табличных частей — в справочнике <a href="damubpm_table_parts_guide.html">«Табличные части»</a>.</p>
 <p>Особенности самого модуля YAML (экспонента больших чисел, восьмеричные числа с ведущим нулём, даты, <code>null</code>) описаны в справочнике <a href="pkg-yaml.html">pkg/yaml</a>. Выгрузка сама берёт все строки в кавычки, опасен только YAML, отредактированный вручную.</p>
 
 <h2 id="export">3. Выгрузка со стенда</h2>
@@ -298,6 +315,7 @@ Content-Type: application/json
   <tr><td><code>HTTP 500 … gitlab_objects_cicd_token не задан</code></td><td>на стенде нет параметра</td><td>создать параметр</td></tr>
   <tr><td><code>HTTP 422: Ошибка разбора YAML: yaml: line N …</code></td><td>файл поправлен вручную с ошибкой (табы в отступах, незакрытые скобки)</td><td>исправить файл</td></tr>
   <tr><td><code>HTTP 422: В файле нет списка objects</code></td><td>файл не в формате выгрузки или на стенде старая версия БП</td><td>проверить файл и версию БП</td></tr>
+  <tr><td>Параметр колонки ТЧ (<code>query_code</code> и т. п.) приехал без привязки к элементу</td><td>у <code>code</code> в <code>table_part_cols_a</code> / <code>table_part_cols_a_pv</code> нет <code>is_object = 1</code> на стенде-источнике</td><td>выставить ключ, выгрузить сущность заново</td></tr>
   <tr><td><code>HTTP 422: … Error on Upsert on &lt;entity&gt;</code></td><td>не прошла запись: нет колонки, нарушен уникальный индекс, неверный тип</td><td>смотреть <code>debug</code> в логе и <code>patch_in</code></td></tr>
   <tr><td><code>Нет изменённых объектов в yaml/ или objects/</code></td><td>в пуше нет файлов объектов</td><td>норма; для полной загрузки — ручной запуск с <code>DEPLOY_ALL=1</code></td></tr>
   <tr><td><code>Удалён в git, на стенде не удаляется</code></td><td>файл удалили из репозитория</td><td>удалить объект на стенде вручную</td></tr>
@@ -314,7 +332,7 @@ Content-Type: application/json
   <li><b>Переводы строк.</b> После YAML в многострочных значениях (скрипты, шаблоны) <code>\r\n</code> становится <code>\n</code>, хвостовые пробелы строк удаляются.</li>
   <li><b>Ссылки по ключу.</b> Если связанной записи на стенде-приёмнике нет, ссылка молча становится пустой. Порядок загрузки это частично снимает; новые справочники выгружайте вместе с объектами.</li>
   <li><b>Длинные загрузки.</b> Крупная сущность или БП с публикацией могут идти дольше таймаута прокси перед стендом — тогда job получит 504, хотя импорт мог завершиться. Проверяйте <code>patch_in</code>.</li>
-  <li><b>Таблицы <code>table_part_cols*</code></b> не тянутся как дочерние объекты сущности — их нужно включать в патч отдельно.</li>
+  <li><b>Табличные части</b> переносятся вместе с сущностью (<a href="#table-parts">раздел 2</a>), но страницы после загрузки нужно перегенерировать. <code>table_part_param_values</code> (старые ng-шаблоны) не переносится.</li>
   <li><b>MCP-методы</b> (<code>mcp_method*</code>, <code>mcp_object*</code>) не попадают в патчи автоматически.</li>
   <li><b>JSON-ветка</b> (<code>objects/</code>, БП <code>patch_out_to_gitlab</code>) по-прежнему принимается, но основная — YAML.</li>
 </ul>
