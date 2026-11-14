@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>pkg/yaml — DamuBPM</title>
+<style>
+:root{
+  --bg:#f6f7f9;--card:#fff;--text:#1f2937;--muted:#6b7280;--line:#e5e7eb;
+  --accent:#2563eb;--accent-soft:#eff4ff;--code-bg:#0f172a;--code-text:#e2e8f0;
+  --warn:#b45309;--warn-soft:#fff7ed;--err:#b91c1c;--err-soft:#fef2f2;--ok:#047857;--ok-soft:#ecfdf5;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:15px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif}
+a{color:var(--accent);text-decoration:none}
+a:hover{text-decoration:underline}
+.topbar{position:sticky;top:0;z-index:10;background:var(--card);border-bottom:1px solid var(--line);padding:10px 24px;display:flex;align-items:center;gap:16px}
+.topbar .home{display:inline-flex;align-items:center;gap:6px;font-weight:600;padding:6px 12px;border:1px solid var(--line);border-radius:8px;color:var(--text)}
+.topbar .home:hover{background:var(--accent-soft);border-color:var(--accent);color:var(--accent);text-decoration:none}
+.topbar .crumbs{color:var(--muted);font-size:14px}
+.layout{display:grid;grid-template-columns:240px 1fr;gap:28px;max-width:1200px;margin:0 auto;padding:24px}
+nav.toc{position:sticky;top:72px;align-self:start;font-size:14px}
+nav.toc .title{font-weight:600;color:var(--muted);text-transform:uppercase;font-size:12px;letter-spacing:.05em;margin-bottom:8px}
+nav.toc a{display:block;padding:4px 10px;border-left:2px solid var(--line);color:var(--text)}
+nav.toc a:hover{border-left-color:var(--accent);color:var(--accent);text-decoration:none}
+nav.toc a.sub{padding-left:22px;color:var(--muted)}
+main{min-width:0}
+section{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:24px 28px;margin-bottom:20px}
+h1{font-size:28px;margin:0 0 6px}
+h2{font-size:22px;margin:0 0 12px;padding-bottom:8px;border-bottom:1px solid var(--line)}
+h3{font-size:17px;margin:22px 0 10px}
+.lead{color:var(--muted);margin:0 0 16px}
+code{font-family:"JetBrains Mono",Consolas,Menlo,monospace;font-size:13px;background:#f1f5f9;padding:1px 5px;border-radius:4px}
+pre{background:var(--code-bg);color:var(--code-text);padding:14px 16px;border-radius:8px;overflow:auto;margin:10px 0 16px}
+pre code{background:none;padding:0;color:inherit;font-size:13px;line-height:1.55}
+.c{color:#94a3b8}
+.sig{background:var(--accent-soft);border:1px solid #c7d7fe;border-radius:8px;padding:10px 14px;font-family:Consolas,Menlo,monospace;font-size:14px;margin:8px 0 14px}
+table{width:100%;border-collapse:collapse;margin:8px 0 16px;font-size:14px}
+th,td{border:1px solid var(--line);padding:7px 10px;text-align:left;vertical-align:top}
+th{background:#f8fafc;font-weight:600}
+.badge{display:inline-block;font-size:12px;font-weight:600;padding:2px 8px;border-radius:999px;background:var(--accent-soft);color:var(--accent);margin-right:6px}
+.note{border-radius:8px;padding:12px 14px;margin:12px 0;border:1px solid}
+.note.warn{background:var(--warn-soft);border-color:#fed7aa;color:#7c2d12}
+.note.err{background:var(--err-soft);border-color:#fecaca;color:#7f1d1d}
+.note.ok{background:var(--ok-soft);border-color:#a7f3d0;color:#064e3b}
+.bad{color:var(--err);font-weight:600}
+ol.pitfalls li{margin-bottom:8px}
+.footer{text-align:center;padding:8px 0 32px;color:var(--muted);font-size:14px}
+@media (max-width:860px){.layout{grid-template-columns:1fr}nav.toc{position:static}}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <a class="home" href="index.html">← На главную</a>
+  <span class="crumbs">Lua-модули / pkg/yaml</span>
+</div>
+
+<div class="layout">
+<nav class="toc">
+  <div class="title">Содержание</div>
+  <a href="#overview">Обзор</a>
+  <a href="#marshal">marshal</a>
+  <a class="sub" href="#marshal-rules">Правила</a>
+  <a class="sub" href="#marshal-examples">Примеры</a>
+  <a href="#unmarshal">unmarshal</a>
+  <a class="sub" href="#unmarshal-rules">Правила</a>
+  <a class="sub" href="#unmarshal-examples">Примеры</a>
+  <a href="#pitfalls">Частые ошибки</a>
+  <a href="#usage">Где используется</a>
+  <a href="#go-fix">Доработка marshal</a>
+  <a href="index.html">← На главную</a>
+</nav>
+
+<main>
+
+<section id="overview">
+  <h1>pkg/yaml</h1>
+  <p class="lead">Преобразование Lua-таблиц в YAML и обратно.</p>
+  <p>Модуль встроен в Go-рантайм DamuBPM (пакет <code>pkgyaml</code>, <code>gopkg.in/yaml.v3</code> + <code>goluago/util</code>), в <code>luas</code> его нет.</p>
+  <div class="sig">local yaml = require("pkg/yaml")</div>
+  <table>
+    <tr><th>Функция</th><th>Назначение</th></tr>
+    <tr><td><a href="#marshal"><code>yaml.marshal(value)</code></a></td><td>Lua-таблица → YAML-строка</td></tr>
+    <tr><td><a href="#unmarshal"><code>yaml.unmarshal(text)</code></a></td><td>YAML-строка → Lua-значение</td></tr>
+  </table>
+  <div class="note warn">Обе функции при ошибке вызывают Lua error. Для своей обработки вызывайте их через <code>pcall</code>.</div>
+  <p>Поведение на этой странице проверено запуском исходника <code>yaml.go</code> на go-lua.</p>
+</section>
+
+<section id="marshal">
+  <h2><span class="badge">функция</span>marshal</h2>
+  <p>Сериализует Lua-таблицу в YAML: отступ 2 пробела, в конце <code>\n</code>.</p>
+  <div class="sig">text = yaml.marshal(value)</div>
+
+  <h3>Входные параметры</h3>
+  <table>
+    <tr><th>Параметр</th><th>Тип</th><th>Описание</th></tr>
+    <tr><td>value</td><td>table | nil</td><td>Lua-таблица или явный <code>nil</code>. Аргумент обязателен: без него, со строкой или числом — ошибка <code>need a table at index 1, got ...</code></td></tr>
+  </table>
+
+  <h3>Результирующие параметры</h3>
+  <table>
+    <tr><th>№</th><th>Значение</th><th>Тип</th><th>Описание</th></tr>
+    <tr><td>1</td><td>text</td><td>string</td><td>YAML; для <code>nil</code> — <code>null\n</code>; при ошибке Lua error</td></tr>
+  </table>
+
+  <h3 id="marshal-rules">Правила преобразования</h3>
+  <table>
+    <tr><th>Lua</th><th>YAML</th></tr>
+    <tr><td>таблица со строковыми ключами</td><td>mapping, ключи отсортированы с учётом чисел (<code>"2"</code> раньше <code>"10"</code>)</td></tr>
+    <tr><td><code>array({...})</code></td><td>список</td></tr>
+    <tr><td>обычная <code>{"a","b"}</code>, <code>{[1]="a"}</code>, <code>{[10]="a"}</code></td><td><span class="bad">ошибка</span> <code>invalid key to 'next'</code></td></tr>
+    <tr><td><code>array</code> со строковым ключом</td><td><span class="bad">ошибка</span> <code>pull array: expected numeric index, got 'string'</code></td></tr>
+    <tr><td>дыра в <code>array</code> (<code>a[1]</code>, <code>a[3]</code>)</td><td><code>null</code> на месте пропуска</td></tr>
+    <tr><td><code>{}</code></td><td><code>{}</code></td></tr>
+    <tr><td><code>array({})</code></td><td><code>[]</code></td></tr>
+    <tr><td><code>"true"</code>, <code>"001"</code>, <code>"yes"</code>, <code>"null"</code>, <code>""</code></td><td>в кавычках — остаются строками</td></tr>
+    <tr><td>число, |x| &lt; 1e6 и ≥ 1e-4</td><td>как есть: <code>100</code>, <code>12.5</code>, <code>123456</code></td></tr>
+    <tr><td>число, |x| ≥ 1e6 или &lt; 1e-4</td><td><span class="bad">экспонента</span>: <code>1000000</code> → <code>1e+06</code>, <code>1234567</code> → <code>1.234567e+06</code>, <code>20240115</code> → <code>2.0240115e+07</code></td></tr>
+    <tr><td>строка с <code>\n</code> или <code>\r</code></td><td>блок <code>|</code> / <code>|-</code> (<code>|2-</code>, если первая строка начинается с пробела)</td></tr>
+    <tr><td>function, userdata</td><td><span class="bad">ошибка</span> <code>pull table, unsupported type function</code></td></tr>
+  </table>
+
+  <div class="note warn">У многострочных строк меняется содержимое: <code>\r\n</code> и <code>\r</code> → <code>\n</code>, пробелы в конце каждой строки удаляются (табы остаются). Это касается и ключей. Кириллица и казахские буквы выводятся без экранирования.</div>
+  <div class="note warn">Экспонента читается обратно через <code>yaml.unmarshal</code> правильно (<code>1e+06</code> → 1000000). Проблема только у внешних потребителей, которым нужно целое (GitLab CI, Kubernetes, сторонние парсеры). Варианты: передать строкой <code>string.format("%d", n)</code> (получится <code>"1000000"</code> в кавычках) или <a href="#go-fix">доработать Go</a>.</div>
+
+  <h3 id="marshal-examples">Примеры</h3>
+  <p><b>Пример 1</b></p>
+<pre><code>local s = yaml.marshal({id=501, state="NEW", price=12.5, active=true})
+print("s =", s)
+<span class="c">-- active: true
+-- id: 501
+-- price: 12.5
+-- state: NEW</span></code></pre>
+
+  <p><b>Пример 2</b> — списки только через <code>array()</code></p>
+<pre><code>local s = yaml.marshal({
+  user = {name="Ayan", roles=array({"admin","user"})},
+  items = array({{sku="A1", qty=2}, {sku="B2", qty=1}}),
+  empty = array({})
+})
+print("s =", s)
+<span class="c">-- empty: []
+-- items:
+--   - qty: 2
+--     sku: A1
+--   - qty: 1
+--     sku: B2
+-- user:
+--   name: Ayan
+--   roles:
+--     - admin
+--     - user</span></code></pre>
+
+  <p><b>Пример 3</b> — многострочный текст и большие числа</p>
+<pre><code>local s = yaml.marshal({note="Привет  \r\nмир", total=1500000, code=string.format("%d", 1500000)})
+print("s =", s)
+<span class="c">-- code: "1500000"
+-- note: |-
+--   Привет
+--   мир
+-- total: 1.5e+06</span></code></pre>
+</section>
+
+<section id="unmarshal">
+  <h2><span class="badge">функция</span>unmarshal</h2>
+  <p>Разбирает YAML-строку в Lua-значение.</p>
+  <div class="sig">value = yaml.unmarshal(text)</div>
+
+  <h3>Входные параметры</h3>
+  <table>
+    <tr><th>Параметр</th><th>Тип</th><th>Описание</th></tr>
+    <tr><td>text</td><td>string</td><td>YAML. Число приводится к строке; <code>nil</code> — ошибка <code>bad argument #1 ... (string expected, got nil)</code></td></tr>
+  </table>
+
+  <h3>Результирующие параметры</h3>
+  <table>
+    <tr><th>№</th><th>Значение</th><th>Тип</th><th>Описание</th></tr>
+    <tr><td>1</td><td>value</td><td>any</td><td>table / string / number / boolean / nil; при ошибке Lua error</td></tr>
+  </table>
+
+  <h3 id="unmarshal-rules">Правила преобразования</h3>
+  <table>
+    <tr><th>YAML</th><th>Lua</th></tr>
+    <tr><td>mapping</td><td>таблица со строковыми ключами</td></tr>
+    <tr><td>sequence</td><td>таблица с меткой <code>array()</code> — повторный <code>marshal</code> / <code>JsonToString</code> дают список, <code>[]</code> остаётся <code>[]</code></td></tr>
+    <tr><td><code>42</code>, <code>0x1F</code>, <code>0o17</code>, <code>1.0</code>, <code>1e3</code></td><td>number: 42, 31, 15, 1, 1000</td></tr>
+    <tr><td><code>0123</code>, <code>050101300123</code> (ведущий ноль)</td><td><span class="bad">восьмеричное</span> number: 83, 5385846867</td></tr>
+    <tr><td><code>"001"</code>, <code>"050101300123"</code></td><td>string</td></tr>
+    <tr><td>целое вне ±9007199254740991</td><td><span class="bad">ошибка</span> <code>integer ... exceeds JSON/Lua safe integer range; store it as string</code></td></tr>
+    <tr><td><code>.nan</code>, <code>.inf</code></td><td><span class="bad">ошибка</span> <code>YAML number NaN is not JSON compatible</code></td></tr>
+    <tr><td><code>true</code>, <code>True</code>, <code>FALSE</code></td><td>boolean</td></tr>
+    <tr><td><code>yes</code>, <code>no</code>, <code>on</code>, <code>off</code></td><td>string (YAML 1.2)</td></tr>
+    <tr><td><code>null</code>, <code>~</code>, пустое значение</td><td>nil: ключ пропадает из таблицы, в списке — дыра (<code>#</code> ненадёжен)</td></tr>
+    <tr><td><code>2024-01-15</code></td><td>string <code>"2024-01-15T00:00:00Z"</code></td></tr>
+    <tr><td><code>2024-01-15T10:00:00+05:00</code></td><td>string <code>"2024-01-15T10:00:00+05:00"</code> (RFC3339Nano, смещение сохраняется)</td></tr>
+    <tr><td><code>!!binary aGVsbG8=</code></td><td>декодированная строка <code>"hello"</code></td></tr>
+    <tr><td><code>&amp;anchor</code>, <code>*alias</code>, <code>&lt;&lt;: *base</code></td><td>разворачиваются</td></tr>
+    <tr><td>ключ не строка: <code>1: a</code>, <code>true: x</code>, <code>~: x</code></td><td><span class="bad">ошибка</span> <code>YAML object key must be string for JSON compatibility, got int</code></td></tr>
+    <tr><td>несколько документов <code>---</code></td><td>берётся только первый</td></tr>
+    <tr><td>пустая строка</td><td>nil</td></tr>
+  </table>
+
+  <div class="note warn">Дату в исходном виде (<code>2024-01-15</code>) можно получить, только взяв значение в кавычки. Комментарии теряются. <code>\r\n</code> в тексте допустим. Табы в отступах — ошибка <code>yaml: line N: found character that cannot start any token</code>.</div>
+  <p>Ошибки внутри вложенных объектов получают путь по ключам через <code>: </code> (индексы списков в путь не попадают): <code>cfg: ports: YAML object key must be string ...</code>. Синтаксические ошибки: <code>yaml: line N: ...</code>.</p>
+
+  <h3 id="unmarshal-examples">Примеры</h3>
+  <p><b>Пример 1</b></p>
+<pre><code>local v = yaml.unmarshal("id: 501\nstate: NEW\ntags: [a, b]\n")
+print("v =", v)
+print(v.id, v.state, v.tags[1], #v.tags)
+<span class="c">-- 501  NEW  a  2</span></code></pre>
+
+  <p><b>Пример 2</b> — с обработкой ошибки</p>
+<pre><code>local ok, v = pcall(yaml.unmarshal, payload)
+if not ok then
+  return {success=false, error="Неверный YAML: " .. tostring(v)}
+end
+if type(v) ~= "table" then
+  return {success=false, error="Ожидался объект YAML"}
+end</code></pre>
+
+  <p><b>Пример 3</b> — YAML → JSON</p>
+<pre><code>local v = yaml.unmarshal("items:\n  - a\n  - b\nempty: []\n")
+print(JsonToString(v))
+<span class="c">-- массивы уже помечены array(), поэтому выводятся как [...]</span></code></pre>
+</section>
+
+<section id="pitfalls">
+  <h2>Частые ошибки</h2>
+  <ol class="pitfalls">
+    <li>Обычная Lua-таблица-массив в <code>marshal</code> — ошибка <code>invalid key to 'next'</code>. Каждый список — <code>array({...})</code>, включая вложенные. Данные из <code>yaml.unmarshal</code> уже помечены и проходят повторный <code>marshal</code> без доработки.</li>
+    <li>Целые ≥ 1 000 000 выводятся в экспоненте (<code>1e+06</code>). Для внешних систем — <code>string.format("%d", n)</code> или доработка Go.</li>
+    <li>Число с ведущим нулём без кавычек читается как восьмеричное: <code>iin: 050101300123</code> → 5385846867. ИИН, БИН, коды, номера счетов в YAML — только в кавычках. <code>marshal</code> строки сам берёт в кавычки, опасен ручной или внешний YAML.</li>
+    <li>Целые вне ±2<sup>53</sup>−1 во входном YAML — ошибка. Такие значения (64-битные id) хранить строкой в кавычках.</li>
+    <li><code>null</code> в YAML = отсутствие ключа в Lua. Проверять <code>v.field == nil</code>, а не наличие ключа.</li>
+    <li>Даты превращаются в RFC3339-строку со временем. Если нужна дата как в файле — кавычки.</li>
+    <li><code>marshal</code> меняет многострочные строки (<code>\r</code> и хвостовые пробелы). Для побайтного переноса текста (скрипты, шаблоны) сравнивать после нормализации или передавать base64.</li>
+    <li><code>yes</code> / <code>no</code> / <code>on</code> / <code>off</code> — строки, а не boolean.</li>
+    <li>Не-строковые ключи (<code>80: http</code>) — ошибка. Брать в кавычки: <code>"80": http</code>.</li>
+    <li>Читается только первый документ из потока <code>---</code>.</li>
+    <li><code>yaml.marshal()</code> без аргумента — ошибка; для пустого результата передавать <code>nil</code> явно (<code>null</code>) или <code>{}</code>.</li>
+  </ol>
+</section>
+
+<section id="usage">
+  <h2>Где используется</h2>
+  <ul>
+    <li><code>patch_out_to_gitlab_yaml</code> — выгрузка объектов патча в <code>yaml/&lt;module&gt;/&lt;entity&gt;/...yaml</code> для репозитория sources-yaml.</li>
+    <li><code>import_object_from_file</code>, REST <code>gitlab_runner_accept_object</code> — приём YAML/JSON из GitLab CI.</li>
+  </ul>
+</section>
+
+<section id="go-fix">
+  <h2>Доработка marshal (Go, предложение)</h2>
+  <p>Чтобы целые Lua-числа выводились без экспоненты, перед <code>node.Encode(value)</code> в <code>marshal</code> вызвать <code>value = normalizeLuaNumbers(value)</code>:</p>
+<pre><code>func normalizeLuaNumbers(value interface{}) interface{} {
+	switch v := value.(type) {
+	case float64:
+		if v == math.Trunc(v) &amp;&amp; math.Abs(v) &lt;= 9007199254740991 {
+			return int64(v)
+		}
+		return v
+	case []interface{}:
+		for i := range v {
+			v[i] = normalizeLuaNumbers(v[i])
+		}
+		return v
+	case map[string]interface{}:
+		for k := range v {
+			v[k] = normalizeLuaNumbers(v[k])
+		}
+		return v
+	}
+	return value
+}</code></pre>
+  <div class="note ok">Проверено: <code>1000000</code> → <code>1000000</code>, <code>20240115</code> → <code>20240115</code>, <code>1e15</code> → <code>1000000000000000</code>. Дроби (<code>12.5</code>, <code>1.2e-05</code>) и числа вне 2<sup>53</sup> не меняются, остальные тесты дают тот же результат.</div>
+</section>
+
+<div class="footer"><a href="index.html">← Вернуться на главную</a></div>
+
+</main>
+</div>
+</body>
+</html>
