@@ -1,0 +1,659 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Табличные части DamuBPM — DamuBPM</title>
+<style>
+:root { --fg:#1f2933; --muted:#616e7c; --line:#e4e7eb; --bg:#ffffff; --soft:#f5f7fa; --accent:#2563eb; --code:#0f172a; }
+* { box-sizing:border-box; }
+body { margin:0; font:15px/1.6 -apple-system,"Segoe UI",Roboto,Arial,sans-serif; color:var(--fg); background:var(--soft); }
+header { position:sticky; top:0; z-index:5; background:var(--bg); border-bottom:1px solid var(--line); }
+header .in { max-width:1080px; margin:0 auto; padding:10px 24px; display:flex; align-items:center; gap:16px; }
+header a.home { color:var(--accent); text-decoration:none; font-weight:600; }
+header a.home:hover { text-decoration:underline; }
+header .crumb { color:var(--muted); }
+main { max-width:1080px; margin:24px auto 48px; padding:32px 40px; background:var(--bg); border:1px solid var(--line); border-radius:8px; }
+h1 { font-size:28px; margin:0 0 12px; }
+h2 { font-size:21px; margin:36px 0 12px; padding-top:12px; border-top:1px solid var(--line); }
+h3 { font-size:17px; margin:24px 0 8px; }
+a { color:var(--accent); }
+code { font:13px/1.5 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; background:var(--soft); padding:1px 5px; border-radius:4px; color:var(--code); }
+pre { background:#0f172a; color:#e2e8f0; padding:14px 16px; border-radius:6px; overflow:auto; }
+pre code { background:none; padding:0; color:inherit; }
+table { border-collapse:collapse; width:100%; margin:12px 0 16px; font-size:14px; }
+th, td { border:1px solid var(--line); padding:6px 10px; text-align:left; vertical-align:top; }
+th { background:var(--soft); font-weight:600; }
+hr { display:none; }
+footer { max-width:1080px; margin:0 auto 32px; padding:0 24px; color:var(--muted); font-size:13px; }
+@media (max-width:720px) { main { padding:20px; margin:12px; } table { display:block; overflow-x:auto; } }
+</style>
+</head>
+<body>
+<header><div class="in"><a class="home" href="index.html">← На главную</a><span class="crumb">DamuBPM · Табличные части DamuBPM</span></div></header>
+<main>
+<h1>Табличные части DamuBPM</h1>
+<p>Руководство по устройству табличных частей (ТЧ): модель данных, колонки и их элементы, параметры, генерация страниц, загрузка данных, проверки и типичные ошибки. Описание сверено с метаданными, шаблонами и скриптами стенда test-helpdesk.</p>
+<h2>Содержание</h2>
+<ol>
+<li><a href="#1">Что такое табличная часть</a></li>
+<li><a href="#2">Модель данных</a></li>
+<li><a href="#3">Как создаётся табличная часть</a></li>
+<li><a href="#4">Загрузка строк: detail_queries</a></li>
+<li><a href="#5">Колонки и элементы колонок</a></li>
+<li><a href="#6">Параметры: четыре уровня</a></li>
+<li><a href="#7">Параметры табличной части</a></li>
+<li><a href="#8">Виды табличных частей</a></li>
+<li><a href="#9">Размещение на странице и генерация</a></li>
+<li><a href="#10">Работа на фронтенде</a></li>
+<li><a href="#11">Обязательность и проверки</a></li>
+<li><a href="#12">Вложенные и кросс-табличные части</a></li>
+<li><a href="#13">Поле code и перенос патчем</a></li>
+<li><a href="#14">Частые ошибки</a></li>
+<li><a href="#15">Полезные SQL</a></li>
+</ol>
+<hr>
+<p><a id="1"></a></p>
+<h2>1. Что такое табличная часть</h2>
+<p>Табличная часть — это список строк подчинённой сущности, показанный внутри карточки родительской записи. Строки хранятся в своей таблице и ссылаются на родителя атрибутом-ссылкой.</p>
+<pre><code class="language-text">Родительская сущность (table_parts.entity_id)
+  └── табличная часть table_parts.code
+        └── строки связанной сущности (table_parts.entity_link_id)
+              где &lt;link_attr&gt; = id родительской записи (table_parts.link_attr_id)
+</code></pre>
+<p>Пример: сущность <code>its_kuka_test_lvl1</code>, ТЧ <code>its_kuka_test_lvl2</code>. Строки лежат в таблице <code>its_kuka_test_lvl2</code>, связь — по полю, указанному в <code>link_attr_id</code>.</p>
+<hr>
+<p><a id="2"></a></p>
+<h2>2. Модель данных</h2>
+<table>
+<thead>
+<tr>
+<th>Таблица</th>
+<th>Назначение</th>
+<th>Ключевые поля</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>table_parts</code></td>
+<td>Табличная часть</td>
+<td><code>entity_id</code>, <code>code</code>, <code>title</code>, <code>entity_link_id</code>, <code>link_attr_id</code>, <code>type_id</code>, <code>nn</code>, <code>ng_if</code>, <code>rq</code>, <code>rq_tb</code>, <code>gen_show_cols</code>, <code>is_child_obj</code>, <code>sort_expr</code>, <code>help_text</code>, <code>th_style</code>, <code>td_style</code>, <code>ui_block_id</code>, <code>tab_nn</code></td>
+</tr>
+<tr>
+<td><code>table_part_types</code></td>
+<td>Вид ТЧ (шаблон таблицы)</td>
+<td><code>code</code>, <code>angular_template</code>, <code>ng_template</code>, <code>ng_template3</code></td>
+</tr>
+<tr>
+<td><code>table_part_cols</code></td>
+<td>Колонка</td>
+<td><code>table_part_id</code>, <code>attr_id</code>, <code>title</code>, <code>code</code>, <code>nn</code>, <code>ui_comp_id</code>, <code>ui_width</code>, <code>ui_ng_if</code>, <code>ui_ng_readonly</code>, <code>ui_ng_title</code>, <code>rq_mark</code>, <code>sort_nn</code></td>
+</tr>
+<tr>
+<td><code>table_part_cols_a</code></td>
+<td>Элемент внутри колонки</td>
+<td><code>table_part_cols_id</code>, <code>t_id</code>, <code>attr_id</code>, <code>html</code>, <code>tp_id</code>, <code>code</code>, <code>ui_comp_id</code>, <code>ui_ng_if</code>, <code>ui_ng_readonly</code>, <code>nn</code>, <code>sort_nn</code>, <code>attr_autosave</code></td>
+</tr>
+<tr>
+<td><code>table_part_cols_a_t</code></td>
+<td>Вид элемента</td>
+<td><code>attr</code> (1), <code>html</code> (2), <code>tp</code> (3)</td>
+</tr>
+<tr>
+<td><code>table_part_cols_a_pv</code></td>
+<td>Параметры UI-компонента элемента</td>
+<td><code>table_part_cols_a_id</code>, <code>param_id</code> → <code>ui_comp_params</code>, <code>value</code>, <code>code</code></td>
+</tr>
+<tr>
+<td><code>table_part_params</code></td>
+<td>Справочник параметров ТЧ</td>
+<td><code>code</code>, <code>title</code>, <code>data_type_id</code></td>
+</tr>
+<tr>
+<td><code>pages_ui_blocks_n_tpv</code></td>
+<td>Значения параметров ТЧ в размещении на странице</td>
+<td><code>pages_ui_blocks_n_id</code>, <code>param_id</code> → <code>table_part_params</code>, <code>value</code></td>
+</tr>
+<tr>
+<td><code>table_part_param_values</code></td>
+<td>Значения параметров ТЧ на уровне самой ТЧ (старые шаблоны)</td>
+<td><code>table_part_id</code>, <code>param_id</code>, <code>value</code></td>
+</tr>
+<tr>
+<td><code>entity_attr_uicmps</code></td>
+<td>Параметры компонента атрибута</td>
+<td><code>attr_id</code>, <code>ui_comp_param_id</code>, <code>value</code></td>
+</tr>
+<tr>
+<td><code>table_parts_tp</code></td>
+<td>Вложенные ТЧ</td>
+<td><code>table_parts_id</code>, <code>tp_id</code>, <code>code</code>, <code>nn</code></td>
+</tr>
+<tr>
+<td><code>table_parts_cross</code></td>
+<td>Кросс-табличные части</td>
+<td><code>table_part_id</code>, <code>cross_table_part_id</code></td>
+</tr>
+</tbody>
+</table>
+<p>Смысл флагов <code>table_parts</code>:</p>
+<table>
+<thead>
+<tr>
+<th>Поле</th>
+<th>Подпись</th>
+<th>Эффект</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>gen_show_cols</code></td>
+<td>Генерировать видимые колонки</td>
+<td>При публикации сущности создаёт колонки по атрибутам с <code>show_col = 1</code></td>
+</tr>
+<tr>
+<td><code>rq</code></td>
+<td>Обязательно к заполнению</td>
+<td>Сохранение без строк даёт ошибку</td>
+</tr>
+<tr>
+<td><code>rq_tb</code></td>
+<td>Не включать в проверку</td>
+<td>Исключает ТЧ из проверки строк и обязательности</td>
+</tr>
+<tr>
+<td><code>ng_if</code></td>
+<td>Angular if</td>
+<td>Условие показа всей таблицы (<code>_ng_if</code>)</td>
+</tr>
+<tr>
+<td><code>sort_expr</code></td>
+<td>Выражение сортировки</td>
+<td><code>order by</code> запроса строк, если нет полей с <code>sort_nn</code></td>
+</tr>
+<tr>
+<td><code>th_style</code>, <code>td_style</code></td>
+<td>Стили</td>
+<td>Шаблоны стилей заголовка и ячейки; разбираются через <code>ParseTemplate</code> в контексте колонки</td>
+</tr>
+<tr>
+<td><code>is_child_obj</code></td>
+<td>Дочерний объект</td>
+<td>Признак дочерней сущности</td>
+</tr>
+<tr>
+<td><code>ui_block_id</code>, <code>tab_nn</code></td>
+<td>UI-блок, номер вкладки</td>
+<td>Привязка в старой схеме <code>entity_ui_blocks</code></td>
+</tr>
+</tbody>
+</table>
+<hr>
+<p><a id="3"></a></p>
+<h2>3. Как создаётся табличная часть</h2>
+<p>Штатный путь — процесс <code>entities_add_tp</code> («Добавить табличную часть») из карточки сущности. Он:</p>
+<ol>
+<li>Создаёт сущность строк с кодом <code>&lt;entity&gt;_tp_&lt;n&gt;</code> и типом <code>table</code>.</li>
+<li>Добавляет в неё ссылку <code>&lt;entity&gt;_id</code> на родителя (<code>data_type_id = 7</code>, правило <code>cascade</code>).</li>
+<li>Создаёт <code>table_parts</code>: <code>entity_link_id</code> = новая сущность, <code>link_attr_id</code> = ссылка, <code>type_id = 1</code> (<code>default</code>), <code>gen_show_cols = 1</code>.</li>
+<li>Добавляет переданные поля как атрибуты строк (<code>rq = 1</code>, <code>show_col = 1</code>).</li>
+</ol>
+<p>Табличную часть можно построить и на существующей сущности: заполнить <code>entity_link_id</code> и <code>link_attr_id</code> вручную. Атрибут связи должен принадлежать связанной сущности и ссылаться на родителя.</p>
+<p>После создания сущность нужно <strong>опубликовать</strong> (<code>entity_publish</code>). Публикация:</p>
+<ul>
+<li>при <code>gen_show_cols = 1</code> создаёт колонки для атрибутов связанной сущности с <code>show_col = 1</code>. Для каждого атрибута это <code>UpsertI("table_part_id;attr_id", "table_part_cols")</code> и <code>UpsertI("table_part_cols_id;attr_id", "table_part_cols_a")</code>, то есть колонка вместе с основным элементом;</li>
+<li>генерирует запрос загрузки строк (раздел 4);</li>
+<li>перегенерирует автостраницы сущности.</li>
+</ul>
+<hr>
+<p><a id="4"></a></p>
+<h2>4. Загрузка строк: detail_queries</h2>
+<p>При публикации у Detail родительской сущности создаётся (<code>Upsert</code> по <code>code;is_auto;detail_id</code>) запрос <code>detail_queries</code> с кодом, равным <code>table_parts.code</code>:</p>
+<pre><code class="language-sql">select &lt;поля связанной сущности, формулы, подписи ссылок&gt;
+from &lt;schema&gt;.&lt;entity_link_code&gt; main &lt;joins&gt;
+where main.&lt;link_attr_code&gt; = ? and coalesce(main.in$trash,0) = 0
+order by &lt;sort_fields&gt;
+</code></pre>
+<ul>
+<li><code>sort_fields</code> — список <code>main.&lt;attr&gt;</code> элементов колонок с <code>table_part_cols_a.sort_nn &gt; 0</code>. Если таких нет, используется <code>table_parts.sort_expr</code>. Порядок полей внутри списка не задаётся.</li>
+<li>В выборку попадают атрибуты без <code>is_formula</code> и <code>data_hide_list</code>, отдельно — формулы и подписи ссылок.</li>
+<li>В runtime строки приходят в <code>details[&lt;table_part_code&gt;]</code>, в форме — <code>form_tb.get('&lt;table_part_code&gt;.values')</code>.</li>
+</ul>
+<p>Если ТЧ переименована или изменена связь, запрос обновится только после повторной публикации.</p>
+<hr>
+<p><a id="5"></a></p>
+<h2>5. Колонки и элементы колонок</h2>
+<h3>Колонка <code>table_part_cols</code></h3>
+<p>Колонка — это заголовок и ячейка таблицы. Она привязана к атрибуту связанной сущности (<code>attr_id</code>) и несёт свойства отображения: <code>title</code>, <code>nn</code> (порядок), <code>ui_width</code> (минимальная ширина, px), <code>ui_ng_if</code>, <code>ui_ng_title</code>, <code>ui_ng_readonly</code>, <code>rq_mark</code> (красная звёздочка).</p>
+<p>Порядок колонок: <code>coalesce(table_part_cols.nn, entity_attrs.nn_field, entity_attrs.id)</code>.</p>
+<h3>Элемент <code>table_part_cols_a</code></h3>
+<p>Содержимое ячейки задают элементы колонки. В одной колонке их может быть несколько (порядок — <code>nn</code>).</p>
+<table>
+<thead>
+<tr>
+<th><code>t_id</code> (вид)</th>
+<th>Что выводит</th>
+<th>Поля</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>attr</code> (1) или пусто</td>
+<td>UI-компонент атрибута</td>
+<td><code>attr_id</code>, <code>ui_comp_id</code>, параметры в <code>table_part_cols_a_pv</code></td>
+</tr>
+<tr>
+<td><code>html</code> (2)</td>
+<td>Произвольный HTML/Angular</td>
+<td><code>html</code></td>
+</tr>
+<tr>
+<td><code>tp</code> (3)</td>
+<td>Ссылка на другую ТЧ</td>
+<td><code>tp_id</code></td>
+</tr>
+</tbody>
+</table>
+<p>На стенде у большинства элементов <code>t_id</code> пустой — такой элемент работает как <code>attr</code>.</p>
+<p><strong>Важно:</strong> в шаблоне вида <code>default</code> ячейка строится <strong>только</strong> из элементов <code>table_part_cols_a</code>. Колонка без элементов выводит пустую ячейку. Колонки, созданные публикацией, получают основной элемент автоматически; добавленные вручную — нет.</p>
+<p>Компонент элемента вычисляется так:</p>
+<pre><code class="language-text">coalesce(table_part_cols_a.ui_comp_id,
+         entity_attrs.ui_component_id,
+         data_types.ui_default_component_id)
+</code></pre>
+<p>В ячейку подставляется <code>angular_tp_template</code> этого компонента (<code>_ui_component_angular_tp_template</code>). Для колонки (заголовок, старые шаблоны) действует тот же порядок, но с <code>table_part_cols.ui_comp_id</code> на первом месте.</p>
+<p>Элемент вида <code>html</code> выводится как есть (<code>table_part_cols_a_html</code>). Внутри доступен Angular-контекст строки: <code>field</code>, <code>index</code>, <code>form_tb</code> и методы страницы.</p>
+<hr>
+<p><a id="6"></a></p>
+<h2>6. Параметры: четыре уровня</h2>
+<table>
+<thead>
+<tr>
+<th>Карта в шаблоне</th>
+<th>Источник</th>
+<th>Ключ</th>
+<th>Где применяется</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>.param</code> ТЧ</td>
+<td><code>pages_ui_blocks_n_tpv</code> + <code>table_part_params</code></td>
+<td><code>table_part_params.code</code></td>
+<td>Angular-страницы (генерация <code>pkg/page</code>)</td>
+</tr>
+<tr>
+<td><code>.param</code> ТЧ (старое)</td>
+<td><code>table_part_param_values</code> + <code>table_part_params</code></td>
+<td><code>table_part_params.code</code></td>
+<td>Старые ng-шаблоны при публикации сущности</td>
+</tr>
+<tr>
+<td><code>.component_param</code> элемента</td>
+<td><code>table_part_cols_a_pv</code> + <code>ui_comp_params</code></td>
+<td><code>ui_comp_params.attr</code></td>
+<td>Ячейки Angular-страниц</td>
+</tr>
+<tr>
+<td><code>.component_param</code> колонки</td>
+<td><code>entity_attr_uicmps</code> + <code>ui_comp_params</code></td>
+<td><code>ui_comp_params.attr</code></td>
+<td>Датасет колонок (заголовки, старые шаблоны)</td>
+</tr>
+</tbody>
+</table>
+<p>Правила:</p>
+<ul>
+<li>Пустые и <code>null</code> значения в карты не попадают.</li>
+<li>Параметры ТЧ на странице читаются <strong>по блоку</strong>: <code>pages_ui_blocks_n.pages_ui_blocks_id = _tp_ui_block_id</code>, а не по конкретному узлу <code>tp</code>. Две ТЧ в одном блоке получат общий набор параметров.</li>
+<li>Параметры элемента берутся по условию <code>ca.id = ? and ca.attr_id = ?</code>. У HTML-элемента нет <code>attr_id</code>, поэтому параметров компонента у него не бывает.</li>
+<li><code>table_part_cols_a_pv.param_id</code> должен ссылаться на параметр текущего компонента элемента. При смене компонента ищите старую строку по <code>ui_comp_params.attr</code>, а не по <code>param_id</code>, иначе появятся дубли одного атрибута.</li>
+</ul>
+<p>Пример: <code>query_code</code> для select-ячейки с фильтром по полю карточки:</p>
+<pre><code class="language-text">table_part_cols_a_pv.value = entity_attrs_select&amp;flt$entity_id$eq='+detail.entity_id+'
+param_id → ui_comp_params (attr = 'query_code') компонента элемента
+</code></pre>
+<hr>
+<p><a id="7"></a></p>
+<h2>7. Параметры табличной части</h2>
+<p>Справочник <code>table_part_params</code> и то, как их использует шаблон <code>default</code>:</p>
+<table>
+<thead>
+<tr>
+<th>code</th>
+<th>Название</th>
+<th>Эффект в <code>default</code></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>no_title</code></td>
+<td>Скрыть наименование</td>
+<td><code>"1"</code> — не выводить заголовок ТЧ</td>
+</tr>
+<tr>
+<td><code>hide_add_button</code></td>
+<td>Скрыть кнопку добавить</td>
+<td><code>"1"</code> — нет кнопки «Добавить» и «Excel»</td>
+</tr>
+<tr>
+<td><code>add_page_code</code></td>
+<td>Страница добавления</td>
+<td>Добавление и редактирование строки в модальной странице <code>openPagesAsModal</code>; ячейки только для чтения</td>
+</tr>
+<tr>
+<td><code>add_page_detail</code></td>
+<td>Страница ввода для строки ТЧ</td>
+<td>Строка раскрывается в <code>jit-page</code> под ней; ячейки только для чтения</td>
+</tr>
+<tr>
+<td><code>ng_readonly</code></td>
+<td>Условие только-чтения</td>
+<td>Скрывает добавление и удаление, если условие истинно</td>
+</tr>
+<tr>
+<td><code>max_row_length</code></td>
+<td>Максимальное число строк</td>
+<td>Блокирует «Добавить» при достижении</td>
+</tr>
+<tr>
+<td><code>autosave</code></td>
+<td>Автосохранение</td>
+<td><code>"1"</code> — <code>save()</code> после добавления и удаления строки</td>
+</tr>
+<tr>
+<td><code>hide_id_href</code></td>
+<td>Скрывать ссылку ID</td>
+<td>Проверяется, но в текущем <code>default</code> ни на что не влияет</td>
+</tr>
+<tr>
+<td><code>delete</code></td>
+<td>Кнопка Удалить</td>
+<td>В <code>default</code> не используется (там <code>hide_del_button</code>)</td>
+</tr>
+<tr>
+<td><code>selectall</code>, <code>expand</code>, <code>no_border</code>, <code>ng_class</code>, <code>add_page_code_callback</code></td>
+<td>—</td>
+<td>В <code>default</code> не используются</td>
+</tr>
+</tbody>
+</table>
+<p>Шаблон <code>default</code> читает ещё четыре параметра, которых <strong>нет</strong> в справочнике: <code>hide_del_button</code>, <code>min_row_length</code>, <code>row_ng_if</code>, <code>modal_page_ok_title</code>. Чтобы задать их на странице, сначала добавьте строку в <code>table_part_params</code>.</p>
+<p>Флаги сравниваются со строкой <code>"1"</code>.</p>
+<hr>
+<p><a id="8"></a></p>
+<h2>8. Виды табличных частей</h2>
+<table>
+<thead>
+<tr>
+<th>code</th>
+<th>Название</th>
+<th>angular_template</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>default</code></td>
+<td>Обычный</td>
+<td>есть</td>
+</tr>
+<tr>
+<td><code>readonly</code></td>
+<td>Только чтение</td>
+<td>есть</td>
+</tr>
+<tr>
+<td><code>readonly2</code></td>
+<td>Только чтение без навигации</td>
+<td>только ng</td>
+</tr>
+<tr>
+<td><code>type1</code></td>
+<td>Вид 1</td>
+<td>только ng</td>
+</tr>
+<tr>
+<td><code>table_part_simple_add</code></td>
+<td>Простой списочный</td>
+<td>только ng</td>
+</tr>
+<tr>
+<td><code>row</code></td>
+<td>Построчный вывод</td>
+<td>только ng</td>
+</tr>
+</tbody>
+</table>
+<p>Для Angular-страниц пригодны только <code>default</code> и <code>readonly</code>. Вид без <code>angular_template</code> на современной странице не отрисуется.</p>
+<hr>
+<p><a id="9"></a></p>
+<h2>9. Размещение на странице и генерация</h2>
+<p>На Angular-странице ТЧ выводится, только если она размещена в блоке: элемент <code>pages_ui_blocks_n</code> с типом <code>tp</code> и <code>tp_id = table_parts.id</code>. ТЧ без размещения на современной странице не видна. Параметры размещения хранятся в <code>pages_ui_blocks_n_tpv</code>.</p>
+<p>Генерация (<code>pkg/page.genPages</code>) собирает датасеты <code>table_parts</code>, <code>table_part_attrs</code>, <code>table_part_cols</code>, <code>table_part_cols_a</code>, <code>table_parts_tp</code>, <code>table_parts_cross</code>, <code>table_parts_cross_cols</code> и «запекает» результат в <code>pages.angular_template</code>. Поэтому:</p>
+<ul>
+<li>любые изменения колонок, элементов и параметров видны только после перегенерации страниц (публикация сущности или <code>genPages</code>);</li>
+<li><code>genPages</code> нужно запускать от пользователя с правами на <code>entities</code> (обычно 1). Иначе датасет <code>entities</code> пустой и генерация падает с <code>index .entities 0</code>;</li>
+<li>при вызове из крона объявите <code>var = {}</code> до <code>genPages</code>: она пишет в <code>var.last_error</code>.</li>
+</ul>
+<p>Как шаблон <code>default</code> строит таблицу:</p>
+<pre><code class="language-text">{{range $value.table_part_cols}}         — заголовки и ячейки
+  if entity_id == $value.entity_link_id   — фильтр колонок
+  {{range $value.table_part_cols_a}}
+    if table_part_cols_id == table_part_col_id
+      html → вывести html
+      иначе → parseTemplate _ui_component_angular_tp_template
+</code></pre>
+<p>Колонки фильтруются по <code>entity_id</code> атрибута, а не по <code>table_part_id</code>. Если у одной сущности две ТЧ на одну и ту же связанную сущность, заголовки обеих могут попасть в каждую таблицу.</p>
+<hr>
+<p><a id="10"></a></p>
+<h2>10. Работа на фронтенде</h2>
+<table>
+<thead>
+<tr>
+<th>Что</th>
+<th>Как</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Строки формы</td>
+<td><code>form_tb.get('&lt;tp_code&gt;.values')</code> (FormArray), группа строки — <code>[formGroupName]="index"</code></td>
+</tr>
+<tr>
+<td>Данные Detail</td>
+<td><code>details['&lt;tp_code&gt;']</code></td>
+</tr>
+<tr>
+<td>Добавить строку</td>
+<td><code>tablePartAdd('&lt;entity_link_code&gt;', { &lt;link_attr&gt;: &lt;id родителя&gt; })</code></td>
+</tr>
+<tr>
+<td>Удалить строку</td>
+<td><code>tablePartDelete('&lt;tp_code&gt;', field.value.sys$uuid)</code></td>
+</tr>
+<tr>
+<td>Модальное редактирование</td>
+<td><code>openPagesAsModal('&lt;add_page_code&gt;', '&lt;tp_code&gt;', index)</code></td>
+</tr>
+<tr>
+<td>Строка в jit-page</td>
+<td><code>tp_jit_opened.&lt;tp_code&gt;</code> (раскрытые id), <code>getTablePartRowJitComponent</code></td>
+</tr>
+<tr>
+<td>Пагинация</td>
+<td><code>tb_perpage</code>, <code>tb_page</code>, <code>onTbPageChanged</code>, <code>paginator['&lt;tp_code&gt;']</code></td>
+</tr>
+<tr>
+<td>Родитель вложенной ТЧ</td>
+<td><code>getParentEntity('&lt;tp_code&gt;')</code></td>
+</tr>
+<tr>
+<td>Выгрузка в Excel</td>
+<td>процесс <code>exp_to_excel_by_tp_code</code> (кнопка видна при доступе к процессу)</td>
+</tr>
+<tr>
+<td>Редактируемость</td>
+<td><code>editable_row</code> или параметр <code>ng_readonly</code></td>
+</tr>
+</tbody>
+</table>
+<p>Новая строка ещё не имеет <code>id</code>: используйте <code>sys$uuid</code>. Ссылка на родителя заполняется из <code>id</code> или <code>sys$uuid</code> родительской записи.</p>
+<hr>
+<p><a id="11"></a></p>
+<h2>11. Обязательность и проверки</h2>
+<p>Проверка при сохранении (<code>pkg/error_rows</code>) берёт ТЧ сущности с <code>entity_link_id &lt;&gt; entity_id</code> и <code>coalesce(rq_tb,0) = 0</code>:</p>
+<ul>
+<li><code>rq = 1</code> и строк нет → «Табличная часть '…' является обязательной к заполнению»;</li>
+<li>каждая строка проверяется как запись связанной сущности (обязательные поля и правила).</li>
+</ul>
+<p><code>rq_tb = 1</code> выключает обе проверки для этой ТЧ. Отметка <code>table_part_cols.rq_mark</code> только рисует звёздочку и ничего не проверяет. Звёздочка также выводится для атрибутов с <code>rq</code> или <code>rq_send</code>, если у ТЧ нет <code>add_page_code</code> и <code>add_page_detail</code>.</p>
+<hr>
+<p><a id="12"></a></p>
+<h2>12. Вложенные и кросс-табличные части</h2>
+<p><strong>Вложенная ТЧ</strong> (<code>table_parts_tp</code>) выводится под каждой строкой родительской ТЧ. Связь: <code>table_parts_id</code> — внешняя ТЧ, <code>tp_id</code> — вложенная, <code>code</code> — код запроса. Публикация собирает их в запрос <code>table_parts_tp$</code>. В шаблоне вложенная таблица рендерится через <code>{{ lua "gen_tp_by_tps_tp_angular_id" … }}</code>, если <code>_table_parts_tp_count</code> не равен <code>"0"</code>.</p>
+<p><strong>Элемент вида <code>tp</code></strong> (<code>table_part_cols_a.tp_id</code>) — второй способ вложить ТЧ. <code>pkg/detail_queries</code> строит для него запрос с кодом <strong><code>table_part_cols_a.code</code></strong>: код такого элемента нельзя менять произвольно.</p>
+<p><strong>Кросс-ТЧ</strong> (<code>table_parts_cross</code>) связывает ТЧ с другой ТЧ (<code>cross_table_part_id</code>). Колонки задаются датасетом <code>table_parts_cross_cols</code>.</p>
+<hr>
+<p><a id="13"></a></p>
+<h2>13. Поле code и перенос патчем</h2>
+<ul>
+<li>У <code>table_part_cols</code>, <code>table_part_cols_a</code> и <code>table_part_cols_a_pv</code> есть поле <code>code</code>: уникальное без учёта регистра (индексы по <code>lower(code)</code>), по умолчанию <code>gen_random_uuid()::text</code>. Это устойчивый ключ строки между стендами, в отличие от <code>id</code>.</li>
+<li>Индекс и default не переносятся вместе с атрибутом. На целевом стенде их создают отдельно:</li>
+</ul>
+<pre><code class="language-sql">update table_part_cols      set code = gen_random_uuid()::text where coalesce(code,'') = '';
+update table_part_cols_a    set code = gen_random_uuid()::text where coalesce(code,'') = '';
+update table_part_cols_a_pv set code = gen_random_uuid()::text where coalesce(code,'') = '';
+alter table table_part_cols      alter column code set default gen_random_uuid()::text;
+alter table table_part_cols_a    alter column code set default gen_random_uuid()::text;
+alter table table_part_cols_a_pv alter column code set default gen_random_uuid()::text;
+create unique index if not exists table_part_cols_code_uindex      on table_part_cols (lower(code));
+create unique index if not exists table_part_cols_a_code_uindex    on table_part_cols_a (lower(code));
+create unique index if not exists table_part_cols_a_pv_code_uindex on table_part_cols_a_pv (lower(code));
+</code></pre>
+<ul>
+<li>Экспорт патча не берёт <code>table_part_cols</code>, <code>table_part_param_values</code> и <code>table_part_cols_a_pv</code> как дочерние объекты сущности. Изменённые строки добавляйте в патч поштучно, вместе с перегенерированными страницами.</li>
+<li>Удаления патчем не переносятся: удалённые колонки, элементы и параметры нужно удалить на целевом стенде отдельно.</li>
+</ul>
+<hr>
+<p><a id="14"></a></p>
+<h2>14. Частые ошибки</h2>
+<table>
+<thead>
+<tr>
+<th>Симптом</th>
+<th>Причина</th>
+<th>Что делать</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Изменение не видно на странице</td>
+<td>Страница не перегенерирована</td>
+<td>Опубликовать сущность или запустить <code>genPages</code></td>
+</tr>
+<tr>
+<td>ТЧ не выводится на Angular-странице</td>
+<td>Нет узла <code>tp</code> в <code>pages_ui_blocks_n</code> или вид без <code>angular_template</code></td>
+<td>Разместить ТЧ в блоке, вид <code>default</code>/<code>readonly</code></td>
+</tr>
+<tr>
+<td>Пустая ячейка в колонке</td>
+<td>У колонки нет элемента <code>table_part_cols_a</code></td>
+<td>Добавить элемент <code>attr</code> с тем же атрибутом</td>
+</tr>
+<tr>
+<td>Параметр ТЧ не действует</td>
+<td>Записан в <code>table_part_param_values</code>, а страница Angular</td>
+<td>Писать в <code>pages_ui_blocks_n_tpv</code> размещения</td>
+</tr>
+<tr>
+<td>Параметры двух ТЧ смешались</td>
+<td>Обе ТЧ в одном блоке, параметры читаются по блоку</td>
+<td>Разнести ТЧ по разным блокам</td>
+</tr>
+<tr>
+<td>Лишние колонки из другой ТЧ</td>
+<td>Две ТЧ сущности на одну связанную сущность</td>
+<td>Учитывать фильтр по <code>entity_id</code>; разделить связанные сущности</td>
+</tr>
+<tr>
+<td><code>query_code</code> не применился</td>
+<td><code>param_id</code> от другого компонента или значение пустое</td>
+<td>Проверить эффективный компонент и <code>ui_comp_params.attr</code></td>
+</tr>
+<tr>
+<td>Дубли параметров элемента</td>
+<td>Поиск по <code>param_id</code> после смены компонента</td>
+<td>Искать по <code>ui_comp_params.attr</code>, лишние строки удалить</td>
+</tr>
+<tr>
+<td><code>index .entities 0</code> при генерации</td>
+<td>Генерация под пользователем без грантов</td>
+<td>Запускать от пользователя 1</td>
+</tr>
+<tr>
+<td><code>hide_del_button</code> и т.п. нельзя выбрать</td>
+<td>Нет строки в <code>table_part_params</code></td>
+<td>Добавить параметр в справочник</td>
+</tr>
+<tr>
+<td>Порядок строк не тот</td>
+<td><code>sort_nn</code> элементов имеет приоритет над <code>sort_expr</code></td>
+<td>Очистить <code>sort_nn</code> или задать нужные поля</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<p><a id="15"></a></p>
+<h2>15. Полезные SQL</h2>
+<p>Табличные части сущности:</p>
+<pre><code class="language-sql">select tp.id, tp.code, tp.title, el.code entity_link, la.code link_attr, t.code type_code
+from table_parts tp
+join entities e on e.id = tp.entity_id
+left join entities el on el.id = tp.entity_link_id
+left join entity_attrs la on la.id = tp.link_attr_id
+left join table_part_types t on t.id = tp.type_id
+where e.code = :entity_code
+order by tp.nn, tp.id;
+</code></pre>
+<p>Колонки, элементы, эффективный компонент и параметры:</p>
+<pre><code class="language-sql">select c.id col_id, c.code col_code, c.title, ea.code col_attr, c.nn,
+       ca.id elem_id, ca.code elem_code, coalesce(t.code,'attr') elem_type, eaa.code elem_attr,
+       comp.code eff_component, p.attr param, pv.value, pv.code pv_code
+from table_part_cols c
+left join entity_attrs ea on ea.id = c.attr_id
+left join table_part_cols_a ca on ca.table_part_cols_id = c.id
+left join table_part_cols_a_t t on t.id = ca.t_id
+left join entity_attrs eaa on eaa.id = ca.attr_id
+left join data_types dt on dt.id = eaa.data_type_id
+left join ui_components comp on comp.id = coalesce(ca.ui_comp_id, eaa.ui_component_id, dt.ui_default_component_id)
+left join table_part_cols_a_pv pv on pv.table_part_cols_a_id = ca.id
+left join ui_comp_params p on p.id = pv.param_id
+where c.table_part_id = (select id from table_parts where code = :tp_code)
+order by coalesce(c.nn, ea.nn_field, ea.id), ca.nn, ca.id;
+</code></pre>
+<p>Параметры ТЧ в размещениях на страницах:</p>
+<pre><code class="language-sql">select pg.code page, n.id node_id, b.id block_id, tpp.code param, tpv.value
+from pages_ui_blocks_n n
+join pages_ui_blocks b on b.id = n.pages_ui_blocks_id
+join pages pg on pg.id = b.pages_id
+left join pages_ui_blocks_n_tpv tpv on tpv.pages_ui_blocks_n_id = n.id
+left join table_part_params tpp on tpp.id = tpv.param_id
+where n.tp_id = (select id from table_parts where code = :tp_code);
+</code></pre>
+<p>Колонки без элементов (пустые ячейки):</p>
+<pre><code class="language-sql">select tp.code, c.id, c.title
+from table_part_cols c
+join table_parts tp on tp.id = c.table_part_id
+where not exists (select 1 from table_part_cols_a a where a.table_part_cols_id = c.id);
+</code></pre>
+<p>Допустимые параметры компонента:</p>
+<pre><code class="language-sql">select p.attr, p.title
+from ui_comp_params p
+where p.comp_id = (select id from ui_components where code = :component_code)
+order by p.attr;
+</code></pre>
+</main>
+<footer><a href="index.html">На главную</a></footer>
+</body>
+</html>
