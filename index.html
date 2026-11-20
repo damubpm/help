@@ -442,7 +442,7 @@
         <div>
           <div class="eyebrow">DamuBPM Help</div>
           <h1>Документация для разработчиков</h1>
-          <p>API, Lua-модули, REST-сервисы, мобильные приложения Flutter, WebSocket, бизнес-процессы и маршруты согласования, печатные формы, полномочия на сущности, MCP-методы для ИИ-клиентов, JIT-интерфейсы и табличные части, системные настройки, перенос объектов через GitLab CI/CD и разбор неочевидных ошибок DamuBPM — в одном месте.</p>
+          <p>API, Lua-модули, REST-сервисы, мобильные приложения Flutter, WebSocket, бизнес-процессы и маршруты согласования, бухгалтерский учёт и проводки, печатные формы, полномочия на сущности, MCP-методы для ИИ-клиентов, JIT-интерфейсы и табличные части, системные настройки, перенос объектов через GitLab CI/CD и разбор неочевидных ошибок DamuBPM — в одном месте.</p>
         </div>
 
         <div class="search-wrap">
@@ -453,7 +453,7 @@
             <span class="key-hint">/</span>
           </div>
           <div class="summary-row">
-            <span>30 материалов</span>
+            <span>31 материал</span>
             <span>Lua</span>
             <span>YAML</span>
             <span>CI/CD</span>
@@ -462,6 +462,7 @@
             <span>Mobile</span>
             <span>BPM</span>
             <span>Согласование</span>
+            <span>Бухучёт</span>
             <span>Печать</span>
             <span>Полномочия</span>
             <span>JIT</span>
@@ -518,11 +519,11 @@
             <div class="doc-arrow">→</div>
           </a>
 
-          <a class="doc-card" href="lua_pkg_tigerbeetle.html" data-search="lua tigerbeetle ledger account balance transfer accounting">
+          <a class="doc-card" href="lua_pkg_tigerbeetle.html" data-search="lua tigerbeetle ledger account balance transfer accounting архив tb_archive its_coa_tiger_trn">
             <div class="doc-icon">TB</div>
             <div class="doc-content">
-              <div class="doc-title">Lua TigerBeetle API <span class="tag">Finance</span></div>
-              <p class="doc-description">Работа со счетами, переводами и балансами через TigerBeetle.</p>
+              <div class="doc-title">Lua TigerBeetle API <span class="tag">Архив</span></div>
+              <p class="doc-description">Счета, переводы и балансы через TigerBeetle. С 13.11.2026 учёт ведётся в БД — см. «Бухгалтерский учёт».</p>
             </div>
             <div class="doc-arrow">→</div>
           </a>
@@ -625,6 +626,27 @@
             <div class="doc-content">
               <div class="doc-title">MCP-методы для ИИ-клиентов <span class="tag">AI</span></div>
               <p class="doc-description">mcp_method, mcp_object, mcp_method_role: tools/list и tools/call, контракт БП, роли, OAuth и добавление нового метода.</p>
+            </div>
+            <div class="doc-arrow">→</div>
+          </a>
+        </div>
+      </section>
+
+      <section class="section docs-section" data-section="accounting">
+        <div class="section-head">
+          <div>
+            <h2 class="section-title">Бухгалтерский учёт</h2>
+            <p class="section-description">Проводки по документам, бухгалтерские модели, движок pkg/its_coa, закрытие месяца, регистры и финансовые отчёты.</p>
+          </div>
+          <div class="section-count">1 материал</div>
+        </div>
+
+        <div class="docs-grid">
+          <a class="doc-card" href="damubpm_accounting_guide.html" data-search="бухгалтерский учет бухучет бухгалтерия accounting ledger проводка проводки провести проведение отмена отменить проведение сторно сторнирование массовое проведение its_coa its_coa_oper its_coa_pst its_coa_trn its_coa_bal its_coa_acc its_r_coa план счетов счет счета субконто аналитика its_r_coa_n its_r_coa_mdl бухмодель бухгалтерская модель модели its_r_coa_mdl_n its_r_coa_mdl_cond its_r_coa_correct_dtcr корреспонденция дебет кредит дт кт сальдо оборот pkg/its_coa postdocument domdl cancelmdl previewmdl reversepst prepare doc_types closeduntil закрытие месяца its_d_coa_close платежное поручение платежи кнп кбк авр входящий авр заработная плата зп начисление основные средства ос амортизация its_r_f_asset its_d_payord_out its_d_payord_in its_d_avr its_d_avr_in its_d_hr_payroll баланс осв оборотно-сальдовая журнал хозяйственных операций карточка счета выписка по счету опиу отчет о прибылях и убытках оддс движение денежных средств статьи ддс акт сверки договор fods excel xlsx тесты перенос патч">
+            <div class="doc-icon">COA</div>
+            <div class="doc-content">
+              <div class="doc-title">Бухгалтерский учёт its_coa <span class="tag">Finance</span></div>
+              <p class="doc-description">План счетов и субконто, бухмодели, pkg/its_coa, кнопки «Провести / Отменить», массовое проведение, закрытие месяца, сторно, отчёты и FODS.</p>
             </div>
             <div class="doc-arrow">→</div>
           </a>
