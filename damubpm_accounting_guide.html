@@ -1,0 +1,932 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Бухгалтерский учёт в DamuBPM (its_coa) — DamuBPM Developer Help Center</title>
+<style>
+:root{--bg:#0d1117;--panel:#161b22;--panel2:#1c2330;--line:#2b3442;--text:#d7dee8;--muted:#8b98a9;--acc:#2fbfb2;--acc2:#e3b341;--code:#0a0e14;--link:#5cc8ff}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--text);font:15px/1.6 -apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif}
+a{color:var(--link);text-decoration:none} a:hover{text-decoration:underline}
+header.top{position:sticky;top:0;z-index:20;display:flex;align-items:center;gap:16px;padding:12px 24px;background:rgba(13,17,23,.92);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+header.top .home{display:inline-flex;align-items:center;gap:8px;padding:6px 12px;border:1px solid var(--line);border-radius:8px;color:var(--text);background:var(--panel)}
+header.top .home:hover{border-color:var(--acc);text-decoration:none}
+header.top .crumb{color:var(--muted);font-size:13px}
+header.top .tag{margin-left:auto;font-size:12px;color:var(--bg);background:var(--acc);padding:3px 10px;border-radius:20px;font-weight:600}
+.wrap{display:grid;grid-template-columns:290px minmax(0,1fr);gap:32px;max-width:1440px;margin:0 auto;padding:24px}
+nav.toc{position:sticky;top:72px;align-self:start;max-height:calc(100vh - 96px);overflow:auto;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px 14px;font-size:13px}
+nav.toc .h{font-weight:700;color:var(--acc2);margin-bottom:8px;text-transform:uppercase;letter-spacing:.05em;font-size:11px}
+nav.toc ul{list-style:none;margin:0;padding-left:0} nav.toc ul ul{padding-left:14px;border-left:1px solid var(--line);margin:2px 0 6px 4px}
+nav.toc a{display:block;padding:3px 6px;border-radius:6px;color:var(--muted)} nav.toc a:hover,nav.toc a.on{color:var(--text);background:var(--panel2);text-decoration:none}
+main{min-width:0}
+.hero{background:linear-gradient(135deg,#123a3a 0%,#161b22 60%);border:1px solid var(--line);border-radius:14px;padding:26px 28px;margin-bottom:24px}
+.hero h1{margin:0 0 8px;font-size:28px;line-height:1.25}
+.hero p{margin:0;color:var(--muted)}
+.hero .meta{margin-top:14px;display:flex;flex-wrap:wrap;gap:8px}
+.hero .meta span{font-size:12px;border:1px solid var(--line);background:var(--panel);padding:3px 10px;border-radius:20px;color:var(--muted)}
+article h1{display:none}
+article h2{margin:36px 0 14px;padding-top:12px;border-top:1px solid var(--line);font-size:22px;color:#fff}
+article h3{margin:24px 0 10px;font-size:17px;color:var(--acc)}
+article p,article li{color:var(--text)}
+article ul,article ol{padding-left:22px} article li{margin:3px 0}
+article strong{color:#fff}
+code{font-family:"JetBrains Mono",Consolas,Menlo,monospace;font-size:12.5px;background:var(--panel2);border:1px solid var(--line);padding:1px 5px;border-radius:5px;color:#ffd58a}
+pre{background:var(--code);border:1px solid var(--line);border-radius:10px;padding:14px 16px;overflow:auto}
+pre code{background:none;border:0;padding:0;color:#c9e3ff;font-size:12.5px}
+.tbl{overflow:auto;margin:12px 0 18px;border:1px solid var(--line);border-radius:10px}
+table{border-collapse:collapse;width:100%;font-size:13.5px}
+th{background:var(--panel2);color:var(--acc2);text-align:left;font-weight:600;white-space:nowrap}
+th,td{padding:8px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+tr:last-child td{border-bottom:0} tbody tr:hover td{background:#18202b}
+hr{border:0;border-top:1px solid var(--line);margin:28px 0}
+.totop{position:fixed;right:22px;bottom:22px;width:40px;height:40px;border-radius:50%;background:var(--acc);color:var(--bg);display:flex;align-items:center;justify-content:center;font-weight:700;box-shadow:0 4px 14px rgba(0,0,0,.4)}
+.totop:hover{text-decoration:none;filter:brightness(1.1)}
+footer{color:var(--muted);font-size:12px;padding:30px 0 10px;border-top:1px solid var(--line);margin-top:40px}
+@media (max-width:980px){.wrap{grid-template-columns:1fr} nav.toc{position:static;max-height:none}}
+@media print{header.top,nav.toc,.totop{display:none} .wrap{display:block} body{background:#fff;color:#000} article p,article li{color:#000}}
+</style>
+</head>
+<body>
+<header class="top">
+  <a class="home" href="index.html">&#8592; На главную</a>
+  <span class="crumb">Developer Help Center / Backend и бизнес-процессы / Бухгалтерский учёт</span>
+  <span class="tag">its_coa</span>
+</header>
+<div class="wrap">
+  <nav class="toc"><div class="h">Содержание</div><div class="toc">
+<ul>
+<li><a href="#1-главное-за-минуту">1. Главное за минуту</a></li>
+<li><a href="#2-модель-данных">2. Модель данных</a><ul>
+<li><a href="#субконто-и-справочники-its_r_coa_nentity_id">Субконто и справочники (its_r_coa_n.entity_id)</a></li>
+<li><a href="#подразделение-документа">Подразделение документа</a></li>
+</ul>
+</li>
+<li><a href="#3-бухгалтерская-модель">3. Бухгалтерская модель</a><ul>
+<li><a href="#31-выбор-модели">3.1. Выбор модели</a></li>
+<li><a href="#32-строка-модели-its_r_coa_mdl_n">3.2. Строка модели (its_r_coa_mdl_n)</a></li>
+<li><a href="#33-прочее">3.3. Прочее</a></li>
+</ul>
+</li>
+<li><a href="#4-движок-pkgits_coa">4. Движок pkg/its_coa</a><ul>
+<li><a href="#41-api">4.1. API</a></li>
+<li><a href="#42-алгоритм-domdl">4.2. Алгоритм doMdl</a></li>
+<li><a href="#43-prepare-хуки">4.3. PREPARE-хуки</a></li>
+<li><a href="#44-doc_types-реестр-документов">4.4. DOC_TYPES (реестр документов)</a></li>
+</ul>
+</li>
+<li><a href="#5-каталог-моделей-20112026">5. Каталог моделей (20.11.2026)</a><ul>
+<li><a href="#исходящие-платежи-its_d_payord_out-денежный-счёт-всегда-кт-1030">Исходящие платежи its_d_payord_out (денежный счёт всегда Кт 1030)</a></li>
+<li><a href="#входящие-платежи-its_d_payord_in-дт-1030">Входящие платежи its_d_payord_in (Дт 1030)</a></li>
+<li><a href="#реализация-its_d_avr-модель-its_d_avr_sale-58">Реализация its_d_avr — модель its_d_avr_sale (58)</a></li>
+<li><a href="#входящий-авр-its_d_avr_in-its_d_avr_in_purchase-60">Входящий АВР its_d_avr_in — its_d_avr_in_purchase (60)</a></li>
+<li><a href="#начисление-зп-its_d_hr_payroll-its_d_hr_payroll_accrual-61-суммы-из-тч-804">Начисление ЗП its_d_hr_payroll — its_d_hr_payroll_accrual (61), суммы из ТЧ 804</a></li>
+<li><a href="#основные-средства-its_r_f_asset-модели-7581-условие-in_type_id-по-коду">Основные средства its_r_f_asset — модели 75–81 (условие in_type_id по коду)</a></li>
+<li><a href="#закрытие-месяца-без-модели-через-registeroper">Закрытие месяца (без модели, через registerOper)</a></li>
+</ul>
+</li>
+<li><a href="#6-атрибуты-документа-для-учёта">6. Атрибуты документа для учёта</a></li>
+<li><a href="#7-сторно-и-отмена">7. Сторно и отмена</a></li>
+<li><a href="#8-процессы-проведения-кнопки">8. Процессы проведения (кнопки)</a><ul>
+<li><a href="#81-набор-на-документ">8.1. Набор на документ</a></li>
+<li><a href="#82-клонирование-процессов-рецепт">8.2. Клонирование процессов (рецепт)</a></li>
+</ul>
+</li>
+<li><a href="#9-массовое-проведение-и-закрытие-месяца">9. Массовое проведение и закрытие месяца</a></li>
+<li><a href="#10-регистры-и-отчёты">10. Регистры и отчёты</a></li>
+<li><a href="#11-печатные-формы-fods">11. Печатные формы FODS</a></li>
+<li><a href="#12-как-добавить-проведение-новому-документу-чек-лист">12. Как добавить проведение новому документу (чек-лист)</a></li>
+<li><a href="#13-тестирование-без-браузера">13. Тестирование без браузера</a></li>
+<li><a href="#14-ловушки">14. Ловушки</a></li>
+<li><a href="#15-перенос-на-прод">15. Перенос на прод</a></li>
+<li><a href="#16-не-покрыто-открытые-вопросы-20112026">16. Не покрыто / открытые вопросы (20.11.2026)</a></li>
+</ul>
+</div>
+</nav>
+  <main>
+    <section class="hero">
+      <h1>Бухгалтерский учёт в DamuBPM (its_coa)</h1>
+      <p>План счетов, бухгалтерские модели, движок проведения <code>pkg/its_coa</code>, кнопки «Провести / Отменить проведение», массовое проведение, закрытие месяца, сторно, регистры и отчёты, печатные формы FODS, тестирование и перенос.</p>
+      <div class="meta"><span>Состояние на 20.11.2026</span><span>стенд test-helpdesk</span><span>модуль its</span><span>MD-версия: damubpm_accounting_guide.md</span></div>
+    </section>
+    <article><h1 id="бухгалтерский-учёт-в-damubpm-its_coa-справочник-разработчика">Бухгалтерский учёт в DamuBPM (its_coa): справочник разработчика</h1>
+<p>Справочник по подсистеме бухучёта модуля <code>its</code>: план счетов, бухгалтерские модели, движок проведения <code>pkg/its_coa</code>, процессы «Провести / Отменить проведение», массовое проведение, закрытие месяца, сторно, регистры и отчёты, печатные формы, тестирование и перенос. Состояние на 20.11.2026, стенд test-helpdesk.</p>
+<p>Читать перед любой задачей, где документ должен давать проводки, где нужен отчёт по проводкам или правка <code>pkg/its_coa</code>.</p>
+<hr />
+<h2 id="1-главное-за-минуту">1. Главное за минуту</h2>
+<ol>
+<li>Учёт хранится в БД (TigerBeetle выключен с 13.11.2026). Документ → операция <code>its_coa_oper</code> → проводки <code>its_coa_pst</code> → движения <code>its_coa_trn</code> (2 на проводку) → история остатков <code>its_coa_bal</code> → текущие остатки лицевых счетов <code>its_coa_acc</code>.</li>
+<li>Проводки строит <strong>бухгалтерская модель</strong> (<code>its_r_coa_mdl</code> + строки <code>its_r_coa_mdl_n</code> + условия <code>its_r_coa_mdl_cond</code>). Код проводок для документа не пишется: создаются модель и, при необходимости, PREPARE-хук в <code>pkg/its_coa</code>.</li>
+<li>Проведение только через <code>pkg/its_coa</code>: <code>postDocument</code> / <code>doMdl</code> (провести), <code>cancelMdl</code> (отменить — сторно той же датой), <code>previewMdl</code> (пробный расчёт), <code>reversePst</code> (сторно одной проводки).</li>
+<li>Сальдо хранится как Дт−Кт. «Натуральное» сальдо пассивного счёта (<code>its_r_coa.is_passive = 1</code>) = Кт−Дт.</li>
+<li>Лицевой счёт <code>its_coa_acc</code> = счёт плана + подразделение + до трёх субконто (<code>uuid1..3</code> = <code>sys$uuid</code> записей справочников).</li>
+<li>Пара Дт/Кт обязана быть в <code>its_r_coa_correct_dtcr</code>, иначе 422.</li>
+<li>На документ — одна проведённая операция (уникальный индекс <code>ux_its_coa_oper_posted</code>). Повторное проведение → 409 «Документ уже проведен».</li>
+<li>Закрытый месяц (<code>its_d_coa_close</code>) запрещает проведение и отмену с датой ≤ даты закрытия (409).</li>
+<li>Кнопки документа — клоны готовых процессов (<code>&lt;entity&gt;_posting</code>, <code>_cancel_posting</code>, <code>_mass_post</code>, <code>_mass_cancel</code>). <code>create_bp_process</code> из шаблона ломает шаблон — клонировать SQL-запросом (раздел 8).</li>
+<li>По умолчанию отчёты скрывают отменённые проведения и сторно (флажки «Показывать сторно / отмены»): пары гасят друг друга в ту же дату, сальдо от флажков не зависит, меняются только обороты.</li>
+</ol>
+<hr />
+<h2 id="2-модель-данных">2. Модель данных</h2>
+<div class="tbl"><table>
+<thead>
+<tr>
+<th>Таблица</th>
+<th>Назначение</th>
+<th>Ключевые поля</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>its_r_coa</code></td>
+<td>План счетов (351 счёт, типовой план РК)</td>
+<td><code>code</code> (сравнивать через <code>trim</code>), <code>title</code>, <code>parent_id</code>, <code>is_passive</code>, <code>is_contr_active</code>, <code>is_cont_passive</code></td>
+</tr>
+<tr>
+<td><code>its_r_coa_n</code></td>
+<td>Виды субконто счёта (664 строки из 1С)</td>
+<td>счёт, <code>nn</code> 1–3, <code>title</code>, <code>entity_id</code> (сущность справочника), <code>code</code> = <code>md5('its_r_coa_n|'||trim(coa.code)||'|'||nn)::uuid</code> (одинаков на всех стендах)</td>
+</tr>
+<tr>
+<td><code>its_r_coa_correct_dtcr</code></td>
+<td>Допустимые корреспонденции (335)</td>
+<td><code>dt_coa_id</code>, <code>cr_coa_id</code>, <code>code</code> = <code>&lt;Дт&gt;_&lt;Кт&gt;</code> (забаланс: <code>9021_off</code>)</td>
+</tr>
+<tr>
+<td><code>its_r_coa_mdl</code></td>
+<td>Бухгалтерская модель</td>
+<td><code>entity_id</code>, <code>code</code>, <code>priority</code>, <code>is_active</code>, <code>match_group</code>, <code>condition_mode</code> (all), <code>stop_on_match</code>, <code>check_amount</code>, <code>cashflow_item_id</code>, <code>dscr</code></td>
+</tr>
+<tr>
+<td><code>its_r_coa_mdl_cond</code></td>
+<td>Условия выбора модели</td>
+<td><code>mdl_id</code>, <code>condition_type</code> (attr / tp_rows), <code>attr_id</code>, <code>operator_code</code>, <code>value_text</code>, <code>compare_by</code> (code / id / пусто), <code>nn</code>, <code>code</code> = <code>&lt;модель&gt;_cond_&lt;nn&gt;</code></td>
+</tr>
+<tr>
+<td><code>its_r_coa_mdl_n</code></td>
+<td>Строки модели (проводки)</td>
+<td><code>nn</code>, <code>dr_coa_id</code>, <code>dr_coa_attr_id</code>, <code>cr_acc_id</code> (это счёт Кт плана!), источник суммы, источники субконто, <code>code</code> = <code>&lt;модель&gt;_&lt;nn&gt;</code></td>
+</tr>
+<tr>
+<td><code>its_r_coa_mdl_n_by</code></td>
+<td>Источник субконто/суммы</td>
+<td>1 <code>attr</code>, 2 <code>table_part_attr</code>, 3 <code>none</code>, 4 <code>attr_opt</code></td>
+</tr>
+<tr>
+<td><code>its_coa_oper</code></td>
+<td>Операция проведения документа</td>
+<td><code>entity_id</code>, <code>entity_pk</code>, <code>entity_uuid</code>, <code>mdl_id</code>, <code>status</code> (posted / reversed), <code>posting_date</code>, <code>dep_id</code>, <code>amount</code>, <code>posted_at</code>, <code>reversed_at</code></td>
+</tr>
+<tr>
+<td><code>its_coa_pst</code></td>
+<td>Проводка Дт/Кт</td>
+<td><code>oper_id</code>, <code>nn</code>, <code>mdl_n_id</code>, <code>source_uuid</code> (документ или строка ТЧ), <code>dr_acc_id</code>, <code>cr_acc_id</code>, <code>amount</code>, <code>posting_date</code>, <code>is_reverse</code>, <code>reverse_pst_id</code>, <code>entity_id/pk</code>, <code>document_uuid</code></td>
+</tr>
+<tr>
+<td><code>its_coa_trn</code></td>
+<td>Движение по лицевому счёту</td>
+<td><code>acc_id</code>, <code>corr_acc_id</code>, <code>ui_is_dr</code>, <code>amount</code>, <code>posting_date</code>, <code>pst_id</code>, <code>oper_id</code>, <code>is_reverse</code></td>
+</tr>
+<tr>
+<td><code>its_coa_bal</code></td>
+<td>Остаток после каждого движения</td>
+<td><code>acc_id</code>, <code>nn</code> (= <code>its_coa_acc.bal_nn</code>), <code>balance</code>, <code>dr_total</code>, <code>cr_total</code>, <code>trn_id</code>, <code>posting_date</code>; уникально (acc_id, nn)</td>
+</tr>
+<tr>
+<td><code>its_coa_acc</code></td>
+<td>Лицевой счёт и текущий остаток</td>
+<td><code>coa_id</code>, <code>dep_id</code>, <code>uuid1..3</code>, <code>balance</code> (Дт−Кт), <code>dr_total</code>, <code>cr_total</code>, <code>bal_nn</code>, <code>last_trn_at</code></td>
+</tr>
+<tr>
+<td><code>its_coa_mass</code>, <code>its_coa_mass_n</code></td>
+<td>Задания массового проведения (REST its_coa_mass)</td>
+<td></td>
+</tr>
+<tr>
+<td><code>its_d_coa_close</code></td>
+<td>Закрытие месяца</td>
+<td></td>
+</tr>
+<tr>
+<td><code>its_coa_tiger_trn</code></td>
+<td>Архив TigerBeetle (не используется)</td>
+<td></td>
+</tr>
+</tbody>
+</table></div>
+<p>Индексы <code>ux_its_coa_oper_posted</code> и <code>ux_its_coa_bal_acc_nn</code> созданы вручную — патчем не переносятся.</p>
+<h3 id="субконто-и-справочники-its_r_coa_nentity_id">Субконто и справочники (<code>its_r_coa_n.entity_id</code>)</h3>
+<div class="tbl"><table>
+<thead>
+<tr>
+<th>Вид субконто</th>
+<th>Сущность</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Контрагенты</td>
+<td><code>its_cli</code></td>
+</tr>
+<tr>
+<td>Договоры</td>
+<td><code>its_cli_contract</code></td>
+</tr>
+<tr>
+<td>Работники организации</td>
+<td><code>its_staff</code></td>
+</tr>
+<tr>
+<td>Подразделения</td>
+<td><code>deps</code></td>
+</tr>
+<tr>
+<td>Статьи движения денежных средств</td>
+<td><code>its_r_cashflow_item</code></td>
+</tr>
+<tr>
+<td>Денежные средства</td>
+<td><code>companies_bank</code> (в отчётах показывать <code>iban</code>)</td>
+</tr>
+<tr>
+<td>Налоги, сборы, отчисления</td>
+<td><code>its_r_kbk</code></td>
+</tr>
+<tr>
+<td>Виды платежей в бюджет</td>
+<td><code>its_r_knp</code></td>
+</tr>
+</tbody>
+</table></div>
+<p>При создании <strong>нового</strong> лицевого счёта <code>pkg.getAccId</code> проверяет каждое заполненное субконто: запись с таким <code>sys$uuid</code> должна быть в таблице сущности, иначе 422 «Счёт 3350, субконто 1 «Работники организации»: значение … не найдено в справочнике…». Существующие лицевые счета не перепроверяются. Субконто «ОС» на 2410/2420 — сама карточка <code>its_r_f_asset</code> (сущности у вида нет, значения пишет модель).</p>
+<p>Фактическая аналитика расчётных счетов:</p>
+<div class="tbl"><table>
+<thead>
+<tr>
+<th>Счёт</th>
+<th>uuid1</th>
+<th>uuid2</th>
+<th>uuid3</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1030</td>
+<td>банковский счёт <code>companies_bank</code></td>
+<td>статья ДДС <code>its_r_cashflow_item</code></td>
+<td>—</td>
+</tr>
+<tr>
+<td>1210, 3510</td>
+<td>покупатель <code>its_cli</code></td>
+<td>договор (основной, по цепочке ДС)</td>
+<td>—</td>
+</tr>
+<tr>
+<td>1710, 3310</td>
+<td>поставщик <code>its_cli</code></td>
+<td>договор</td>
+<td>—</td>
+</tr>
+<tr>
+<td>3350</td>
+<td>работник <code>its_staff</code></td>
+<td>—</td>
+<td>—</td>
+</tr>
+<tr>
+<td>32xx по реестру</td>
+<td>—</td>
+<td>работник (3211/3212/3213 — субконто 2; 3220/3231 — субконто 3)</td>
+<td></td>
+</tr>
+<tr>
+<td>2410, 2420</td>
+<td>основное средство <code>its_r_f_asset</code></td>
+<td>—</td>
+<td>—</td>
+</tr>
+</tbody>
+</table></div>
+<h3 id="подразделение-документа">Подразделение документа</h3>
+<p>Проводки всегда в разрезе подразделения (<code>dep_id</code>). <code>resolveDep</code>: <code>dep_id</code> документа → иначе <code>companies.main_dep_id</code> организации (через <code>companies_bank_id → companies_id</code>, иначе <code>company_id</code>) и запись его в документ → нет ни того, ни другого → 422. Колонки определяются через <code>information_schema</code>, поэтому сущность без <code>companies_bank_id</code>/<code>company_id</code> не падает. У всех организаций заполнено «Главное подразделение» <code>companies.main_dep_id</code>.</p>
+<hr />
+<h2 id="3-бухгалтерская-модель">3. Бухгалтерская модель</h2>
+<h3 id="31-выбор-модели">3.1. Выбор модели</h3>
+<ul>
+<li>Кандидаты — активные модели сущности документа (<code>is_active = 1</code>, не в корзине), чьи условия выполняются (<code>condition_mode = all</code>).</li>
+<li>Побеждает максимальный <code>priority</code>. Две модели с одинаковым максимальным приоритетом → 409.</li>
+<li>Ни одной → «Для документа не найдена подходящая активная бухгалтерская модель (проверьте КНП, КБК и операцию)». Для документов, где выбор идёт по своему реквизиту (например, способ поступления ОС), лучше заранее проверить этот реквизит в скрипте БП и выдать понятный текст.</li>
+<li>Явный выбор: <code>doMdl({mdl_id | mdl_code, ...})</code>.</li>
+</ul>
+<p>Условия (<code>its_r_coa_mdl_cond</code>):
+- <code>condition_type = attr</code> — значение атрибута документа <code>attr_id</code>. <code>compare_by = code</code> — сравнивается <code>code</code> связанной записи (например, <code>its_r_knp.code</code>), <code>id</code> — сам id, пусто — значение. Значения <code>trim</code>-ятся (в <code>its_r_knp.code</code> бывают ведущие пробелы « 332»).
+- Операторы: <code>eq</code>, <code>neq</code>, <code>in</code>, <code>not_in</code> (список через запятую), <code>prefix</code>, <code>not_prefix</code>, <code>is_null</code>, <code>is_not_null</code>, <code>gt</code>, <code>gte</code>, <code>lt</code>, <code>lte</code>.
+- <code>condition_type = tp_rows</code> — есть ли строки табличной части: <code>attr_id</code> = атрибут связи строки ТЧ с документом, <code>eq 1</code> — строки есть, <code>eq 0</code> — нет. Так модели «по реестру» (приоритет 310) выигрывают у базовых (300) только при наличии реестра.</p>
+<h3 id="32-строка-модели-its_r_coa_mdl_n">3.2. Строка модели (<code>its_r_coa_mdl_n</code>)</h3>
+<ul>
+<li>Счёт Дт: <code>dr_coa_id</code>; если задан <code>dr_coa_attr_id</code> («Счёт Дт из реквизита документа») и реквизит заполнен — счёт берётся из документа (например, <code>coa_id</code> входящего АВР или ОС). Корреспонденция проверяется по фактическому счёту.</li>
+<li>Счёт Кт: <code>cr_acc_id</code> (это id счёта <strong>плана</strong> <code>its_r_coa</code>, а не лицевого счёта — историческое имя).</li>
+<li>Сумма: <code>attr_amnt_by_id</code> 1 (<code>attr_amnt_id</code> — атрибут шапки) или 2 (<code>tp_amnt_id</code> — ТЧ, <code>tp_attr_amnt_id</code> — атрибут строки). Пустое значение → <code>0.00</code>, строка пропускается. Отрицательная → 422.</li>
+<li>Субконто Дт/Кт 1–3: <code>attr_dr_n1_by_id</code> … <code>attr_cr_n3_by_id</code> (1 attr, 2 table_part_attr, 3 none, 4 attr_opt) + <code>attr_dr_nX_id</code> / <code>attr_cr_nX_id</code> (атрибут шапки) или <code>tp_dr_nX_id</code> + <code>tp_attr_dr_nX_id</code> (ТЧ и её атрибут). Значение-ссылка превращается в <code>sys$uuid</code> связанной записи; атрибут <code>id</code> → <code>sys$uuid</code> самого документа (или строки ТЧ).</li>
+<li><code>attr</code> и <code>table_part_attr</code> обязательны: пусто → 422 «Не заполнено обязательное субконто». <code>attr_opt</code> — пусто допустимо (субконто остаётся пустым).</li>
+<li>В одной строке модели нельзя смешивать разные ТЧ (500). Строка с ТЧ даёт по проводке на каждую строку ТЧ (<code>select * from &lt;ТЧ&gt; where &lt;link&gt;=? and coalesce("in$trash",0)=0 order by id</code>); <code>source_uuid</code> проводки = <code>sys$uuid</code> строки ТЧ.</li>
+<li>Пустая ТЧ не ошибка: строки модели по ТЧ пропускаются; 422 «Не найдены строки табличной части…» только если проводок нет совсем.</li>
+<li><strong>Дата проводки из строки ТЧ</strong> (с 20.11.2026): если в строке ТЧ есть колонка <code>pst_date</code>, проводка пишется этой датой, иначе — датой операции. Сторно берёт даты исходных проводок.</li>
+<li><strong>Формулы не поддерживаются</strong>: строки ТЧ читаются <code>select *</code> (формульных колонок там нет), шапка — <code>EntityValueById</code>. Нужное значение заранее записать в обычную колонку (PREPARE-хук или скрипт БП перед проведением, пример — <code>its_d_hr_payroll.sum_stax</code>).</li>
+</ul>
+<h3 id="33-прочее">3.3. Прочее</h3>
+<ul>
+<li><code>check_amount = 1</code>: сумма строк с денежным счётом 10xx (если таких строк нет — всех строк) должна равняться <code>amount</code> документа.</li>
+<li><code>cashflow_item_id</code>: при проведении <code>fillCashflow</code> ставит статью ДДС в документ, если там пусто (21 статья <code>its_r_cashflow_item</code>, у 55 моделей).</li>
+<li><code>REGISTRIES</code> (ПП исх. с реестром MT102 <code>its_d_payord_out_reg</code>): если строки есть, их сумма = <code>amount</code>, суммы &gt; 0, иначе 422.</li>
+<li>Нет ни одной суммы → 400/422 «Бухгалтерская модель не сформировала проводок».</li>
+<li>Коды строк и условий уникальны, заполнять по шаблону <code>&lt;модель&gt;_&lt;nn&gt;</code>, <code>&lt;модель&gt;_cond_&lt;nn&gt;</code> (при совпадении — <code>_&lt;id&gt;</code>), иначе перенос в YAML теряет ключ.</li>
+</ul>
+<hr />
+<h2 id="4-движок-pkgits_coa">4. Движок <code>pkg/its_coa</code></h2>
+<p><code>local pkg = dbrequire("pkg/its_coa")</code>. Состояние на 20.11.2026: md5 <code>a68096bb2fe8319dbea352880ed1fd99</code>, 120 557 символов.</p>
+<h3 id="41-api">4.1. API</h3>
+<div class="tbl"><table>
+<thead>
+<tr>
+<th>Функция</th>
+<th>Что делает</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>pkg.postDocument({entity_code, entity_pk, posting_date?, user_id})</code></td>
+<td>Дата = <code>posting_date</code> или <code>pkg.docDate</code> (по <code>DOC_TYPES</code>); нет даты → 422 с названием поля; затем <code>doMdl</code></td>
+</tr>
+<tr>
+<td><code>pkg.doMdl({entity_code \| entity_id, entity_pk, posting_date?, mdl_id? \| mdl_code?, user_id})</code></td>
+<td>Проведение. Возврат <code>{oper_id, mdl_id, mdl_code, posting_date, dep_id, posting_count, total_amount, …}</code>, <code>errText</code>, <code>errNum</code></td>
+</tr>
+<tr>
+<td><code>pkg.cancelMdl({entity_code \| entity_id, entity_pk, user_id})</code></td>
+<td>Отмена: обратные проводки (Дт↔Кт, <code>is_reverse = 1</code>, <code>reverse_pst_id</code>) с датами исходных, <code>oper.status = reversed</code>. Уже сторнированные проводки пропускаются. 404 «Документ не проведен»</td>
+</tr>
+<tr>
+<td><code>pkg.previewMdl({entity_code, entity_pk})</code></td>
+<td>Пробный расчёт без записи: <code>{mdl_id, mdl_code, mdl_title, lines[{dr, cr, amount}], amount_ok, amount_error}</code>. PREPARE выполняется (с записью реквизитов!) на дату <code>coalesce(posting_date, current_date)</code></td>
+</tr>
+<tr>
+<td><code>pkg.reversePst({pst_id \| trn_id, user_id})</code></td>
+<td>Сторно одной проводки датой исходной. 409: сторнирующая, операция отменена, уже сторнирована, закрытый период. Статус операции остаётся <code>posted</code></td>
+</tr>
+<tr>
+<td><code>pkg.registerOper(params, lines)</code></td>
+<td>Низкоуровневая запись операции и проводок (используется закрытием месяца)</td>
+</tr>
+<tr>
+<td><code>pkg.isPosted(entity_id, entity_pk)</code></td>
+<td>Есть ли проведённая операция</td>
+</tr>
+<tr>
+<td><code>pkg.getAccId(coa_id, dep_id, uuid1, uuid2, uuid3)</code></td>
+<td>Найти/создать лицевой счёт (с проверкой субконто)</td>
+</tr>
+<tr>
+<td><code>pkg.getAccInfo(acc_id, on_date?)</code>, <code>pkg.getAccBal(acc_id, on_date?)</code></td>
+<td>Сведения/натуральное сальдо счёта на дату</td>
+</tr>
+<tr>
+<td><code>pkg.DOC_TYPES</code>, <code>pkg.docTypes()</code>, <code>pkg.docDate(entity_code, pk)</code></td>
+<td>Реестр документов для массового проведения и даты проведения</td>
+</tr>
+<tr>
+<td><code>pkg.findUnposted(p)</code>, <code>pkg.massCreate/massStep/massRetry</code></td>
+<td>Массовое проведение (REST its_coa_mass)</td>
+</tr>
+<tr>
+<td><code>pkg.closedUntil(dep_id)</code>, <code>pkg.closeCalc</code>, <code>pkg.closeMonth</code>, <code>pkg.closeCancel</code></td>
+<td>Закрытие месяца</td>
+</tr>
+<tr>
+<td><code>pkg.fillPayordOutRegStaff(payord_out_id)</code></td>
+<td>Работник в строках реестра ПП исх. по ИИН</td>
+</tr>
+<tr>
+<td><code>pkg.depTree(dep_id, with_children)</code></td>
+<td>Подразделение с дочерними</td>
+</tr>
+</tbody>
+</table></div>
+<h3 id="42-алгоритм-domdl">4.2. Алгоритм <code>doMdl</code></h3>
+<ol>
+<li>Дата проведения: <code>info.posting_date</code> или <code>current_date</code>.</li>
+<li>Модель (<code>resolveMdl</code>): явная или по условиям/приоритету.</li>
+<li>Проверка «уже проведён» (409).</li>
+<li>Подразделение <code>resolveDep</code> (с записью в документ).</li>
+<li>Закрытый период по дате операции (409), кроме самого <code>its_d_coa_close</code>.</li>
+<li><strong>PREPARE-хук</strong> сущности (<code>PREPARE[entity_code](entity_pk, dep_id, posting_date, mdl)</code>) + <code>fillCashflow</code>.</li>
+<li>План (<code>buildPlan</code>): по строкам модели — счета, корреспонденции, субконто, суммы, лицевые счета. Ничего не записывается.</li>
+<li><code>checkPlanAmount</code>; закрытый период по датам всех строк плана (<code>pst_date</code> строк ТЧ).</li>
+<li><code>posting_date</code> пишется в документ (<code>update &lt;entity&gt; set posting_date=…</code> — колонка обязательна!).</li>
+<li><code>registerOper</code>: операция, проводки, движения; обновления остатков отсортированы по <code>acc_id</code> (нет дедлоков). Сбой записи → <code>error()</code> → откат всей транзакции.</li>
+</ol>
+<p><code>cancelMdl</code> проверяет закрытый период по <strong>минимальной</strong> дате проводок операции.</p>
+<h3 id="43-prepare-хуки">4.3. PREPARE-хуки</h3>
+<p>Таблица <code>PREPARE</code> в пакете, ключ — код сущности. Вызываются в <code>doMdl</code> и <code>previewMdl</code> до построения плана: проверяют документ (422 с понятным текстом) и дописывают в него вычисляемые суммы, которые потом читает модель.</p>
+<div class="tbl"><table>
+<thead>
+<tr>
+<th>Сущность</th>
+<th>Что делает</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>its_d_payord_out</code></td>
+<td>Разбивка оплаты поставщику: по строкам ТЧ <code>its_d_payord_out_contract</code> — долг (кредитовое сальдо 3310 по договору) / аванс; без ТЧ — <code>debt_amount</code> / <code>advance_amount</code> шапки по поставщику; <code>fillPayordOutRegStaff</code>; <code>staff_id</code> по ИИН получателя для КНП 332/311; 422, если модель берёт реестр, а работник не найден</td>
+</tr>
+<tr>
+<td><code>its_d_payord_in</code></td>
+<td><code>debt_amount</code> = min(дебетовое сальдо 1210, amount), <code>advance_amount</code> = остаток; договор = основной по цепочке ДС; разбивка по строкам ТЧ 866</td>
+</tr>
+<tr>
+<td><code>its_d_avr</code></td>
+<td>Проверки (покупатель, amount &gt; 0, НДС ≥ 0, amount_w_tax = amount + НДС); <code>coa_contract_id</code> = основной договор; <code>advance_offset</code> (зачёт аванса 3510 по договору), <code>advance_offset_free</code> (без договора)</td>
+</tr>
+<tr>
+<td><code>its_d_avr_in</code></td>
+<td>Контрагент обязателен; статусы DECLINED/REVOKED/CANCELED/CANCELLED/DELETED/FAILED → 422; подбор договора по номеру (буквы/цифры без регистра) + дате; <code>coa_id</code> = coalesce(АВР, договор, 7210); <code>advance_offset</code> = min(дебетовое сальдо 1710, сумма с НДС)</td>
+</tr>
+<tr>
+<td><code>its_d_hr_payroll</code></td>
+<td>Проверка строк и <code>staff_id</code>; <code>pst_accrual</code> = calc или salary+ОПВ+ВОСМС+ИПН</td>
+</tr>
+<tr>
+<td><code>its_r_f_asset</code></td>
+<td>Способ поступления обязателен; поставщик для purchase; стоимость из ТЧ, если пусто; <code>amo_amount</code>/<code>pst_date</code> строк ТЧ «Амортизация»; <code>amo_accum</code>, <code>residual</code>; зачёт аванса 1710 для purchase</td>
+</tr>
+</tbody>
+</table></div>
+<p>Помощники для сальдо расчётов (в SQL-тексте): <code>cliBalanceSql(coa_code, cli_expr, dep_expr, date_expr)</code>, <code>settleBalanceSql(coa_code, cli_expr, ctr_expr, dep_expr, date_expr)</code> — сумма <code>its_coa_trn</code> по счёту и контрагенту (и договору) по всем подразделениям той же организации на дату включительно.</p>
+<p>Правила для хуков:
+- Обновления — через <code>SqlExec2</code> (возвращает <code>errText, errNum</code>). <code>SqlInsert</code> добавляет <code>returning id</code> и падает на UPDATE без строк («no row found») и на <code>UPDATE … FROM</code> с колонкой id («ambiguous»).
+- <code>?</code> в тексте SQL пакета писать как <code>Q</code> (<code>local Q = string.char(63)</code>), если пакет правится через <code>db_execute_sql</code>.
+- В Lua нет <code>string.match</code>/<code>gsub</code> — используйте <code>pkg/strings</code>, <code>RegexpCheck</code>.</p>
+<h3 id="44-doc_types-реестр-документов">4.4. <code>DOC_TYPES</code> (реестр документов)</h3>
+<p>Поля: <code>code</code>, <code>title</code>, <code>short</code>, <code>ord</code>, <code>date</code> (SQL-выражение даты проведения от <code>d</code>), <code>date_title</code>, <code>company</code>, <code>num</code>, <code>amount</code>, <code>cli</code>, <code>extra</code> (доп. условие отбора).</p>
+<div class="tbl"><table>
+<thead>
+<tr>
+<th>Документ</th>
+<th>Дата проведения</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>its_d_avr</code></td>
+<td><code>avr_sign_dt</code></td>
+</tr>
+<tr>
+<td><code>its_d_avr_in</code></td>
+<td><code>coalesce(performed_date, awp_date)</code>, статусы отказа исключены</td>
+</tr>
+<tr>
+<td><code>its_d_hr_payroll</code></td>
+<td>последний рабочий день месяца периода по <code>its_calendar</code> (<code>its_day_type.code = 'work-day'</code>), иначе последний будний, иначе <code>oper_date</code></td>
+</tr>
+<tr>
+<td><code>its_d_payord_in</code>, <code>its_d_payord_out</code></td>
+<td><code>oper_date</code></td>
+</tr>
+<tr>
+<td><code>its_r_f_asset</code></td>
+<td><code>date_in</code>, иначе 1 января первого года ТЧ «Амортизация», иначе <code>posting_date</code>; только ОС со способом поступления</td>
+</tr>
+</tbody>
+</table></div>
+<p>Новый документ для массового проведения и страницы <code>its_coa_mass_post</code> — добавить элемент в <code>DOC_TYPES</code>.</p>
+<hr />
+<h2 id="5-каталог-моделей-20112026">5. Каталог моделей (20.11.2026)</h2>
+<h3 id="исходящие-платежи-its_d_payord_out-денежный-счёт-всегда-кт-1030">Исходящие платежи <code>its_d_payord_out</code> (денежный счёт всегда Кт 1030)</h3>
+<div class="tbl"><table>
+<thead>
+<tr>
+<th>Приор.</th>
+<th>Модели</th>
+<th>Условие</th>
+<th>Дт</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>400</td>
+<td>supplier_payment (4) / supplier_advance (5)</td>
+<td>операция 3 / 4</td>
+<td>3310 долг, 1710 аванс (по ТЧ договоров или по поставщику)</td>
+</tr>
+<tr>
+<td>350</td>
+<td>pension/social/osms/vosms_penalty, budget_penalty/fine</td>
+<td>КНП 019,098 / 017 / 123 / 124 / 912 / 913</td>
+<td>Дт 7480 Кт 32xx/3190, затем Дт 32xx/3190 Кт 1030</td>
+</tr>
+<tr>
+<td>310</td>
+<td>its_po_reg_* (67–74)</td>
+<td>КНП как у базовой + есть строки реестра</td>
+<td>по каждой строке реестра с работником: 3212, 3220, 3231, 3211, 3213, 3350</td>
+</tr>
+<tr>
+<td>300</td>
+<td>pension, oppv, opvr / social_contribution, osms, vosms / single_payment, salary</td>
+<td>010, 015, 089 / 012, 121, 122 / 183,185 / 332</td>
+<td>3220 / 3211, 3213, 3212 / 3231 / 3350</td>
+</tr>
+<tr>
+<td>300</td>
+<td>loan_short, loan_long, loan_issue_short, loan_issue_long, lease</td>
+<td>421,429 / 423 / 411,419 / 413 / 424</td>
+<td>3010 / 4010 / 1110 / 2010 / 3360</td>
+</tr>
+<tr>
+<td>300</td>
+<td>dividends, deposit, own_transfer</td>
+<td>661 / 311,312,314,319 / 342,343</td>
+<td>3040 / 1050 / 1021</td>
+</tr>
+<tr>
+<td>300</td>
+<td>customer_refund, bank_fee, charity, guarantee, other_transfer</td>
+<td>780,880 / 842,120 / 119 / 171 / 190</td>
+<td>3510 / 7210 / 7480 / 1274 / 3387</td>
+</tr>
+<tr>
+<td>250</td>
+<td>ipn, kpn, social_tax, vat, excise, property, land, transport</td>
+<td>911 + КБК 1012 / 1011 / 1031 / 1051 / 106 / 1041 / 1043 / 1044</td>
+<td>3120 / 3110 / 3150 / 3130 / 3140 / 3180 / 3160 / 3170</td>
+</tr>
+<tr>
+<td>200</td>
+<td>other_tax</td>
+<td>911 без распознанного КБК</td>
+<td>3190</td>
+</tr>
+<tr>
+<td>100</td>
+<td>supplier_default (33)</td>
+<td>КНП 7xx, 8xx</td>
+<td>как supplier_payment</td>
+</tr>
+</tbody>
+</table></div>
+<h3 id="входящие-платежи-its_d_payord_in-дт-1030">Входящие платежи <code>its_d_payord_in</code> (Дт 1030)</h3>
+<div class="tbl"><table>
+<thead>
+<tr>
+<th>Приор.</th>
+<th>Модели</th>
+<th>Условие</th>
+<th>Кт</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>400</td>
+<td>customer_payment (2) / customer_advance (3)</td>
+<td>операция 5 / 6</td>
+<td>1210 долг, 3510 аванс / 3510</td>
+</tr>
+<tr>
+<td>400</td>
+<td>revenue (43)</td>
+<td>операция 17 «Оплата с признанием выручки (без АВР)»</td>
+<td>Дт 1210 Кт 6010 (с НДС), Дт 6010 Кт 3130 (НДС), Дт 1030 Кт 1210</td>
+</tr>
+<tr>
+<td>300</td>
+<td>supplier_refund, own_transfer, deposit_return, interest</td>
+<td>780,880 / 342,343 / 321,322,324,329 / 315–318,333</td>
+<td>1710 / 1021 / 1050 / 6110</td>
+</tr>
+<tr>
+<td>300</td>
+<td>loan_short, loan_long, loan_repay_short, loan_repay_long</td>
+<td>411,419 / 413 / 421,429 / 423</td>
+<td>3010 / 4010 / 1110 / 2010</td>
+</tr>
+<tr>
+<td>300</td>
+<td>dividends, grant, guarantee_return, other</td>
+<td>661 / 119 / 171 / 190</td>
+<td>6120 / 6220 / 1274 / 3387</td>
+</tr>
+<tr>
+<td>100</td>
+<td>customer_default (59)</td>
+<td>КНП 7xx, 8xx без операции</td>
+<td>как customer_payment</td>
+</tr>
+</tbody>
+</table></div>
+<p>С 14.11.2026 оплата по КНП 7/8 <strong>не признаёт выручку</strong> (её признаёт АВР), иначе выручка задваивается. Нет моделей для КНП 021 и 172.</p>
+<h3 id="реализация-its_d_avr-модель-its_d_avr_sale-58">Реализация <code>its_d_avr</code> — модель its_d_avr_sale (58)</h3>
+<p>Дт 1210 Кт 6010 <code>amount</code> · Дт 1210 Кт 3130 <code>tax_amount</code> · Дт 3510 Кт 1210 <code>advance_offset</code> (по договору) · Дт 3510 Кт 1210 <code>advance_offset_free</code> (без договора). 1210: покупатель + договор (<code>coa_contract_id</code>, attr_opt).</p>
+<h3 id="входящий-авр-its_d_avr_in-its_d_avr_in_purchase-60">Входящий АВР <code>its_d_avr_in</code> — its_d_avr_in_purchase (60)</h3>
+<p>Дт [<code>coa_id</code>, по умолчанию 7210] Кт 3310 без НДС · Дт 1421 Кт 3310 НДС · Дт 3310 Кт 1710 зачёт аванса. 3310/1710: поставщик + договор.</p>
+<h3 id="начисление-зп-its_d_hr_payroll-its_d_hr_payroll_accrual-61-суммы-из-тч-804">Начисление ЗП <code>its_d_hr_payroll</code> — its_d_hr_payroll_accrual (61), суммы из ТЧ 804</h3>
+<p>Дт 7210 (<code>coa_id</code>) Кт 3350 начислено (работник) · Дт 3350 Кт 3220 ОПВ · Дт 3350 Кт 3212 ВОСМС · Дт 3350 Кт 3120 ИПН · Дт 7210 Кт 3220/3211/3213 ОПВР, СО, ООСМС · Дт 7210 Кт 3150 СН одной проводкой из <code>sum_stax</code> шапки (пересчитывает БП перед проведением) · Дт 5610 Кт 3040 дивиденды · Дт 3040 Кт 3120 ИПН с дивидендов.</p>
+<h3 id="основные-средства-its_r_f_asset-модели-7581-условие-in_type_id-по-коду">Основные средства <code>its_r_f_asset</code> — модели 75–81 (условие <code>in_type_id</code> по коду)</h3>
+<div class="tbl"><table>
+<thead>
+<tr>
+<th>Способ поступления</th>
+<th>Проводки</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>purchase</td>
+<td>Дт 2410 Кт 3310 стоимость, Дт 1421 Кт 3310 НДС, Дт 3310 Кт 1710 зачёт аванса</td>
+</tr>
+<tr>
+<td>opening</td>
+<td>Дт 2410 Кт 5620; амортизация Дт 5620 Кт 2420</td>
+</tr>
+<tr>
+<td>construction / contribution / gratis / surplus</td>
+<td>Дт 2410 Кт 2931 / 5030 / 6220 / 6290</td>
+</tr>
+<tr>
+<td>doc</td>
+<td>только амортизация (стоимость уже на 2410 через входящий АВР)</td>
+</tr>
+<tr>
+<td>Амортизация (все, кроме opening): Дт 7210 (<code>coa_exp_id</code>) Кт 2420 по строкам ТЧ <code>its_r_f_asset_amo</code>: <code>amo_amount</code> = (остаток на начало, иначе стоимость для первой строки, иначе остаток прошлого года) − остаток на конец; незавершённый год = 0; дата <code>pst_date</code> = greatest(дата проведения, least(31.12 года, сегодня)).</td>
+<td></td>
+</tr>
+</tbody>
+</table></div>
+<h3 id="закрытие-месяца-без-модели-через-registeroper">Закрытие месяца (без модели, через <code>registerOper</code>)</h3>
+<p>Дт 3130 Кт 1421 — зачёт НДС (меньшая из сумм); закрытие 6xxx и 7xxx на 5610.</p>
+<hr />
+<h2 id="6-атрибуты-документа-для-учёта">6. Атрибуты документа для учёта</h2>
+<p>Минимум для проводимой сущности:
+- <code>dep_id</code> (ref <code>deps</code>) и организация (<code>company_id</code> или <code>companies_bank_id</code>) — для подразделения;
+- <code>posting_date</code> (date) — <strong>обязательно</strong>, <code>doMdl</code> пишет в неё дату;
+- суммы, которые читает модель, — обычными колонками (не формулами);
+- счета «из реквизита» — ref <code>its_r_coa</code> (<code>coa_id</code>, <code>coa_exp_id</code> …);
+- аналитика — ref на справочники из таблицы субконто (<code>its_cli</code>, <code>its_cli_contract</code>, <code>its_staff</code> …);
+- служебные расчётные поля PREPARE (<code>advance_offset</code>, <code>debt_amount</code>, <code>advance_amount</code>, <code>amo_accum</code> …);
+- <code>cashflow_item_id</code>, если документ денежный.</p>
+<p>Для ТЧ, по которой строятся проводки: колонки сумм и аналитики; опционально <code>pst_date</code> — своя дата проводки.</p>
+<p>После добавления атрибутов страницы карточки нужно перегенерировать (<code>dbrequire("pkg/page").genPages(entity_id, 1)</code> или «Опубликовать» на сущности из интерфейса). Публикация из крона (<code>BPMSStartProcess2("entity_publish", …)</code>) падает на шаге колонок фильтра (<code>SAVEPOINT can only be used in transaction blocks</code>), хотя страницы при этом пересоздаются.</p>
+<hr />
+<h2 id="7-сторно-и-отмена">7. Сторно и отмена</h2>
+<ul>
+<li><strong>Отмена проведения</strong> (<code>cancelMdl</code>): операция <code>status = reversed</code>, на каждую проводку — зеркальная с <code>is_reverse = 1</code>, <code>reverse_pst_id</code>, той же датой. Документ можно провести снова (новая операция).</li>
+<li><strong>Сторно проводки</strong> (<code>reversePst</code>, БП <code>its_coa_trn_reverse</code>, кнопка на <code>its_coa_trn</code>, роль its_accountant): одна зеркальная проводка, операция остаётся <code>posted</code>; последующая отмена документа сторнирует только оставшиеся.</li>
+<li>Группы движения в отчётах:</li>
+<li><code>rev</code> — операция <code>reversed</code> (прямые и обратные движения отменённого проведения);</li>
+<li><code>sto</code> — <code>is_reverse = 1</code> или проводка сторнирована (есть <code>its_coa_pst</code> с <code>reverse_pst_id</code> = pst и <code>is_reverse = 1</code>);</li>
+<li><code>act</code> — остальные.</li>
+<li>По умолчанию отчёты показывают только <code>act</code> (баланс, выписка, карточка счёта, вкладка «Проводки» договора). Пары <code>rev</code>/<code>sto</code> дают 0 в ту же дату — сальдо на начало/конец не меняется, только обороты. Если включён только один вид — обороты и сальдо искажаются (страница предупреждает).</li>
+<li>Проверка «сторно существует» — <code>exists</code> по индексу <code>its_coa_pst.reverse_pst_id</code>; join с <code>distinct</code>-CTE работал минуты.</li>
+</ul>
+<hr />
+<h2 id="8-процессы-проведения-кнопки">8. Процессы проведения (кнопки)</h2>
+<h3 id="81-набор-на-документ">8.1. Набор на документ</h3>
+<div class="tbl"><table>
+<thead>
+<tr>
+<th>Процесс</th>
+<th>Тип</th>
+<th>Вход/выход</th>
+<th>Назначение</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>&lt;entity&gt;_posting</code> «Провести»</td>
+<td>entityActionByID (12)</td>
+<td><code>id</code> (in, rq), <code>last_error</code> (<strong>out</strong>)</td>
+<td><code>pkg.postDocument({entity_code, entity_pk = var.id, user_id = tonumber(sys.user_id)})</code></td>
+</tr>
+<tr>
+<td><code>&lt;entity&gt;_posting_nonoperational</code> «Провести неоперативно»</td>
+<td>entityActionByID</td>
+<td>то же</td>
+<td><code>doMdl</code> с заполненной <code>posting_date</code> (ПП, АВР; у ЗП отключён)</td>
+</tr>
+<tr>
+<td><code>&lt;entity&gt;_cancel_posting</code> «Отменить проведение»</td>
+<td>entityActionByID</td>
+<td>то же</td>
+<td><code>pkg.cancelMdl</code></td>
+</tr>
+<tr>
+<td><code>&lt;entity&gt;_mass_post</code> «Провести (массово)»</td>
+<td>массовое действие (3), <code>is_action_single_only = 0</code></td>
+<td><code>url</code> (in, rq), <code>last_error</code> (out)</td>
+<td><code>Query(var.url, sys.user_id)</code> → по каждой записи одиночный БП</td>
+</tr>
+<tr>
+<td><code>&lt;entity&gt;_mass_cancel</code> «Отменить проведение (массово)»</td>
+<td>то же</td>
+<td>то же</td>
+<td>то же для отмены</td>
+</tr>
+</tbody>
+</table></div>
+<p><code>condition_action</code>:</p>
+<pre><code class="language-sql">-- «Провести»
+not exists (select 1 from its_coa_oper o where o.entity_id=(select id from entities where code='&lt;entity&gt;') and o.entity_pk=main.id and o.status='posted' and coalesce(o.&quot;in$trash&quot;,0)=0)
+-- «Отменить проведение» — exists (...) с тем же условием
+</code></pre>
+<p>Массовый скрипт: для каждой записи проверяет <code>its_coa_oper.status = 'posted'</code>, пропускает уже проведённые (при отмене — непроведённые), вызывает <code>BPMSStartProcess2(PROCESS, sys.user_id, {id = id}, sys.instance_id)</code>, перепроверяет состояние, собирает итог «Проведено: N, пропущено: M, ошибок: K» и до 30 строк «ID …: текст» в <code>last_error</code>. Причину он берёт из <code>rv.last_error</code> дочернего процесса — <strong><code>last_error</code> одиночного БП должна быть выходной</strong> (<code>is_output = 1</code>), иначе в итоге будет только «документ не проведён». Все документы выделения обрабатываются в одной транзакции БП, ошибка одного не откатывает остальные.</p>
+<p>Роли: its_user, its_accountant, helpdesk_admin (<code>bp_process_roles</code>, <code>can_run = 1</code>; вставлять с <code>not exists</code>). Ранние массовые процессы (ПП, ЗП, АВР) — только its_accountant.</p>
+<p>Существующие (20.11.2026): its_d_payord_out (2687, 2691, 2829, 2830 + nonoperational), its_d_payord_in (2804, 2806, 2831, 2832 + nonoperational), its_d_avr (2808–2810, 2835, 2836), its_d_avr_in (2821–2823), its_d_hr_payroll (2824, 2826, 2833, 2834), its_r_f_asset (2844–2847), its_coa_trn_reverse (2837), its_coa_accdetails_showbal (2688).</p>
+<p>Перед проведением в скрипте БП можно подготовить данные, которые модель читает (пример — <code>its_d_hr_payroll_posting</code> пересчитывает <code>sum_stax</code>). REST <code>its_coa_mass</code> вызывает <code>pkg.postDocument</code> напрямую, минуя БП, — такая подготовка там не выполнится; её место — PREPARE-хук.</p>
+<h3 id="82-клонирование-процессов-рецепт">8.2. Клонирование процессов (рецепт)</h3>
+<p><code>create_bp_process</code> из <code>tpl_entity_action_by_id</code> «забирает» точки шаблона себе (коды точек и стрелок глобально уникальны) и иногда возвращает «no row found» без ролей и переменных. Надёжный путь — клон готового процесса одним <code>DO</code>-блоком:</p>
+<ol>
+<li><code>insert into bp_processes</code> копией всех колонок, кроме <code>id, code, title, action_entity_id, module_id, condition_action, sys$uuid, created_at, updated_at, wf_id_var_id, wf_status_attr_id</code>; <code>condition_action</code> — <code>replace</code> кода сущности.</li>
+<li><code>bp_points</code> и <code>bp_sequence_flows</code>: новые коды <code>split_part(code,'_',1) || '_' || gen_random_uuid()</code>; в <code>diagram</code> и <code>svg</code> заменить каждый старый код новым.</li>
+<li><code>bp_process_vars</code> — копия (колонки без префикса таблицы дают «column reference "code" is ambiguous» при join — выбирать через <code>where process_id = (select id …)</code>).</li>
+<li>Роли — <code>bp_process_roles</code>.</li>
+<li>Таблица переменных: <code>create table "i$&lt;новый&gt;" (like "i$&lt;старый&gt;" including all)</code>.</li>
+<li>Скрипты — <code>update bp_points set script_txt = …</code>.</li>
+<li><strong><code>update_bp_process_diagram</code></strong> с диаграммой нового процесса — без этого процесс не запускается (экземпляр висит). <code>name</code> у <code>scriptTask</code> в диаграмме становится <code>title</code> точки.</li>
+<li><code>patch_out_add_objects</code> с <code>bp_processes</code> (клон через SQL сам в патч не попадает).</li>
+</ol>
+<hr />
+<h2 id="9-массовое-проведение-и-закрытие-месяца">9. Массовое проведение и закрытие месяца</h2>
+<ul>
+<li>REST <code>its_coa_mass</code> (страница <code>its_coa_mass_post</code>): GET <code>types</code>, <code>jobs</code>, <code>preview</code>, <code>job</code>; POST <code>create</code> (mode <code>check</code> | <code>post</code>), <code>step</code>, <code>retry</code>. Задание в <code>its_coa_mass</code> / <code>its_coa_mass_n</code>, каждый документ — отдельная транзакция, ошибка не останавливает задание. Список типов — <code>pkg.DOC_TYPES</code>.</li>
+<li>Закрытие месяца: сущность <code>its_d_coa_close</code>, REST <code>its_coa_close</code> (GET <code>calc</code>, <code>history</code>, <code>postings</code>; POST <code>close</code>, <code>cancel</code>; роли its_accountant, helpdesk_admin), страница <code>its_coa_month_close</code> (<code>?dep_id=&amp;m=YYYY-MM</code>). Проверки: месяц уже закрыт (ошибка), непроведённые документы за месяц (предупреждение), сходимость оборотов, сальдо не на своей стороне. Отменить можно только последнее закрытие.</li>
+</ul>
+<hr />
+<h2 id="10-регистры-и-отчёты">10. Регистры и отчёты</h2>
+<p>Все отчёты — query + JIT-страница; Excel — FODS-шаблон (<code>exp_tmp_ftypes</code> <code>fods</code>, «Excel (FODS → xlsx)»). Центр отчётов <code>its_hr_reports</code>, группа «Финансы» (<code>report_page</code>, роли its_user / its_accountant).</p>
+<div class="tbl"><table>
+<thead>
+<tr>
+<th>Отчёт</th>
+<th>Объекты</th>
+<th>Параметры query</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Бухгалтерский баланс</td>
+<td>query <code>its_coa_balance</code> (24602), <code>its_coa_balance_form</code> (24648), REST <code>its_coa_balance_drilldown</code>, страница <code>its_coa_balance</code> (15200), шаблон <code>its_coa_balance$fods</code> (1028)</td>
+<td>dep_id, с, по, показывать сторно, показывать отмены (все 5 передавать)</td>
+</tr>
+<tr>
+<td>Выписка по счёту</td>
+<td>REST <code>its_coa_acc_statement</code>, страница <code>its_coa_acc_statement</code> (15197)</td>
+<td><code>id</code> лицевого счёта, <code>date_from/date_to</code> (пусто — весь период), <code>show_storno</code>, <code>show_cancel</code></td>
+</tr>
+<tr>
+<td>ОСВ</td>
+<td>query <code>its_coa_osv</code>, страница <code>its_hr_report_osv</code></td>
+<td>dep, с, по, дочерние, уровень 0/1/2, маска счёта; CSV</td>
+</tr>
+<tr>
+<td>Журнал хозяйственных операций</td>
+<td>query <code>its_coa_journal</code> (24626), REST <code>its_coa_journal_xlsx</code>, страница <code>its_hr_report_journal</code>, шаблон <code>its_coa_journal$fods</code></td>
+<td>dep, с, по, дочерние, маска счёта, скрыть сторнированные (6)</td>
+</tr>
+<tr>
+<td>Карточка счёта</td>
+<td>query <code>its_coa_acc_card</code> (24625), REST <code>its_coa_acc_card_xlsx</code>, страница <code>its_hr_report_acc_card</code>, шаблон <code>its_coa_acc_card$fods</code></td>
+<td>dep, coa_id (с дочерними счетами), с, по, дочерние подр., отменённые, сторно (7)</td>
+</tr>
+<tr>
+<td>ОПиУ</td>
+<td>query <code>its_coa_pnl</code>, <code>its_coa_pnl_form</code>, REST <code>its_coa_pnl_xlsx</code>, страница <code>its_hr_report_pnl</code>, шаблон <code>its_coa_pnl$fods</code></td>
+<td>dep, с, по, дочерние; предыдущий период = −1 год</td>
+</tr>
+<tr>
+<td>ОДДС (прямой метод)</td>
+<td>query <code>its_coa_cf_form</code>, REST <code>its_coa_cf_xlsx</code>, страница <code>its_hr_report_cf</code>, шаблон <code>its_coa_cf$fods</code></td>
+<td>dep, с, по, дочерние</td>
+</tr>
+<tr>
+<td>Движение денег по статьям ДДС</td>
+<td>query <code>its_coa_cf_items</code>, страница <code>its_hr_report_cf_items</code></td>
+<td></td>
+</tr>
+<tr>
+<td>Акт сверки</td>
+<td>query <code>its_coa_recon_act</code> (24634), <code>its_coa_recon_act_lookup</code>, страница <code>its_hr_report_recon_act</code>, шаблоны <code>its_coa_recon_act$fods</code>, <code>$pdf</code>, template_funcs <code>fods_image_by_file_id</code></td>
+<td>организация, контрагент, договоры через запятую, с, по, зеркально, печать (7)</td>
+</tr>
+<tr>
+<td>Незакрытые договоры / без оплат</td>
+<td>query <code>its_cli_contract_unclosed</code>, страница <code>its_hr_report_contracts_unclosed</code></td>
+<td>dep, на дату, дочерние</td>
+</tr>
+<tr>
+<td>Проводки договора</td>
+<td>detail_query <code>its_coa_pst_contract</code>, ui_block_tpl 19, вкладка на <code>its_cli_contractdetails</code></td>
+<td></td>
+</tr>
+<tr>
+<td>Проводки документа</td>
+<td>ui_block_tpl <code>its_coa_pst</code> (18) + detail_query <code>its_coa_pst</code> в details документа</td>
+<td></td>
+</tr>
+<tr>
+<td>Реестр ЭСФ, ФНО 300</td>
+<td><code>its_d_esf_report(_form)</code>, <code>its_d_esf_report$fods</code>; БП <code>its_fno_gen_300_json</code></td>
+<td></td>
+</tr>
+</tbody>
+</table></div>
+<p>Методические карты (в SQL отчётов):
+- <strong>ОПиУ</strong>: 010 — 60xx (6010 − 6020/6030, НДС уменьшает), 011 — 70xx, 013/014 — 71xx/72xx, 015 — 74xx, 016 — 62xx, 021/022 — 61xx/73xx, 023 — 64xx/76xx, 101 — 77xx, 201 — 63xx/75xx, 400 — 5520/5530/5540/5560. Обороты с 56xx/57xx (закрытие) исключаются; счета вне карты — предупреждение (line_code 999).
+- <strong>ОДДС</strong>: денежные — 10xx, кроме 1000 и 1090; строка по корр. счёту (самый длинный префикс), не найдено → 016/027 с пометкой «не сопоставлен»; переводы между своими денежными счетами исключены; сторно уменьшает исходный поток.
+- <strong>Баланс</strong>: сторона по <code>is_passive</code>, раздел — первая цифра кода, группа — XX00; расшифровка по субконто — строки <code>kind = sub</code>.
+- <strong>Аналитика по uuid</strong>: имя ищется по <code>its_r_coa_n.entity_id</code> (<code>query_to_xml</code> по <code>sys$uuid</code>), в старых запросах — перечнем таблиц (its_cli, its_cli_contract, companies_bank, deps, its_r_cashflow_item, its_staff, its_d_payord_out/in, its_d_avr, its_d_avr_in). Новый вид аналитики — дописать ветку.</p>
+<p>Документ-основание проводки: <code>its_coa_pst.entity_id/entity_pk</code> → <code>entities.detail_page_id</code> → ссылка <code>/&lt;detail_page&gt;/&lt;pk&gt;</code>; номер/дата — из полей документа (ПП <code>document_number</code>/<code>oper_date</code>, АВР <code>avr_num_ext</code>/<code>avr_dt</code>, вх. АВР <code>num</code>/<code>awp_date</code>, иначе <code>its_req.docnum/doc_at</code>).</p>
+<hr />
+<h2 id="11-печатные-формы-fods">11. Печатные формы FODS</h2>
+<ul>
+<li>Тип <code>fods</code>: Go-шаблон по <code>.items</code> → Flat ODS → <code>generateXlsxbyFODS</code> (soffice) → xlsx с настоящими формулами (<code>of:=SUBTOTAL(9;[.J8:.J20])</code>), outline-группами, повтором шапки при печати.</li>
+<li>Query формы возвращает строки уже с <code>row_no</code> (номер строки листа), <code>kind</code>/<code>st</code> (стиль), формулами <code>f_*</code> и флагами групп <code>*_open/*_close</code>.</li>
+<li>Вызов: REST (<code>Query(...)</code> → <code>generateXlsxbyFODS('EXP_TEMPLATE', '&lt;имя&gt;.xlsx', template, {user_id, items = array(rows)}, user_id)</code> → <code>Commit()</code> → <code>{success, file_uuid, file_url}</code>) или БП <code>exp_template</code> (<code>bpRun('exp_template', {url, entity_id, template_code})</code>, ветка fods есть в шагах Query и Detail). PDF — тот же текст шаблона с ftype <code>pdf</code> (soffice распознаёт Flat ODS).</li>
+<li><strong>Шаблон проверяется при сохранении/импорте на пустом <code>.items</code></strong>: <code>index .items 0</code> вне <code>range</code> → «slice index out of range» → Upsert падает. Шапку брать внутри <code>{{if .items}}…{{end}}</code> или <code>{{range $i, $h := .items}}{{if eq $i 0}}…{{end}}{{end}}</code>.</li>
+<li><code>ParseTemplate(s, arr, userId)</code> — третий аргумент обязателен.</li>
+<li>Два <code>generateXlsxbyFODS</code> подряд (≈2 с) — второй иногда «exit status 1»; повтор проходит.</li>
+<li>Закрепление областей при headless-конвертации не сохраняется; длинный текст — объединять ячейки на все колонки с переносом.</li>
+<li>Шаблоны с <code>{{</code>, <code>}}</code>, <code>?</code> в <code>db_execute_sql</code> не передавать (MCP-мост отвечает «Информация не найдена» и ничего не делает): <code>convert_from(decode('&lt;b64&gt;','base64'),'UTF8')</code>, частями с охраной <code>length(...)</code>, сверять md5; либо кроном (Lua long string / gzip + <code>GunZipString</code>).</li>
+</ul>
+<hr />
+<h2 id="12-как-добавить-проведение-новому-документу-чек-лист">12. Как добавить проведение новому документу (чек-лист)</h2>
+<ol>
+<li>Изучить сущность: атрибуты, ТЧ (<code>table_parts</code>), формулы (модель их не читает), данные.</li>
+<li>Добавить атрибуты учёта (раздел 6): <code>dep_id</code>, организация, <code>posting_date</code>, суммы, счета, аналитика, служебные поля.</li>
+<li>Проверить корреспонденции <code>its_r_coa_correct_dtcr</code>, недостающие добавить с <code>code = &lt;Дт&gt;_&lt;Кт&gt;</code>.</li>
+<li>Создать модели (<code>its_r_coa_mdl</code> + <code>_cond</code> + <code>_n</code>) SQL-блоком: коды строк/условий по шаблону, <code>check_amount</code>, приоритеты без равных конкурентов, <code>cashflow_item_id</code> для денежных.</li>
+<li>Если нужны вычисления/проверки — PREPARE-хук в <code>pkg/its_coa</code> (бэкап <code>create table bak_luas_its_coa_&lt;дата&gt; as select * from luas where code='pkg/its_coa'</code>; правка точечными <code>replace</code> по якорям с проверкой числа вхождений).</li>
+<li>Добавить тип в <code>pkg.DOC_TYPES</code> (дата проведения, номер, сумма, контрагент, <code>extra</code>).</li>
+<li>Клонировать 4 процесса (раздел 8.2), <code>last_error</code> — выходная, роли, <code>update_bp_process_diagram</code>, таблицы <code>i$</code>.</li>
+<li>Перегенерировать страницы сущности (новые поля, колонки ТЧ).</li>
+<li>При желании — вкладка «Проводки» (ui_block_tpl <code>its_coa_pst</code> + detail_query <code>its_coa_pst</code> с кодом сущности).</li>
+<li>Протестировать кроном (раздел 13), убрать следы, собрать патч, записать заметку в проект.</li>
+</ol>
+<hr />
+<h2 id="13-тестирование-без-браузера">13. Тестирование без браузера</h2>
+<ul>
+<li>Временный крон с guard-строкой во временной таблице (<code>tmp_&lt;x&gt;_test</code>): первая строка скрипта — «если есть строка <code>start</code> — return», затем запись <code>start</code>, затем шаги с логом <code>insert into tmp(step,res) values (Q,Q)</code>.</li>
+<li>Запуск процессов: <code>pcall(BPMSStartProcess2, code, 1, vars, nil)</code> → <code>rv.last_error</code>. Нельзя присваивать <code>sys.user_id</code> и вызывать <code>Commit()</code> до старта БП — откатывается без сообщения. <code>BPMSStartProcess</code> из крона с <code>DMLI</code> внутри падает «SAVEPOINT can only be used in transaction blocks» (проведение через pkg работает).</li>
+<li><strong>Планировщик держит крон в памяти</strong>: <code>update crontab set is_active=0</code> не останавливает его. Выключать через <code>create_crontab</code> с тем же кодом и <code>is_active = false</code>, затем удалить строку <code>crontab</code> и её запись в <code>patch_out_obj</code> (крон, созданный через MCP, попадает в открытый патч), удалить tmp-таблицу.</li>
+<li><code>Rollback()</code> в кроне не откатывает записи pkg — тестовые проведения отменять <code>cancelMdl</code>, данные документов возвращать из бэкапа.</li>
+<li>Что проверять: проводки (<code>its_coa_pst</code> с кодами счетов и датами), операция posted/reversed, суммы = документу, Дт = Кт, чистое сальдо по тестовым операциям после отмены = 0, тексты ошибок (нет обязательного реквизита, повторное проведение 409, отмена непроведённого 404), массовые — пропуски и причины.</li>
+<li>Query с <code>?</code> из <code>db_execute_sql</code>: <code>query_to_xml(regexp_replace(sql_text, chr(92)||chr(63), quote_literal(p)), …)</code> по одному параметру; <code>EXPLAIN</code> — только во временной volatile-функции.</li>
+<li>Тело REST можно выполнить в кроне через <code>load(function)</code> с подменой <code>request</code>.</li>
+</ul>
+<hr />
+<h2 id="14-ловушки">14. Ловушки</h2>
+<ul>
+<li><code>db_execute_sql</code>: SQL в base64; <code>?</code> в литералах — <code>chr(63)</code>; <code>{{</code>/<code>}}</code> — <code>chr(123)/chr(125)</code> или base64; из нескольких операторов возвращается только первый результат (сводить в один <code>select</code> или <code>DO</code>-блок); <code>limit</code> в конце <code>union all</code> действует на весь union.</li>
+<li>Атрибут, добавленный <code>add_entity_attr</code>, появляется колонкой сразу, но на форме — только после перегенерации страниц.</li>
+<li><code>EntityValueById</code> на сущностях типа <code>its_req</code> из временного БП под user 1 может вернуть пусто даже для обычных полей — суммы для модели держать в колонках и проверять предпросмотром.</li>
+<li><code>its_r_knp.code</code> с ведущим пробелом — всегда <code>trim</code>.</li>
+<li><code>x OR NULL = NULL</code>: условия «закрыт по дате» оборачивать <code>coalesce(…, false)</code>.</li>
+<li>Патч, уже выгруженный в файл, не принимает объекты — <code>patch_out_create</code> новый. Объекты, изменённые SQL-запросом (модели, строки, условия, корреспонденции, справочники, <code>luas</code>, <code>bp_processes</code>), добавлять <code>patch_out_add_objects</code> явно.</li>
+<li><code>_mcp_method_create_query</code>: title &gt; 100 символов откатывает всё; срезает завершающий перевод строки.</li>
+<li><code>previewMdl</code> запускает PREPARE и пишет вычисляемые поля в документ; дата — текущая, если <code>posting_date</code> пуст.</li>
+<li>Названия видов субконто плана счетов (из 1С) могут не совпадать с фактической аналитикой моделей (у 6010 в плане «Доходы…», по факту контрагент) — в шапки отчётов не выводить.</li>
+</ul>
+<hr />
+<h2 id="15-перенос-на-прод">15. Перенос на прод</h2>
+<p>Порядок патчей учёта: 81 (<code>coa-db-ledger-20261113</code>) → 83 → 110 (поставщики) → 115 (договор в субконто АВР) → 123 (ЗП, ДДС, массовое, закрытие, ОСВ, реестр) → 130/132/133/134/136/139 (выписка, баланс, карточка) → 135 (ОС). Отчёты: 98 (тип fods и ОПиУ — раньше любых FODS-шаблонов) → 112, 113, 114/116, 122, 124, 126, 131.</p>
+<p>Не переносится патчем (выполнить вручную): уникальные индексы <code>ux_its_coa_oper_posted</code>, <code>ux_its_coa_bal_acc_nn</code>; <code>its_d_stmt_dtnumcompanyidx</code> (по <code>document_number, oper_date, company_id, dt</code>); заполнение <code>companies.main_dep_id</code>, <code>dep_id</code> документов; скрипт <code>its_r_coa_n</code> (колонка <code>code</code>, <code>entity_id</code> по названию вида); <code>ANALYZE its_coa_acc</code> (устаревшая статистика замедляла баланс в 15 раз).</p>
+<hr />
+<h2 id="16-не-покрыто-открытые-вопросы-20112026">16. Не покрыто / открытые вопросы (20.11.2026)</h2>
+<ul>
+<li>Нет моделей для КНП 021 и 172 во входящих платежах.</li>
+<li>Модели its_d_payord_in пишут на 1210/3510 договор только при указанном договоре; платежи без договора остаются на контрагенте (встречные сальдо по договорам). Вариант — автозаполнение ТЧ договоров по долгам (FIFO).</li>
+<li>Начисление ЗП кредитует 3220/3211/3212/3213 без работника, выплаты по реестру дебетуют по работнику — по субконто остатки не сворачиваются.</li>
+<li>Нет ежемесячного документа амортизации ОС и выбытия ОС; амортизация идёт годовыми суммами из ТЧ при проведении карточки.</li>
+<li>Валютные платежи, КНП 322 в исходящих — не реализовано.</li>
+<li>Ручных сторно на стенде нет — группа <code>sto</code> на реальных данных не проверена.</li>
+<li>Страницы отчётов в браузере в основном не проверялись (проверены query, REST и файлы xlsx).</li>
+</ul></article>
+    <footer>DamuBPM · ТОО «B-apps» · Справочник для разработчиков. <a href="index.html">Вернуться на главную</a></footer>
+  </main>
+</div>
+<a class="totop" href="#" title="Наверх">&#8593;</a>
+<script>
+(function(){
+  var links=[].slice.call(document.querySelectorAll('nav.toc a'));
+  var heads=links.map(function(a){return document.getElementById(decodeURIComponent(a.getAttribute('href').slice(1)));});
+  function onScroll(){
+    var y=window.scrollY+110,cur=-1;
+    heads.forEach(function(h,i){if(h&&h.offsetTop<=y)cur=i;});
+    links.forEach(function(a,i){a.classList.toggle('on',i===cur);});
+  }
+  window.addEventListener('scroll',onScroll,{passive:true});onScroll();
+})();
+</script>
+</body>
+</html>
